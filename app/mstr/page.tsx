@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Activity, TrendingUp, Calculator, DollarSign, AlertTriangle, Target, BarChart3 } from 'lucide-react'
 import Link from 'next/link'
 import { getMSTRData, getMSTROptions, getBTCPrice, getTreasuryHoldings, formatCurrency, formatNumber, formatPercent } from '../lib/data'
-import { getAccurateMSTRData, formatNAVPremium, getNAVColor, ACCURACY_DISCLAIMER } from '../lib/accurate-mstr-data'
+import { getRealMSTRData, formatRealCurrency, formatRealNumber, getRealPremiumColor } from '../lib/real-mstr-data'
 import OptionsFlow from '../components/OptionFlows'
 import DualTickerComparison from '../components/DualTickerComparison'
 import type { MSTRStockData, OptionData, BTCPriceData, TreasuryHolding } from '../lib/data'
@@ -21,16 +21,16 @@ export default function MSTRPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [mstr, accurate, options, btc, holdings] = await Promise.all([
+        const [mstr, realData, options, btc, holdings] = await Promise.all([
           getMSTRData(),
-          getAccurateMSTRData(),
+          getRealMSTRData(),
           getMSTROptions(),
           getBTCPrice(),
           getTreasuryHoldings()
         ])
         
         setMstrData(mstr)
-        setAccurateData(accurate)
+        setAccurateData(realData)
         setOptionsData(options)
         setBtcPrice(btc)
         

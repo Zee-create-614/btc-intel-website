@@ -1,5 +1,5 @@
-// STRC (Strategic Reserves Corp) data tracking
-// Professional-grade STRC analytics alongside MSTR for BTCIntelVault
+// MSTX (MicroStrategy Preferred Stock) data tracking  
+// Professional-grade MSTR preferred stock analytics for BTCIntelVault
 
 interface STRCData {
   // Stock Data
