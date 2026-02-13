@@ -23,11 +23,13 @@ export async function generateStaticParams() {
 // Politician avatar placeholder — initials on party-colored background
 function PoliticianAvatar({ name, party, large = false }: { name: string; party: string; large?: boolean }) {
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-  const bgColor = party === 'R' ? 'bg-red-600' : party === 'D' ? 'bg-blue-600' : 'bg-purple-600'
+  const bgColor = party === 'R' ? 'bg-gradient-to-br from-red-600 to-red-700' : 
+                   party === 'D' ? 'bg-gradient-to-br from-blue-600 to-blue-700' : 
+                   'bg-gradient-to-br from-purple-600 to-purple-700'
   const size = large ? 'w-20 h-20 text-2xl' : 'w-12 h-12 text-base'
   
   return (
-    <div className={`${size} ${bgColor} rounded-full flex items-center justify-center font-bold text-white shadow-lg`}>
+    <div className={`${size} ${bgColor} rounded-full flex items-center justify-center font-bold text-white shadow-lg border-4 border-gray-700`}>
       {initials}
     </div>
   )
@@ -177,16 +179,35 @@ export default async function PoliticianPage({ params }: { params: { name: strin
         </div>
       </div>
 
-      {/* ──── Top Tickers ──── */}
+      {/* ──── Portfolio Holdings ──── */}
       {politician.top_tickers && politician.top_tickers.length > 0 && (
         <div className="card">
-          <h2 className="text-lg font-bold mb-3">Most Traded Tickers</h2>
-          <div className="flex flex-wrap gap-2">
-            {politician.top_tickers.map(t => (
-              <span key={t} className="bg-gray-800 border border-gray-700 text-white px-3 py-1.5 rounded-lg text-sm font-mono">
-                ${t}
-              </span>
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-bitcoin-500" />
+            Portfolio Holdings ({politician.top_tickers.length} stocks)
+          </h2>
+          <p className="text-sm text-gray-400 mb-4">Most actively traded stocks based on transaction frequency</p>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {politician.top_tickers.map((ticker, index) => (
+              <div key={ticker} className="group">
+                <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-lg p-4 text-center hover:border-bitcoin-500/50 transition-all group-hover:scale-105">
+                  <div className="text-lg font-bold text-bitcoin-400 font-mono mb-1">
+                    {ticker}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    #{index + 1} most traded
+                  </div>
+                </div>
+              </div>
             ))}
+          </div>
+          
+          <div className="mt-4 p-3 bg-gray-900/50 border border-gray-800 rounded-lg">
+            <p className="text-xs text-gray-500 flex items-center gap-1">
+              <User className="h-3 w-3" />
+              Portfolio represents most frequently traded stocks, not current holdings or position sizes
+            </p>
           </div>
         </div>
       )}

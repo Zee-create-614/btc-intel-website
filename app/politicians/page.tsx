@@ -109,6 +109,21 @@ async function RecentTrades() {
   )
 }
 
+// Politician avatar component - enhanced with better styling
+function PoliticianAvatar({ name, party, large = false }: { name: string; party: string; large?: boolean }) {
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+  const bgColor = party === 'R' ? 'bg-gradient-to-br from-red-600 to-red-700' : 
+                   party === 'D' ? 'bg-gradient-to-br from-blue-600 to-blue-700' : 
+                   'bg-gradient-to-br from-purple-600 to-purple-700'
+  const size = large ? 'w-16 h-16 text-xl' : 'w-12 h-12 text-sm'
+  
+  return (
+    <div className={`${size} ${bgColor} rounded-full flex items-center justify-center font-bold text-white shadow-lg border-2 border-gray-600`}>
+      {initials}
+    </div>
+  )
+}
+
 async function PoliticianCards() {
   const summaries = await getPoliticianSummaries()
   const top = summaries.slice(0, 12)
@@ -132,34 +147,67 @@ async function PoliticianCards() {
             href={`/politicians/${encodeURIComponent(pol.name)}`}
             className="bg-gray-800 border border-gray-700 rounded-lg p-4 hover:border-bitcoin-500/50 transition-all group"
           >
-            <div className="flex items-center justify-between mb-3">
-              <div>
+            {/* Header with Avatar and Performance */}
+            <div className="flex items-start gap-3 mb-4">
+              <PoliticianAvatar name={pol.name} party={pol.party} />
+              
+              <div className="flex-grow">
                 <h3 className="font-semibold text-white group-hover:text-bitcoin-400 transition-colors">
                   {pol.name}
                 </h3>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-400 mb-2">
                   <span className={partyColor(pol.party)}>{partyName(pol.party)}</span>
                   {' · '}{pol.chamber}{pol.state ? ` · ${pol.state}` : ''}
                 </p>
-              </div>
-              <div className={`text-lg font-bold ${returnColor(pol.avg_return_pct)}`}>
-                {formatReturn(pol.avg_return_pct)}
+                
+                <div className={`text-lg font-bold ${returnColor(pol.avg_return_pct)}`}>
+                  {formatReturn(pol.avg_return_pct)} avg
+                </div>
               </div>
             </div>
             
-            <div className="flex items-center justify-between text-xs text-gray-400">
+            {/* Portfolio Performance Summary */}
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <div className="bg-gray-900 rounded p-2 text-center">
+                <p className="text-xs text-gray-500">Best</p>
+                <p className={`text-sm font-bold ${returnColor(pol.best_return_pct)}`}>
+                  {formatReturn(pol.best_return_pct)}
+                </p>
+              </div>
+              <div className="bg-gray-900 rounded p-2 text-center">
+                <p className="text-xs text-gray-500">Worst</p>
+                <p className={`text-sm font-bold ${returnColor(pol.worst_return_pct)}`}>
+                  {formatReturn(pol.worst_return_pct)}
+                </p>
+              </div>
+            </div>
+            
+            {/* Trading Activity */}
+            <div className="flex items-center justify-between text-xs text-gray-400 mb-3">
               <span>{pol.total_trades} trades</span>
               <span className="text-green-400">{pol.buys} buys</span>
               <span className="text-red-400">{pol.sells} sells</span>
             </div>
             
+            {/* Portfolio Holdings */}
             {pol.top_tickers && pol.top_tickers.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {pol.top_tickers.slice(0, 4).map(t => (
-                  <span key={t} className="text-xs bg-gray-700 text-gray-300 px-1.5 py-0.5 rounded">
-                    ${t}
-                  </span>
-                ))}
+              <div>
+                <p className="text-xs text-gray-500 mb-2 flex items-center gap-1">
+                  <BarChart3 className="h-3 w-3" />
+                  Portfolio:
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {pol.top_tickers.slice(0, 5).map(ticker => (
+                    <span key={ticker} className="text-xs bg-gradient-to-r from-bitcoin-500/20 to-orange-500/20 border border-bitcoin-500/30 text-bitcoin-400 px-2 py-1 rounded font-mono font-bold">
+                      {ticker}
+                    </span>
+                  ))}
+                  {pol.top_tickers.length > 5 && (
+                    <span className="text-xs bg-gray-700 text-gray-400 px-2 py-1 rounded">
+                      +{pol.top_tickers.length - 5}
+                    </span>
+                  )}
+                </div>
               </div>
             )}
           </Link>
