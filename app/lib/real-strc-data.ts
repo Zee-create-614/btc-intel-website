@@ -58,11 +58,11 @@ export async function getRealSTRCData(): Promise<RealSTRCData> {
     const meta = result?.meta || {}
     const quotes = result?.indicators?.quote?.[0] || {}
     
-    // Real STRC data (from Josh's screenshot + Yahoo Finance)
+    // Real STRC data (from MicroStrategy's official app)
     const realPrice = meta.regularMarketPrice || 99.80
-    const realVolume = meta.regularMarketVolume || 150000 // Preferred stocks lower volume
-    const realMarketCap = 42770000000 // $42.77B from Josh's image
-    const realShares = Math.round(realMarketCap / realPrice) // Calculate shares outstanding
+    const realVolume = meta.regularMarketVolume || 103000000 // $103M daily volume from MSTR app
+    const realMarketCap = 3372700000 // $3.373B from MSTR official app
+    const realShares = Math.round(realMarketCap / realPrice) // ~33.8M shares
     
     // Calculate historical volumes
     const volumes = quotes.volume?.filter((v: any) => v != null) || []
@@ -76,19 +76,20 @@ export async function getRealSTRCData(): Promise<RealSTRCData> {
       ? monthlyVolumes.reduce((sum: number, v: number) => sum + v, 0) / monthlyVolumes.length
       : realVolume
     
-    // Calculate volatility for preferred stock (typically very low)
+    // STRC volatility (from MicroStrategy official app: 22% 30D)
     const closes = quotes.close?.filter((c: any) => c != null) || []
-    const volatility30d = calculatePreferredVolatility(closes.slice(-30))
+    const volatility30d = 22.0 // Historical Volatility (30D) from MSTR app
     
     // Volume analysis  
     const volumeSpike = realVolume > (avgVolume30d * 1.3) ? 
       ((realVolume - avgVolume30d) / avgVolume30d) * 100 : 0
     const unusualVolumeDetected = volumeSpike > 20 // Lower threshold for preferred
     
-    // Preferred stock characteristics
-    const parValue = 100.0 // Typical preferred par value
-    const dividendYield = 5.5 + (Math.random() * 2) // Variable rate preferred: 4-8%
-    const currentYield = (dividendYield * parValue) / realPrice
+    // STRC preferred stock characteristics (from MicroStrategy official app)
+    const parValue = 100.0 // Standard preferred par value
+    const dividendYield = 11.25 // Current dividend yield from MSTR app
+    const effectiveYield = 11.27 // Effective yield from MSTR app
+    const currentYield = effectiveYield
     const yieldToCall = dividendYield + 0.5 // Slight premium if called
     const priceToParRatio = realPrice / parValue
     
@@ -130,24 +131,24 @@ export async function getRealSTRCData(): Promise<RealSTRCData> {
   } catch (error) {
     console.error('Error fetching real STRC data:', error)
     
-    // Fallback with data from Josh's image
+    // Fallback with official MSTR app data
     return {
       price: 99.80,
-      volume: 150000,
-      market_cap: 42770000000, // $42.77B
-      shares_outstanding: 428467336, // Calculated from market cap
-      daily_volume_avg_10d: 175000,
-      daily_volume_avg_30d: 200000,
+      volume: 103000000, // $103M from MSTR app
+      market_cap: 3372700000, // $3.373B from MSTR app
+      shares_outstanding: 33799000, // ~33.8M shares calculated
+      daily_volume_avg_10d: 142300000, // $142.3M 30D avg from MSTR app
+      daily_volume_avg_30d: 142300000,
       
-      dividend_yield: 6.2, // Variable rate preferred
+      dividend_yield: 11.25, // Current dividend from MSTR app
       par_value: 100.0,
-      current_yield: 6.21, // (6.2 * 100) / 99.80
-      yield_to_call: 6.7,
+      current_yield: 11.27, // Effective yield from MSTR app
+      yield_to_call: 11.75,
       call_protection: true,
       
       rsi_14: 48.5,
       price_to_par_ratio: 0.998, // Close to par
-      volatility_30d: 2.1, // Very low for preferred
+      volatility_30d: 22.0, // Historical volatility 30D from MSTR app
       trading_range_52w: {
         high: 101.25,
         low: 98.35
@@ -175,7 +176,7 @@ export async function getMSTRvsSTRCComparison(): Promise<MSTRvsSTRCComparison> {
     const mstrMarketCap = mstrPrice * 16800000 // MSTR shares
     
     // Calculate comparison metrics
-    const marketCapRatio = strcData.market_cap / mstrMarketCap // STRC is MUCH larger
+    const marketCapRatio = strcData.market_cap / mstrMarketCap // MSTR is much larger ($44.6B vs $3.4B)
     const yieldAdvantage = strcData.dividend_yield // MSTR pays no dividend
     
     // Volatility comparison (STRC much lower as preferred stock)
@@ -185,8 +186,8 @@ export async function getMSTRvsSTRCComparison(): Promise<MSTRvsSTRCComparison> {
     const volumeComparison = mstrVolume > (strcData.volume * 50) ? 'mstr_higher' : 
                             strcData.volume > mstrVolume ? 'strc_higher' : 'similar'
     
-    // Correlation analysis
-    const correlationAnalysis = "No meaningful correlation - STRC is a traditional preferred stock focused on dividend income, while MSTR is a volatile Bitcoin treasury play. Different investor bases and risk profiles."
+    // Correlation analysis (updated with official MSTR app data)
+    const correlationAnalysis = "Strong correlations: STRC has 69% correlation to MSTR and 64% correlation to BTC. This preferred stock provides Bitcoin exposure with high dividend yield (11.25%) and lower volatility than common shares."
     
     return {
       mstr: {
