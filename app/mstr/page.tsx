@@ -101,7 +101,7 @@ export default function MSTRPage() {
             <div>
               <p className="text-sm text-gray-400">MSTR Price</p>
               <p className="text-3xl font-bold text-mstr-500">
-                ${mstrData?.price.toFixed(2)}
+                ${mstrData?.price?.toFixed(2) || "0.00"}
               </p>
               <p className="text-sm text-gray-400">
                 Market Cap: {formatCurrency(mstrData?.market_cap || 0)}
@@ -116,10 +116,10 @@ export default function MSTRPage() {
             <div>
               <p className="text-sm text-gray-400">30D IV Percentile</p>
               <p className={`text-3xl font-bold ${getIVColor((mstrData?.iv_30d || 0) / 100)}`}>
-                {mstrData?.iv_30d.toFixed(1)}%
+                {mstrData?.iv_30d?.toFixed(1) || "0.0"}%
               </p>
               <p className="text-sm text-gray-400">
-                90D: {mstrData?.iv_90d?.toFixed(1)}%
+                90D: {mstrData?.iv_90d?.toFixed(1) || "0.0"}%
               </p>
             </div>
             <TrendingUp className="h-12 w-12 text-yellow-500" />
@@ -170,7 +170,7 @@ export default function MSTRPage() {
                   ></div>
                 </div>
                 <span className={`font-bold ${getIVColor((mstrData?.iv_30d || 0) / 100)}`}>
-                  {mstrData?.iv_30d?.toFixed(1)}%
+                  {mstrData?.iv_30d?.toFixed(1) || "0.0"}%
                 </span>
               </div>
             </div>
@@ -185,7 +185,7 @@ export default function MSTRPage() {
                   ></div>
                 </div>
                 <span className={`font-bold ${getIVColor((mstrData?.iv_60d || 0) / 100)}`}>
-                  {mstrData?.iv_60d?.toFixed(1)}%
+                  {mstrData?.iv_60d?.toFixed(1) || "0.0"}%
                 </span>
               </div>
             </div>
@@ -200,7 +200,7 @@ export default function MSTRPage() {
                   ></div>
                 </div>
                 <span className={`font-bold ${getIVColor((mstrData?.iv_90d || 0) / 100)}`}>
-                  {mstrData?.iv_90d?.toFixed(1)}%
+                  {mstrData?.iv_90d?.toFixed(1) || "0.0"}%
                 </span>
               </div>
             </div>
@@ -215,7 +215,7 @@ export default function MSTRPage() {
                   ></div>
                 </div>
                 <span className={`font-bold ${getIVColor((mstrData?.iv_252d || 0) / 100)}`}>
-                  {mstrData?.iv_252d?.toFixed(1)}%
+                  {mstrData?.iv_252d?.toFixed(1) || "0.0"}%
                 </span>
               </div>
             </div>
