@@ -1,10 +1,11 @@
-import { Users, TrendingUp, TrendingDown, BarChart3, ArrowRight } from 'lucide-react'
+import { Users, TrendingUp, TrendingDown, BarChart3, ArrowRight, Star } from 'lucide-react'
 import Link from 'next/link'
 import {
   getTradeStats, getTrades, getPoliticianSummaries,
   partyColor, partyBg, partyName, tradeTypeColor, tradeTypeEmoji,
   returnColor, formatReturn,
 } from '../lib/politician-data'
+import PoliticianCard from '../components/PoliticianCard'
 
 export const metadata = {
   title: 'Politician Trading Tracker | BTCIntelVault',

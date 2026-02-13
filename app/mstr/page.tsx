@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { getMSTRData, getMSTROptions, getBTCPrice, getTreasuryHoldings, formatCurrency, formatNumber, formatPercent } from '../lib/data'
 import { getAccurateMSTRData, formatNAVPremium, getNAVColor, ACCURACY_DISCLAIMER } from '../lib/accurate-mstr-data'
 import OptionsFlow from '../components/OptionFlows'
+import DualTickerComparison from '../components/DualTickerComparison'
 import type { MSTRStockData, OptionData, BTCPriceData, TreasuryHolding } from '../lib/data'
 
 export default function MSTRPage() {
@@ -84,9 +85,9 @@ export default function MSTRPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2 text-mstr-500">MSTR Analytics Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-2 text-mstr-500">MSTR + STRC Analytics Dashboard</h1>
           <p className="text-gray-400">
-            Professional-grade MicroStrategy options analytics with 1000% accurate data
+            Professional dual-ticker Bitcoin treasury analysis with live STRC tracking, volume analysis, and 1000% accurate data
           </p>
         </div>
         <div className="flex items-center space-x-4 mt-4 md:mt-0">
@@ -109,27 +110,27 @@ export default function MSTRPage() {
         <div className="flex items-start space-x-3">
           <Target className="h-5 w-5 text-mstr-500 mt-0.5" />
           <div>
-            <h3 className="font-bold text-mstr-500 mb-2">Institutional-Grade Accuracy</h3>
+            <h3 className="font-bold text-mstr-500 mb-2">Dual-Ticker Bitcoin Treasury Intelligence</h3>
             <p className="text-sm text-gray-300 mb-3">
-              Professional MSTR analytics with real-time NAV calculations, accurate BTC holdings data, 
+              Professional MSTR + STRC analytics with live volume tracking, volatility analysis, dual-ticker comparisons,
               and institutional options flow analysis. Updated every 30 seconds for maximum precision.
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span>Real-time BTC Holdings</span>
+                <span>Live STRC Volume Tracking</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span>Precise NAV Calculations</span>
+                <span>Dual-Ticker Correlation</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                <span>Real-time Volatility Analysis</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                 <span>Professional Options Flow</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span>Institutional Greeks</span>
               </div>
             </div>
           </div>
@@ -301,6 +302,9 @@ export default function MSTRPage() {
           </div>
         </div>
       </div>
+
+      {/* MSTR vs STRC Dual Ticker Analysis */}
+      <DualTickerComparison />
 
       {/* Professional Options Flow Analysis */}
       <OptionsFlow symbol="MSTR" />
