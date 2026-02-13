@@ -32,7 +32,7 @@ async function DashboardStats() {
               <p className="text-3xl font-bold text-bitcoin-500">
                 {formatCurrency(stats.btcPrice)}
               </p>
-              <p className={`text-sm ${stats.btcChange24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              <p className={`text-sm ${(stats.btcChange24h || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {formatPercent(stats.btcChange24h || 0)} 24h
               </p>
             </div>
@@ -92,7 +92,7 @@ async function DashboardStats() {
             <p className="text-4xl font-bold mb-2">{formatNumber(stats.corporateBTC)}</p>
             <p className="text-gray-400">BTC held by companies</p>
             <p className="text-sm text-gray-500 mt-2">
-              {formatCurrency(stats.corporateBTC * stats.btcPrice)}
+              {formatCurrency((stats.corporateBTC || 0) * (stats.btcPrice || 0))}
             </p>
           </div>
         </div>
@@ -103,7 +103,7 @@ async function DashboardStats() {
             <p className="text-4xl font-bold mb-2">{formatNumber(stats.etfBTC)}</p>
             <p className="text-gray-400">BTC held by ETFs</p>
             <p className="text-sm text-gray-500 mt-2">
-              {formatCurrency(stats.etfBTC * stats.btcPrice)}
+              {formatCurrency((stats.etfBTC || 0) * (stats.btcPrice || 0))}
             </p>
           </div>
         </div>
@@ -147,7 +147,7 @@ async function DashboardStats() {
               <div className="text-right">
                 <p className="font-bold">{formatNumber(holder.btc_holdings)} BTC</p>
                 <p className="text-sm text-gray-400">
-                  {formatCurrency(holder.btc_holdings * stats.btcPrice)}
+                  {formatCurrency(holder.btc_holdings * (stats.btcPrice || 0))}
                 </p>
               </div>
             </div>
