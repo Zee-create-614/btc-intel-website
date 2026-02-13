@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-black text-white;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-gray-900 rounded-lg border border-gray-800 p-6;
+  }
+  
+  .btn-primary {
+    @apply bg-bitcoin-500 hover:bg-bitcoin-600 text-white font-bold py-2 px-4 rounded transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition-colors;
+  }
+  
+  .table-header {
+    @apply bg-gray-800 text-gray-200 font-semibold py-3 px-6 text-left;
+  }
+  
+  .table-cell {
+    @apply py-4 px-6 border-b border-gray-800;
+  }
+  
+  .metric-card {
+    @apply bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg p-6 border border-gray-700;
+  }
+  
+  .glow-bitcoin {
+    box-shadow: 0 0 20px rgba(235, 157, 66, 0.3);
+  }
+  
+  .glow-mstr {
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+  }
+}

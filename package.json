@@ -1,0 +1,39 @@
+{
+  "name": "btc-intel-website",
+  "version": "1.0.0",
+  "description": "Bitcoin Treasury & MSTR Options Intelligence Platform",
+  "scripts": {
+    "dev": "next dev -H 0.0.0.0 -p 3002",
+    "build": "next build",
+    "start": "next start -p 3002",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.4.16",
+    "clsx": "^2.1.0",
+    "lucide-react": "^0.317.0",
+    "next": "^14.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "recharts": "^2.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "^14.1.0",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.3.3"
+  },
+  "keywords": [
+    "bitcoin",
+    "mstr",
+    "options",
+    "treasury",
+    "analytics"
+  ],
+  "author": "",
+  "license": "MIT"
+}
