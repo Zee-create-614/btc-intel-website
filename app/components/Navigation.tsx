@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Bitcoin, TrendingUp, Calculator, Bell } from 'lucide-react'
+import { Bitcoin, TrendingUp, Calculator, Bell, Users } from 'lucide-react'
 
 export default function Navigation() {
   const pathname = usePathname()
@@ -10,6 +11,7 @@ export default function Navigation() {
   const navItems = [
     { href: '/', label: 'Dashboard', icon: Bitcoin },
     { href: '/treasuries', label: 'Treasuries', icon: TrendingUp },
+    { href: '/politicians', label: 'Politicians', icon: Users },
     { href: '/mstr', label: 'MSTR Analytics', icon: TrendingUp },
     { href: '/mstr/calculator', label: 'Options Calculator', icon: Calculator },
     { href: '/alerts', label: 'Alerts', icon: Bell },
@@ -21,8 +23,14 @@ export default function Navigation() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <Bitcoin className="h-8 w-8 text-bitcoin-500" />
-            <span className="text-xl font-bold">BTC Intel</span>
+            <Image 
+              src="/Bitcoin Intel Vault.png" 
+              alt="BTCIntelVault" 
+              width={40} 
+              height={40} 
+              className="h-10 w-10"
+            />
+            <span className="text-xl font-bold">BTCIntelVault</span>
           </Link>
 
           {/* Navigation Links */}

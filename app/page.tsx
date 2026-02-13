@@ -1,4 +1,4 @@
-import { Bitcoin, TrendingUp, DollarSign, Activity } from 'lucide-react'
+import { Bitcoin, TrendingUp, DollarSign, Activity, Users } from 'lucide-react'
 import { getDashboardStats, getTreasuryHoldings, formatCurrency, formatNumber, formatPercent } from './lib/data'
 import Link from 'next/link'
 
@@ -155,8 +155,20 @@ async function DashboardStats() {
         </div>
       </div>
 
+      {/* Politician Trading Preview */}
+      <div className="card">
+        <h3 className="text-xl font-bold mb-4 text-bitcoin-500">🏛️ Politician Trading Activity</h3>
+        <div className="text-center">
+          <p className="text-4xl font-bold mb-2 text-white">96+</p>
+          <p className="text-gray-400">Live trades tracked</p>
+          <p className="text-sm text-gray-500 mt-2">
+            25+ Politicians • Real-time alerts
+          </p>
+        </div>
+      </div>
+
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Link href="/treasuries" className="card hover:bg-gray-800 transition-colors">
           <div className="text-center">
             <TrendingUp className="h-12 w-12 text-bitcoin-500 mx-auto mb-4" />
@@ -173,6 +185,16 @@ async function DashboardStats() {
             <h3 className="text-lg font-bold mb-2">MSTR Analytics</h3>
             <p className="text-gray-400 text-sm">
               Deep dive into MicroStrategy options, volatility, and NAV analysis
+            </p>
+          </div>
+        </Link>
+
+        <Link href="/politicians" className="card hover:bg-gray-800 transition-colors">
+          <div className="text-center">
+            <Users className="h-12 w-12 text-blue-400 mx-auto mb-4" />
+            <h3 className="text-lg font-bold mb-2">Politician Trades</h3>
+            <p className="text-gray-400 text-sm">
+              Track Congress stock trades with performance analytics and alerts
             </p>
           </div>
         </Link>

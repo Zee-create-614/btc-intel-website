@@ -3,8 +3,8 @@ import './globals.css'
 import Navigation from './components/Navigation'
 
 export const metadata: Metadata = {
-  title: 'BTC Intel - Bitcoin Treasury & MSTR Options Analytics',
-  description: 'Track Bitcoin treasuries and analyze MSTR options with real-time data and insights',
+  title: 'BTCIntelVault - Bitcoin Treasury & MSTR Options Intelligence',
+  description: 'Professional Bitcoin treasury analytics, MSTR options intelligence, and political trading insights. Real-time data for institutional investors.',
 }
 
 export default function RootLayout({
