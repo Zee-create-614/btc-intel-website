@@ -221,7 +221,7 @@ export default function MSTRPage() {
                 ${(btcPrice?.price_usd || 68790)?.toLocaleString()}
               </p>
               <p className="text-sm text-gray-400">
-                {btcPrice?.change_24h > 0 ? '+' : ''}{(btcPrice?.change_24h || 4.75)?.toFixed(2)}% 24h
+                {(btcPrice?.change_24h || 0) > 0 ? '+' : ''}{(btcPrice?.change_24h || 4.75).toFixed(2)}% 24h
               </p>
             </div>
             <Activity className="h-12 w-12 text-orange-500" />
