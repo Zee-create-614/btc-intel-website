@@ -16,8 +16,8 @@ export async function generateMetadata({ params }: { params: { name: string } })
 }
 
 export async function generateStaticParams() {
-  const summaries = await getPoliticianSummaries()
-  return summaries.map(s => ({ name: encodeURIComponent(s.name) }))
+  // Return empty array during build - pages will be generated dynamically
+  return []
 }
 
 // Politician avatar placeholder — initials on party-colored background
