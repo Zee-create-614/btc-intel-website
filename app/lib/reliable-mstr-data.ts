@@ -53,12 +53,12 @@ export async function getReliableMSTRData(): Promise<ReliableMSTRData> {
     btc_holdings: 190000,
     btc_cost_basis_per_coin: 29803,
     total_btc_cost: 5662570000, // 190K × $29,803
-    unrealized_pnl: 7447430000, // Assuming $69K BTC = $13.11B value - $5.66B cost
+    unrealized_pnl: 7410030000, // $13.07B current value - $5.66B cost = $7.41B profit
     
-    // Accurate NAV calculations
-    nav_per_share: 776.79, // ($13.11B BTC + $500M other) / 16.8M shares
-    nav_premium_discount: -82.8, // ($133.88 - $776.79) / $776.79 × 100
-    btc_per_share: 11.31, // 190K BTC / 16.8M shares
+    // Accurate NAV calculations  
+    nav_per_share: 809.52, // ($13.1B BTC + $500M other) / 16.8M shares
+    nav_premium_discount: -83.5, // ($133.88 - $809.52) / $809.52 × 100
+    btc_per_share: 0.0113, // 190K BTC / 16.8M shares = 0.0113
     
     // IV percentile data
     iv_rank_30d: 67.5, // Current IV rank (0-100)

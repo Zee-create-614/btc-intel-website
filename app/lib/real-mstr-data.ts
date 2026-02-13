@@ -72,7 +72,7 @@ export async function getRealMSTRData(): Promise<RealMSTRData> {
     const totalAssets = btcValue + cashAndOther
     const navPerShare = totalAssets / realShares
     const navPremiumDiscount = ((realPrice - navPerShare) / navPerShare) * 100
-    const btcPerShare = realBtcHoldings / realShares
+    const btcPerShare = realBtcHoldings / realShares // Should be ~0.0113
     const unrealizedPnl = btcValue - totalBtcCost
     
     // REAL ETF Holdings (Major ETFs holding MSTR)
@@ -155,11 +155,11 @@ export async function getRealMSTRData(): Promise<RealMSTRData> {
       btc_holdings: 190000,
       btc_cost_basis_per_coin: 29803,
       total_btc_cost: 5662570000,
-      unrealized_pnl: 7447430000, // Assuming $69k BTC
+      unrealized_pnl: 7410030000, // $13.07B current - $5.66B cost
       
-      nav_per_share: 776.79,
-      nav_premium_discount: -82.8,
-      btc_per_share: 11.31,
+      nav_per_share: 809.52,
+      nav_premium_discount: -83.5,
+      btc_per_share: 0.0113,
       
       etf_holdings: [
         {

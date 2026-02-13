@@ -187,11 +187,11 @@ export default function MSTRPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-400">NAV Premium/Discount</p>
-              <p className={`text-3xl font-bold ${getNAVColor(accurateData?.nav_premium_discount || -82.8)}`}>
-                {formatNAVPremium(accurateData?.nav_premium_discount || -82.8)}
+              <p className={`text-3xl font-bold ${getNAVColor(accurateData?.nav_premium_discount || -83.5)}`}>
+                {formatNAVPremium(accurateData?.nav_premium_discount || -83.5)}
               </p>
               <p className="text-sm text-gray-400">
-                NAV: ${(accurateData?.nav_per_share || 776.79).toFixed(0)}
+                NAV: ${(accurateData?.nav_per_share || 809.52).toFixed(0)}
               </p>
             </div>
             <DollarSign className="h-12 w-12 text-green-400" />
@@ -206,7 +206,7 @@ export default function MSTRPage() {
                 {(accurateData?.btc_holdings || 190000).toLocaleString()}
               </p>
               <p className="text-sm text-gray-400">
-                {(accurateData?.btc_per_share || 11.31).toFixed(2)} BTC/share
+                {(accurateData?.btc_per_share || 0.0113).toFixed(4)} BTC/share
               </p>
             </div>
             <Activity className="h-12 w-12 text-bitcoin-500" />
@@ -376,13 +376,13 @@ export default function MSTRPage() {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-400">Average Cost Basis</span>
               <span className="text-white font-bold">
-                ${(accurateData?.btc_cost_basis || 29803).toLocaleString()}
+                ${(accurateData?.btc_cost_basis_per_coin || 29803).toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-400">Unrealized P&L</span>
               <span className="text-green-400 font-bold">
-                {formatCurrency(accurateData?.btc_unrealized_pnl || 8.5e9)}
+                {formatCurrency(accurateData?.unrealized_pnl || 7.41e9)}
               </span>
             </div>
           </div>
