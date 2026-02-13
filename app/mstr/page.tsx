@@ -187,11 +187,11 @@ export default function MSTRPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-400">NAV Premium/Discount</p>
-              <p className={`text-3xl font-bold ${getNAVColor(accurateData?.nav_premium_discount || -83.5)}`}>
-                {formatNAVPremium(accurateData?.nav_premium_discount || -83.5)}
+              <p className={`text-3xl font-bold ${getNAVColor(accurateData?.nav_premium_discount || -95.47)}`}>
+                {formatNAVPremium(accurateData?.nav_premium_discount || -95.47)}
               </p>
               <p className="text-sm text-gray-400">
-                NAV: ${(accurateData?.nav_per_share || 809.52).toFixed(0)}
+                NAV: ${(accurateData?.nav_per_share || 2956.31).toFixed(0)}
               </p>
             </div>
             <DollarSign className="h-12 w-12 text-green-400" />
@@ -203,10 +203,10 @@ export default function MSTRPage() {
             <div>
               <p className="text-sm text-gray-400">BTC Holdings</p>
               <p className="text-3xl font-bold text-bitcoin-500">
-                {(accurateData?.btc_holdings || 190000).toLocaleString()}
+                {(accurateData?.btc_holdings || 714644).toLocaleString()}
               </p>
               <p className="text-sm text-gray-400">
-                {(accurateData?.btc_per_share || 0.0113).toFixed(4)} BTC/share
+                {(accurateData?.btc_per_share || 0.0425).toFixed(4)} BTC/share
               </p>
             </div>
             <Activity className="h-12 w-12 text-bitcoin-500" />
@@ -369,7 +369,7 @@ export default function MSTRPage() {
           <div className="space-y-3">
             <div className="text-center p-4 bg-gray-800 rounded">
               <p className="text-2xl font-bold text-bitcoin-500">
-                {formatNumber(accurateData?.btc_holdings || 190000)}
+                {(accurateData?.btc_holdings || 714644).toLocaleString()}
               </p>
               <p className="text-sm text-gray-400">Total BTC Holdings</p>
             </div>
@@ -382,7 +382,7 @@ export default function MSTRPage() {
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-400">Unrealized P&L</span>
               <span className="text-green-400 font-bold">
-                {formatCurrency(accurateData?.unrealized_pnl || 7.41e9)}
+                {formatCurrency(accurateData?.unrealized_pnl || 28.02e9)}
               </span>
             </div>
           </div>

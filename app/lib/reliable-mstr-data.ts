@@ -49,16 +49,16 @@ export async function getReliableMSTRData(): Promise<ReliableMSTRData> {
     market_cap: 2249184000, // 16.8M shares × $133.88
     shares_outstanding: 16800000,
     
-    // Real BTC treasury holdings
-    btc_holdings: 190000,
+    // Real BTC treasury holdings (CORRECTED from institutional data)
+    btc_holdings: 714644, // Strategy Company from Josh's institutional tracker
     btc_cost_basis_per_coin: 29803,
-    total_btc_cost: 5662570000, // 190K × $29,803
-    unrealized_pnl: 7410030000, // $13.07B current value - $5.66B cost = $7.41B profit
+    total_btc_cost: 21303132732, // 714,644 × $29,803
+    unrealized_pnl: 28022644268, // $49.16B current value - $21.3B cost = $27.86B profit!
     
-    // Accurate NAV calculations  
-    nav_per_share: 809.52, // ($13.1B BTC + $500M other) / 16.8M shares
-    nav_premium_discount: -83.5, // ($133.88 - $809.52) / $809.52 × 100
-    btc_per_share: 0.0113, // 190K BTC / 16.8M shares = 0.0113
+    // Accurate NAV calculations (CORRECTED with real BTC holdings)
+    nav_per_share: 2956.31, // ($49.16B BTC + $500M other) / 16.8M shares
+    nav_premium_discount: -95.47, // ($133.88 - $2956.31) / $2956.31 × 100 = -95.47%!
+    btc_per_share: 0.0425, // 714,644 BTC / 16.8M shares = 0.0425
     
     // IV percentile data
     iv_rank_30d: 67.5, // Current IV rank (0-100)
@@ -128,8 +128,8 @@ export async function getReliableMSTRData(): Promise<ReliableMSTRData> {
         reliableData.volume = meta.regularMarketVolume
         reliableData.market_cap = meta.regularMarketPrice * 16800000
         
-        // Recalculate NAV premium with live price
-        reliableData.nav_premium_discount = ((meta.regularMarketPrice - 776.79) / 776.79) * 100
+        // Recalculate NAV premium with live price (using corrected NAV)
+        reliableData.nav_premium_discount = ((meta.regularMarketPrice - 2956.31) / 2956.31) * 100
         
         console.log('Enhanced with live MSTR data:', meta.regularMarketPrice)
       }

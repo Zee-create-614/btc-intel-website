@@ -152,14 +152,14 @@ export async function getRealMSTRData(): Promise<RealMSTRData> {
       market_cap: 2249184000,
       shares_outstanding: 16800000,
       
-      btc_holdings: 190000,
+      btc_holdings: 714644,
       btc_cost_basis_per_coin: 29803,
-      total_btc_cost: 5662570000,
-      unrealized_pnl: 7410030000, // $13.07B current - $5.66B cost
+      total_btc_cost: 21303132732,
+      unrealized_pnl: 28022644268, // $49.16B current - $21.3B cost
       
-      nav_per_share: 809.52,
-      nav_premium_discount: -83.5,
-      btc_per_share: 0.0113,
+      nav_per_share: 2956.31,
+      nav_premium_discount: -95.47,
+      btc_per_share: 0.0425,
       
       etf_holdings: [
         {
