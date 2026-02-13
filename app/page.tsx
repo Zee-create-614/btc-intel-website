@@ -156,7 +156,7 @@ async function DashboardStats() {
       </div>
 
       {/* Politician Trading Preview */}
-      <div className="card">
+      <Link href="/politicians" className="card hover:bg-gray-800 transition-colors">
         <h3 className="text-xl font-bold mb-4 text-bitcoin-500">🏛️ Politician Trading Activity</h3>
         <div className="text-center">
           <p className="text-4xl font-bold mb-2 text-white">96+</p>
@@ -165,7 +165,7 @@ async function DashboardStats() {
             25+ Politicians • Real-time alerts
           </p>
         </div>
-      </div>
+      </Link>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
