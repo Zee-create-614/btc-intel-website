@@ -553,6 +553,7 @@ export default function OptionsCalculator() {
                   const optionType = needsSpread ? 'spread' as const
                     : (selectedStrategy === 'covered_call' || selectedStrategy === 'bull_call_spread') ? 'call' as const : 'put' as const
                   placeTrade({
+                    tradeType: 'option',
                     strategy: selectedStrategy,
                     strategyName: strat.name,
                     symbol: 'MSTR',

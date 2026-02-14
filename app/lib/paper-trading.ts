@@ -1,29 +1,34 @@
 // Paper Trading Engine - localStorage backed
 // Migrate to server + user accounts when auth is ready
 
+export type TradeType = 'option' | 'spot'
+
 export interface PaperTrade {
   id: string
+  tradeType: TradeType
   strategy: string
   strategyName: string
   symbol: string
-  direction: 'long' | 'short' // selling options = short
-  optionType: 'call' | 'put' | 'spread'
+  direction: 'long' | 'short'
+  optionType?: 'call' | 'put' | 'spread'
   strikePrice: number
-  strikePrice2?: number // for spreads
+  strikePrice2?: number
   contracts: number
-  shares: number // contracts * 100
-  entryPrice: number // stock price at entry
-  premium: number // per share
-  totalPremium: number // premium * shares
+  shares: number
+  quantity?: number // for spot trades (BTC amount or share count)
+  entryPrice: number
+  premium: number
+  totalPremium: number
   expirationDate: string
   iv: number
-  openedAt: string // ISO timestamp
+  openedAt: string
   closedAt?: string
-  closePrice?: number // stock price at close
-  closePremium?: number // premium at close
+  closePrice?: number
+  closePremium?: number
   pnl?: number
   pnlPercent?: number
   status: 'open' | 'closed' | 'expired'
+  signalAtEntry?: string // VaultSignal signal at time of trade
   notes?: string
 }
 
@@ -64,10 +69,76 @@ function saveAccount(account: PaperAccount) {
   }
 }
 
+export function placeSpotTrade(params: {
+  symbol: 'BTC' | 'MSTR'
+  direction: 'long' | 'short'
+  quantity: number
+  entryPrice: number
+  signal?: string
+}): PaperTrade {
+  const account = getAccount()
+  const cost = params.quantity * params.entryPrice
+  
+  const trade: PaperTrade = {
+    id: generateId(),
+    tradeType: 'spot',
+    strategy: params.direction === 'long' ? 'spot_long' : 'spot_short',
+    strategyName: `${params.direction === 'long' ? 'Buy' : 'Short'} ${params.symbol}`,
+    symbol: params.symbol,
+    direction: params.direction,
+    strikePrice: 0,
+    contracts: 0,
+    shares: 0,
+    quantity: params.quantity,
+    entryPrice: params.entryPrice,
+    premium: 0,
+    totalPremium: 0,
+    expirationDate: '',
+    iv: 0,
+    openedAt: new Date().toISOString(),
+    status: 'open',
+    signalAtEntry: params.signal,
+  }
+
+  if (params.direction === 'long') {
+    account.balance -= cost
+  } else {
+    account.balance += cost // short sale proceeds
+  }
+
+  account.trades.push(trade)
+  saveAccount(account)
+  return trade
+}
+
+export function closeSpotTrade(tradeId: string, closePrice: number): PaperTrade | null {
+  const account = getAccount()
+  const trade = account.trades.find(t => t.id === tradeId)
+  if (!trade || trade.status !== 'open' || trade.tradeType !== 'spot') return null
+
+  trade.status = 'closed'
+  trade.closedAt = new Date().toISOString()
+  trade.closePrice = closePrice
+
+  const qty = trade.quantity || 0
+  if (trade.direction === 'long') {
+    trade.pnl = (closePrice - trade.entryPrice) * qty
+    account.balance += closePrice * qty
+  } else {
+    trade.pnl = (trade.entryPrice - closePrice) * qty
+    account.balance -= closePrice * qty
+  }
+  trade.pnlPercent = trade.entryPrice > 0 ? (trade.pnl / (trade.entryPrice * qty)) * 100 : 0
+
+  saveAccount(account)
+  return trade
+}
+
 export function placeTrade(trade: Omit<PaperTrade, 'id' | 'openedAt' | 'status'>): PaperTrade {
   const account = getAccount()
   const newTrade: PaperTrade = {
     ...trade,
+    tradeType: 'option',
     id: generateId(),
     openedAt: new Date().toISOString(),
     status: 'open',
