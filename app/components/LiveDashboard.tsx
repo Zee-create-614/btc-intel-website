@@ -1,7 +1,79 @@
-import { Bitcoin, TrendingUp, DollarSign, Activity } from 'lucide-react'
-import Link from 'next/link'
+'use client'
 
-export default function Dashboard() {
+import { useState, useEffect } from 'react'
+import { Bitcoin, TrendingUp, DollarSign, Activity, RefreshCw } from 'lucide-react'
+import Link from 'next/link'
+import { 
+  getLiveAnalytics, 
+  formatLivePrice, 
+  formatLiveBTC, 
+  formatLivePercent, 
+  formatLiveValue,
+  LIVE_UPDATE_INTERVAL 
+} from '../lib/live-data-feeds'
+
+export default function LiveDashboard() {
+  const [analytics, setAnalytics] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [updating, setUpdating] = useState(false)
+  const [lastUpdate, setLastUpdate] = useState<string>('')
+
+  const fetchLiveData = async () => {
+    try {
+      setUpdating(true)
+      console.log('🔴 DASHBOARD: Fetching live data...')
+      
+      const data = await getLiveAnalytics()
+      setAnalytics(data)
+      setLastUpdate(new Date().toLocaleTimeString())
+      setLoading(false)
+    } catch (error) {
+      console.error('❌ Dashboard live data error:', error)
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchLiveData()
+  }, [])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchLiveData()
+    }, LIVE_UPDATE_INTERVAL)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  if (loading || !analytics) {
+    return (
+      <div className="space-y-8">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-bitcoin-500 to-mstr-500 bg-clip-text text-transparent">
+            Bitcoin Treasury & MSTR Intelligence
+          </h1>
+          <p className="text-xl text-slate-400">
+            Loading real-time data...
+          </p>
+        </div>
+        <div className="animate-pulse grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="bg-slate-800 rounded-lg p-6 h-32"></div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const { btc_data, mstr_data, holdings_data, nav_premium_discount } = analytics
+  
+  // Calculate total institutional value (MSTR + other holders)
+  const mstrValue = holdings_data.btc_holdings * btc_data.price_usd
+  const otherInstitutionalBTC = 423431 // Other institutions (rough estimate)
+  const totalInstitutionalBTC = holdings_data.btc_holdings + otherInstitutionalBTC
+  const totalInstitutionalValue = totalInstitutionalBTC * btc_data.price_usd
+
   return (
     <div className="space-y-8">
       <div className="text-center mb-8">
@@ -11,26 +83,46 @@ export default function Dashboard() {
         <p className="text-xl text-slate-400">
           Real-time tracking of institutional Bitcoin holdings and MSTR options analytics
         </p>
+        
+        {/* Live Status Indicator */}
+        <div className="flex items-center justify-center space-x-2 mt-4">
+          <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm ${
+            updating ? 'bg-yellow-900/20 text-yellow-400' : 'bg-green-900/20 text-green-400'
+          }`}>
+            <div className={`w-2 h-2 rounded-full ${
+              updating ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'
+            }`}></div>
+            <RefreshCw className={`h-3 w-3 ${updating ? 'animate-spin' : ''}`} />
+            <span>LIVE DATA</span>
+          </div>
+          <span className="text-xs text-slate-500">
+            Updated: {lastUpdate}
+          </span>
+        </div>
       </div>
       
       {/* BETA MODE Banner */}
       <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-lg p-4 text-center">
         <div className="flex items-center justify-center space-x-2">
           <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-          <span className="text-blue-400 font-semibold text-lg">BETA MODE</span>
+          <span className="text-blue-400 font-semibold text-lg">LIVE MODE</span>
           <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
         </div>
-        <p className="text-slate-400 text-sm mt-1">Platform in active development • Data feeds stabilizing • More features coming soon</p>
+        <p className="text-slate-400 text-sm mt-1">Real-time data updates every 30 seconds • Live Bitcoin & MSTR prices • Current market analytics</p>
       </div>
       
-      {/* Original Top 4 Metric Cards */}
+      {/* Live Top 4 Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="metric-card glow-bitcoin">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-400">Bitcoin Price</p>
-              <div className="text-3xl font-bold text-orange-400">$66,923</div>
-              <div className="text-sm text-green-400">+4.39% 24h</div>
+              <div className="text-3xl font-bold text-orange-400">
+                {formatLivePrice(btc_data.price_usd)}
+              </div>
+              <div className={`text-sm ${btc_data.change_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {formatLivePercent(btc_data.change_24h)} 24h
+              </div>
             </div>
             <Bitcoin className="h-12 w-12 text-orange-500" />
           </div>
@@ -40,9 +132,11 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-400">Total Institutional BTC</p>
-              <div className="text-3xl font-bold text-blue-400">1,138,075</div>
+              <div className="text-3xl font-bold text-blue-400">
+                {formatLiveBTC(totalInstitutionalBTC)}
+              </div>
               <p className="text-sm text-slate-400">
-                $78,400,000,000
+                {formatLiveValue(totalInstitutionalValue)}
               </p>
             </div>
             <TrendingUp className="h-12 w-12 text-blue-500" />
@@ -53,9 +147,11 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-400">MSTR Price</p>
-              <div className="text-3xl font-bold text-blue-400">$123.00</div>
-              <p className="text-sm text-slate-400">
-                vs BTC correlation
+              <div className="text-3xl font-bold text-blue-400">
+                {formatLivePrice(mstr_data.price)}
+              </div>
+              <p className={`text-sm ${mstr_data.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {formatLivePercent(mstr_data.change_percent)} today
               </p>
             </div>
             <Activity className="h-12 w-12 text-blue-500" />
@@ -66,25 +162,29 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-400">MSTR NAV Premium</p>
-              <div className="text-3xl font-bold text-green-400">-84.00%</div>
+              <div className={`text-3xl font-bold ${nav_premium_discount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {formatLivePercent(nav_premium_discount)}
+              </div>
               <p className="text-sm text-slate-400">vs BTC holdings</p>
             </div>
-            <DollarSign className="h-12 w-12 text-green-500" />
+            <DollarSign className={`h-12 w-12 ${nav_premium_discount >= 0 ? 'text-green-500' : 'text-red-500'}`} />
           </div>
         </div>
       </div>
 
-      {/* Original 3 Column Data Sections */}
+      {/* Live 3 Column Data Sections */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-white">Corporate Holdings</h3>
-            <span className="text-orange-400 font-mono text-sm">₿ 714,644</span>
+            <span className="text-orange-400 font-mono text-sm">
+              ₿ {formatLiveBTC(holdings_data.btc_holdings)}
+            </span>
           </div>
           <div>
             <p className="text-slate-400">BTC held by companies</p>
             <p className="text-sm text-slate-500 mt-2">
-              MicroStrategy dominates with 714,644 BTC
+              MicroStrategy dominates with {formatLiveBTC(holdings_data.btc_holdings)} BTC
             </p>
           </div>
           
@@ -96,9 +196,11 @@ export default function Dashboard() {
                 <div className="flex items-center space-x-2">
                   <span className="text-xs text-slate-500">1</span>
                   <span className="text-xs">🇺🇸</span>
-                  <span className="text-xs text-orange-400 font-medium">Strategy Company</span>
+                  <span className="text-xs text-orange-400 font-medium">MicroStrategy</span>
                 </div>
-                <span className="font-mono text-xs text-orange-400 font-bold">₿ 714,644</span>
+                <span className="font-mono text-xs text-orange-400 font-bold">
+                  ₿ {formatLiveBTC(holdings_data.btc_holdings)}
+                </span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <div className="flex items-center space-x-2">
@@ -124,24 +226,22 @@ export default function Dashboard() {
           </div>
           <div>
             <p className="text-slate-400">BTC held by ETFs</p>
-            <p className="text-sm text-slate-500 mt-2">
-              $0
-            </p>
-            <p className="text-sm text-slate-500 mt-2">
-              ETF data coming soon
-            </p>
+            <p className="text-sm text-slate-500 mt-2">$0</p>
+            <p className="text-sm text-slate-500 mt-2">ETF data coming soon</p>
           </div>
         </div>
 
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-white">Total Value</h3>
-            <span className="text-green-400 font-mono text-sm">$78,400,000,000</span>
+            <span className="text-green-400 font-mono text-sm">
+              {formatLiveValue(totalInstitutionalValue)}
+            </span>
           </div>
           <div>
             <p className="text-slate-400">Total institutional value</p>
             <p className="text-sm text-slate-500 mt-2">
-              1,138,075 BTC
+              {formatLiveBTC(totalInstitutionalBTC)} BTC
             </p>
           </div>
         </div>
@@ -186,6 +286,15 @@ export default function Dashboard() {
             </p>
           </div>
         </Link>
+      </div>
+
+      {/* Data Source Attribution */}
+      <div className="text-center text-xs text-slate-500 border-t border-slate-800 pt-4">
+        <p>
+          📊 Live data from CoinGecko • Yahoo Finance • SEC EDGAR filings • 
+          Auto-updates every 30 seconds • 
+          Last refresh: {lastUpdate}
+        </p>
       </div>
     </div>
   )
