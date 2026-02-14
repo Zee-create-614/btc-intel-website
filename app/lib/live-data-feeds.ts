@@ -105,15 +105,19 @@ export async function getLiveMSTRPrice(): Promise<LiveMSTRData> {
     }
   } catch (error) {
     console.error('❌ Error fetching live MSTR price from API:', error)
-    // Fallback data with Josh's specifications
+    // Fallback data with CORRECT market cap and shares outstanding
+    const fallbackPrice = 133.88
+    const correctSharesOutstanding = 332237825
+    const correctMarketCap = fallbackPrice * correctSharesOutstanding
+    
     return {
       symbol: 'MSTR',
-      price: 480.00,
+      price: fallbackPrice,
       change: 5.20,
       change_percent: 1.10,
       volume: 2500000,
-      market_cap: 8064000000,
-      shares_outstanding: 16800000,
+      market_cap: correctMarketCap, // ~$44.5B (133.88 * 332M shares)
+      shares_outstanding: correctSharesOutstanding, // 332M shares - CORRECT!
       last_updated: new Date().toISOString()
     }
   }
