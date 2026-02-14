@@ -108,7 +108,7 @@ export default function LiveDashboard() {
           <span className="text-blue-400 font-semibold text-lg">LIVE MODE</span>
           <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
         </div>
-        <p className="text-slate-400 text-sm mt-1">Real-time data updates every 30 seconds • Live Bitcoin & MSTR prices • Current market analytics</p>
+        <p className="text-slate-400 text-sm mt-1">Real-time data updates every 10 seconds • Live Bitcoin from Coinbase • Live MSTR from Yahoo Finance</p>
       </div>
       
       {/* Live Top 4 Metric Cards */}
@@ -116,7 +116,10 @@ export default function LiveDashboard() {
         <div className="metric-card glow-bitcoin">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-400">Bitcoin Price</p>
+              <div className="flex items-center space-x-2 mb-1">
+                <p className="text-sm text-slate-400">Bitcoin Price</p>
+                <span className="text-xs bg-orange-500/20 text-orange-300 px-2 py-1 rounded">COINBASE</span>
+              </div>
               <div className="text-3xl font-bold text-orange-400">
                 {formatLivePrice(btc_data.price_usd)}
               </div>
@@ -124,7 +127,10 @@ export default function LiveDashboard() {
                 {formatLivePercent(btc_data.change_24h)} 24h
               </div>
             </div>
-            <Bitcoin className="h-12 w-12 text-orange-500" />
+            <div className="flex flex-col items-center">
+              <Bitcoin className="h-12 w-12 text-orange-500" />
+              <div className={`w-2 h-2 rounded-full mt-2 ${updating ? 'bg-orange-500 animate-pulse' : 'bg-green-500'}`}></div>
+            </div>
           </div>
         </div>
 

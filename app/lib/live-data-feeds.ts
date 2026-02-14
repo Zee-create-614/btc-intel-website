@@ -65,11 +65,11 @@ export async function getLiveBTCPrice(): Promise<LiveBTCData> {
     }
   } catch (error) {
     console.error('❌ Error fetching live BTC price from API:', error)
-    // Fallback data with Josh's current price
+    // Fallback data with Josh's current Coinbase price
     return {
       price_usd: 69851,
       change_24h: 2.5,
-      market_cap: 1330000000000,
+      market_cap: 1383600000000, // Accurate calculation
       volume_24h: 28000000000,
       last_updated: new Date().toISOString()
     }
@@ -224,4 +224,4 @@ export function formatLiveValue(value: number): string {
 }
 
 // Real-time update interval
-export const LIVE_UPDATE_INTERVAL = 30000 // 30 seconds
+export const LIVE_UPDATE_INTERVAL = 10000 // 10 seconds for real-time updates
