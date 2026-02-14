@@ -29,6 +29,8 @@ export interface MSTRStockData {
   price: number;
   volume?: number;
   market_cap?: number;
+  change_percent?: number;
+  btc_holdings?: number;
   iv_30d?: number;
   iv_60d?: number;
   iv_90d?: number;
