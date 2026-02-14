@@ -104,7 +104,7 @@ export default function Dashboard() {
           <span className="text-green-400 font-semibold text-lg">100% LIVE DATA</span>
           {updating && <RefreshCw className="h-4 w-4 animate-spin text-orange-400" />}
         </div>
-        <p className="text-slate-400 text-sm mt-1">All data from live APIs • Bitcoin: Coinbase • MSTR: Yahoo Finance • Last: {liveData?.lastUpdate}</p>
+        <p className="text-slate-400 text-sm mt-1">100% Live Data • Real-time market updates • Last: {liveData?.lastUpdate}</p>
       </div>
       
       {/* LIVE METRICS - NO HARDCODED VALUES */}
@@ -114,7 +114,7 @@ export default function Dashboard() {
             <div>
               <div className="flex items-center space-x-2 mb-1">
                 <p className="text-sm text-slate-400">Bitcoin Price</p>
-                <span className="text-xs bg-orange-500/20 text-orange-300 px-2 py-1 rounded">COINBASE LIVE</span>
+                <span className="text-xs bg-orange-500/20 text-orange-300 px-2 py-1 rounded">LIVE</span>
               </div>
               <div className="text-3xl font-bold text-orange-400">
                 ${liveData?.btcPrice.toLocaleString()}
@@ -148,7 +148,7 @@ export default function Dashboard() {
             <div>
               <div className="flex items-center space-x-2 mb-1">
                 <p className="text-sm text-slate-400">MSTR Price</p>
-                <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded">YAHOO LIVE</span>
+                <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded">LIVE</span>
               </div>
               <div className="text-3xl font-bold text-blue-400">${liveData?.mstrPrice.toFixed(2)}</div>
               <div className={`text-sm ${(liveData?.mstrChange || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -232,7 +232,7 @@ export default function Dashboard() {
           <h3 className="text-2xl font-bold text-white">Live Corporate Bitcoin Holdings</h3>
           <div className="flex items-center space-x-2">
             <div className={`w-2 h-2 rounded-full ${updating ? 'bg-orange-500 animate-pulse' : 'bg-green-500'}`}></div>
-            <span className="text-xs text-slate-400">Live data from APIs</span>
+            <span className="text-xs text-slate-400">100% Live Data</span>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

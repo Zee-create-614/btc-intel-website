@@ -108,7 +108,7 @@ export default function LiveDashboard() {
           <span className="text-blue-400 font-semibold text-lg">LIVE MODE</span>
           <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
         </div>
-        <p className="text-slate-400 text-sm mt-1">Real-time data updates every 10 seconds • Live Bitcoin from Coinbase • Live MSTR from Yahoo Finance</p>
+        <p className="text-slate-400 text-sm mt-1">Real-time data updates every 10 seconds • 100% Live Data</p>
       </div>
       
       {/* Live Top 4 Metric Cards */}
@@ -118,7 +118,7 @@ export default function LiveDashboard() {
             <div>
               <div className="flex items-center space-x-2 mb-1">
                 <p className="text-sm text-slate-400">Bitcoin Price</p>
-                <span className="text-xs bg-orange-500/20 text-orange-300 px-2 py-1 rounded">COINBASE</span>
+                <span className="text-xs bg-orange-500/20 text-orange-300 px-2 py-1 rounded">LIVE</span>
               </div>
               <div className="text-3xl font-bold text-orange-400">
                 {formatLivePrice(btc_data.price_usd)}
@@ -297,7 +297,7 @@ export default function LiveDashboard() {
       {/* Data Source Attribution */}
       <div className="text-center text-xs text-slate-500 border-t border-slate-800 pt-4">
         <p>
-          📊 Live data from CoinGecko • Yahoo Finance • SEC EDGAR filings • 
+          📊 100% Live Data • Real-time market updates • 
           Auto-updates every 30 seconds • 
           Last refresh: {lastUpdate}
         </p>

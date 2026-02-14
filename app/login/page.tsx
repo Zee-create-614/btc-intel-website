@@ -158,7 +158,7 @@ export default function LoginPage() {
               <li>💎 Full corporate BTC holdings data</li>
               <li>🏛️ Complete politician database</li>
               <li>🤖 MSTR analytics & calculator</li>
-              <li>🔥 Real-time alerts & API access</li>
+              <li>🔥 Real-time alerts & live data access</li>
             </ul>
             <Link 
               href="/register" 

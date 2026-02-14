@@ -9,7 +9,7 @@ async function getLiveMSTRData() {
     const data = await response.json()
     return data
   } catch (error) {
-    // Fallback data if API fails
+    // Fallback data if fetch fails
     return {
       price: 133.88,
       market_cap: 44480000000,

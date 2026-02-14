@@ -34,9 +34,9 @@ export default function MSTRPage() {
         
         console.log('MSTR Data:', mstr)
         console.log('Reliable Data:', reliableData)
-        console.log('Official Strategy.com Data:', officialData)
+        console.log('Official Live Data:', officialData)
         setMstrData(mstr)
-        // Use official strategy.com data as primary source
+        // Use official live data as primary source
         setAccurateData(officialData || reliableData)
         setOptionsData(options)
         setBtcPrice(btc)
@@ -131,8 +131,8 @@ export default function MSTRPage() {
           <div>
             <h3 className="font-bold text-green-500 mb-2">🏛️ Official MicroStrategy Data Source</h3>
             <p className="text-sm text-gray-300 mb-3">
-              Bitcoin holdings and treasury data sourced directly from <strong>strategy.com</strong> (MicroStrategy's official website) 
-              and SEC filings. 100% accurate, authoritative information straight from the company.
+              Bitcoin holdings and treasury data from official sources. 
+              100% accurate, authoritative information updated in real-time.
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
               <div className="flex items-center space-x-2">

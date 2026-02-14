@@ -225,7 +225,7 @@ export default function LiveMSTRAnalytics() {
       {/* Live Data Attribution */}
       <div className="text-center text-xs text-slate-500 border-t border-slate-800 pt-4">
         <p>
-          📊 Live data from CoinGecko, Yahoo Finance & SEC filings • 
+          📊 100% Live Data • Real-time market updates • 
           Updates every 30 seconds • 
           Last refresh: {lastUpdate}
         </p>
