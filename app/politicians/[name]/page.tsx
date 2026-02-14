@@ -1,3 +1,4 @@
+import React from 'react'
 import { ArrowLeft, TrendingUp, TrendingDown, BarChart3, Calendar, ExternalLink, Clock, User } from 'lucide-react'
 import Link from 'next/link'
 import {
@@ -21,18 +22,20 @@ export async function generateStaticParams() {
 }
 
 function PoliticianAvatar({ name, party, photoUrl, large = false }: { name: string; party: string; photoUrl?: string; large?: boolean }) {
+  const [imgFailed, setImgFailed] = React.useState(false)
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
   const bgColor = party === 'R' ? 'bg-gradient-to-br from-red-600 to-red-700' : 
                    party === 'D' ? 'bg-gradient-to-br from-blue-600 to-blue-700' : 
                    'bg-gradient-to-br from-purple-600 to-purple-700'
   const size = large ? 'w-20 h-20 text-2xl' : 'w-12 h-12 text-base'
   
-  if (photoUrl) {
+  if (photoUrl && !imgFailed) {
     return (
       <img 
         src={photoUrl} 
         alt={name}
         className={`${large ? 'w-20 h-20' : 'w-12 h-12'} rounded-full object-cover shadow-lg border-4 border-gray-700`}
+        onError={() => setImgFailed(true)}
       />
     )
   }

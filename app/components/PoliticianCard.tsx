@@ -1,7 +1,20 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { TrendingUp, TrendingDown, User, MapPin, Building } from 'lucide-react'
+
+function PoliticianImg({ src, alt, initials, party }: { src: string; alt: string; initials: string; party: string }) {
+  const [failed, setFailed] = useState(false)
+  if (failed) {
+    return (
+      <div className={`w-16 h-16 rounded-full flex items-center justify-center font-bold text-white text-lg border-2 border-gray-600 ${
+        party === 'R' ? 'bg-red-600' : party === 'D' ? 'bg-blue-600' : 'bg-purple-600'
+      }`}>{initials}</div>
+    )
+  }
+  return <img src={src} alt={alt} className="w-16 h-16 rounded-full object-cover border-2 border-gray-600" onError={() => setFailed(true)} />
+}
 
 interface PoliticianCardProps {
   politician: {
@@ -51,11 +64,7 @@ export default function PoliticianCard({ politician }: PoliticianCardProps) {
   const Avatar = () => {
     if (politician.photoUrl) {
       return (
-        <img 
-          src={politician.photoUrl}
-          alt={politician.name}
-          className="w-16 h-16 rounded-full object-cover border-2 border-gray-600"
-        />
+        <PoliticianImg src={politician.photoUrl} alt={politician.name} initials={getInitials(politician.name)} party={politician.party} />
       )
     }
     
