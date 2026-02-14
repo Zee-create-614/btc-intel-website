@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
+import { VolumeChart } from '../../components/VolumeChart'
+import { TrendingUp, TrendingDown, Target, DollarSign, Activity, Percent } from 'lucide-react'
 
 interface PreferredStock {
   symbol: string
@@ -28,310 +30,294 @@ interface PreferredsData {
 export default function MSTRPreferreds() {
   const [preferredsData, setPreferredsData] = useState<PreferredsData | null>(null)
   const [navData, setNavData] = useState<any>(null)
-  const [activeTab, setActiveTab] = useState<string>('STRC')
-  const [loading, setLoading] = useState(true)
-  const [lastUpdate, setLastUpdate] = useState<string>('')
+  const [selectedSymbol, setSelectedSymbol] = useState<string>('STRC')
+  const [selectedTimeframe, setSelectedTimeframe] = useState<string>('30d')
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const fetchData = async () => {
-    try {
-      // Fetch preferreds data
-      const preferredsResponse = await fetch('/api/v1/live/preferreds', {
-        cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache' }
-      })
-      
-      if (preferredsResponse.ok) {
-        const preferreds = await preferredsResponse.json()
-        setPreferredsData(preferreds)
-      }
-
-      // Fetch NAV data
-      const navResponse = await fetch('/api/v1/live/nav', {
-        cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache' }
-      })
-      
-      if (navResponse.ok) {
-        const nav = await navResponse.json()
-        setNavData(nav)
-      }
-
-      setLastUpdate(new Date().toLocaleTimeString())
-      setLoading(false)
-    } catch (error) {
-      console.error('Error fetching data:', error)
-      setLoading(false)
-    }
-  }
-
+  // Fetch preferreds data
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [preferredsResponse, navResponse] = await Promise.all([
+          fetch('/api/v1/live/preferreds'),
+          fetch('/api/v1/live/nav')
+        ])
+
+        if (preferredsResponse.ok) {
+          const preferredsData = await preferredsResponse.json()
+          setPreferredsData(preferredsData)
+        }
+
+        if (navResponse.ok) {
+          const navData = await navResponse.json()
+          setNavData(navData)
+        }
+
+        setError(null)
+      } catch (err) {
+        console.log('Failed to fetch preferreds data:', err)
+        setError('Failed to load data')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
     fetchData()
-    
-    // Auto-refresh every 10 seconds
-    const interval = setInterval(fetchData, 10000)
+    const interval = setInterval(fetchData, 30000) // Update every 30 seconds
     return () => clearInterval(interval)
   }, [])
 
-  const formatNumber = (num: number): string => {
-    return new Intl.NumberFormat().format(num)
+  // Format volume with appropriate suffix
+  const formatVolume = (volume: number) => {
+    if (volume >= 1e9) {
+      return `$${(volume / 1e9).toFixed(2)}B`
+    } else if (volume >= 1e6) {
+      return `$${(volume / 1e6).toFixed(1)}M`
+    } else if (volume >= 1e3) {
+      return `$${(volume / 1e3).toFixed(0)}K`
+    } else {
+      return `$${volume.toFixed(0)}`
+    }
   }
 
-  const formatCurrency = (num: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(num)
+  const formatPercent = (percent: number) => {
+    const sign = percent >= 0 ? '+' : ''
+    return `${sign}${percent.toFixed(2)}%`
   }
 
-  const getChangeColor = (change: number): string => {
-    return change >= 0 ? 'text-green-500' : 'text-red-500'
+  const getChangeColor = (change: number) => {
+    return change >= 0 ? 'text-green-400' : 'text-red-400'
   }
 
-  const getChangeIcon = (change: number): string => {
-    return change >= 0 ? '↗' : '↘'
-  }
-
-  const preferredSymbols = ['STRC', 'STRF', 'STRD', 'STRK']
-  const preferredNames = {
-    'STRC': 'MicroStrategy 6.125% Series A Preferred',
-    'STRF': 'MicroStrategy 6.75% Series F Preferred', 
-    'STRD': 'MicroStrategy 6.375% Series D Preferred',
-    'STRK': 'MicroStrategy 6.875% Series K Preferred'
-  }
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-slate-700 rounded mb-6"></div>
-            <div className="grid gap-6">
-              <div className="h-64 bg-slate-700 rounded"></div>
-              <div className="h-96 bg-slate-700 rounded"></div>
-            </div>
+      <div className="container mx-auto p-6">
+        <div className="flex items-center justify-center min-h-64">
+          <div className="text-center">
+            <div className="animate-spin h-8 w-8 border-2 border-blue-400 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-slate-400">Loading MSTR Preferreds data...</p>
           </div>
         </div>
       </div>
     )
   }
 
-  const activeStock = preferredsData?.preferreds[activeTab]
-
-  return (
-    <div className="min-h-screen bg-slate-900 text-white">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-700">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">MSTR Preferred Stocks</h1>
-              <p className="text-slate-400">Live trading volumes and dividend analytics from strategy.com</p>
-            </div>
-            <div className="text-right">
-              <div className="text-sm text-slate-400">MSTR NAV Multiple</div>
-              <div className="text-2xl font-bold text-orange-400">
-                {navData?.nav_multiple_formatted || '1.19x'}
-              </div>
-              <div className="text-xs text-slate-500">
-                Last Update: {lastUpdate}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Summary Cards */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-slate-800 border-slate-700">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-400">Total Symbols</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                {preferredsData?.summary.total_symbols || 4}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-800 border-slate-700">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-400">Total Volume</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-400">
-                {preferredsData ? formatNumber(preferredsData.summary.total_volume) : '208M'}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-800 border-slate-700">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-400">Avg Dividend Yield</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-400">
-                {preferredsData ? `${preferredsData.summary.average_dividend_yield.toFixed(2)}%` : '11.53%'}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-800 border-slate-700">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-slate-400">Data Quality</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-lg font-bold">
-                <span className={preferredsData?.data_quality === 'live' ? 'text-green-400' : 'text-yellow-400'}>
-                  {preferredsData?.data_quality === 'live' ? '🟢 LIVE' : '🟡 FALLBACK'}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Tabs for each preferred */}
-        <div className="mb-6">
-          <div className="border-b border-slate-700">
-            <div className="flex space-x-8">
-              {preferredSymbols.map((symbol) => (
-                <button
-                  key={symbol}
-                  onClick={() => setActiveTab(symbol)}
-                  className={`py-2 px-4 border-b-2 font-medium transition-colors ${
-                    activeTab === symbol
-                      ? 'border-orange-400 text-orange-400'
-                      : 'border-transparent text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {symbol}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Active stock details */}
-        {activeStock && (
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Stock Overview */}
-            <Card className="bg-slate-800 border-slate-700">
-              <CardHeader>
-                <CardTitle className="flex justify-between items-center">
-                  <span>{activeStock.symbol}</span>
-                  <span className="text-sm text-slate-400">{activeStock.source}</span>
-                </CardTitle>
-                <p className="text-sm text-slate-400">
-                  {preferredNames[activeStock.symbol as keyof typeof preferredNames]}
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-sm text-slate-400">Current Price</div>
-                    <div className="text-3xl font-bold text-white">
-                      {formatCurrency(activeStock.price)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-slate-400">24h Change</div>
-                    <div className={`text-xl font-bold ${getChangeColor(activeStock.change)}`}>
-                      {getChangeIcon(activeStock.change)} {formatCurrency(Math.abs(activeStock.change))} 
-                      <span className="text-sm ml-2">
-                        ({activeStock.change_percent >= 0 ? '+' : ''}{activeStock.change_percent.toFixed(2)}%)
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Trading Volume */}
-            <Card className="bg-slate-800 border-slate-700">
-              <CardHeader>
-                <CardTitle>Trading Volume</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <div className="text-sm text-slate-400">Volume</div>
-                  <div className="text-3xl font-bold text-orange-400">
-                    {formatNumber(activeStock.volume)}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-slate-400">Dividend Yield</div>
-                  <div className="text-2xl font-bold text-green-400">
-                    {activeStock.dividend_yield.toFixed(2)}%
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* All Preferreds Table */}
-        <Card className="bg-slate-800 border-slate-700 mt-8">
-          <CardHeader>
-            <CardTitle>All MSTR Preferreds</CardTitle>
-            <p className="text-slate-400">Complete overview with live data</p>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-slate-700">
-                    <th className="text-left py-2 text-slate-400">Symbol</th>
-                    <th className="text-right py-2 text-slate-400">Price</th>
-                    <th className="text-right py-2 text-slate-400">Change</th>
-                    <th className="text-right py-2 text-slate-400">Volume</th>
-                    <th className="text-right py-2 text-slate-400">Dividend</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {preferredSymbols.map((symbol) => {
-                    const stock = preferredsData?.preferreds[symbol]
-                    if (!stock) return null
-                    
-                    return (
-                      <tr 
-                        key={symbol} 
-                        className={`border-b border-slate-700 hover:bg-slate-700/50 cursor-pointer ${
-                          activeTab === symbol ? 'bg-slate-700/30' : ''
-                        }`}
-                        onClick={() => setActiveTab(symbol)}
-                      >
-                        <td className="py-3">
-                          <div className="font-bold">{stock.symbol}</div>
-                        </td>
-                        <td className="text-right py-3">
-                          <div className="font-bold">{formatCurrency(stock.price)}</div>
-                        </td>
-                        <td className="text-right py-3">
-                          <div className={`${getChangeColor(stock.change)}`}>
-                            {stock.change >= 0 ? '+' : ''}{stock.change_percent.toFixed(2)}%
-                          </div>
-                        </td>
-                        <td className="text-right py-3 text-orange-400 font-bold">
-                          {formatNumber(stock.volume)}
-                        </td>
-                        <td className="text-right py-3 text-green-400 font-bold">
-                          {stock.dividend_yield.toFixed(2)}%
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card className="bg-slate-800 border-slate-700">
+          <CardContent className="pt-6">
+            <div className="text-center text-red-400">
+              <p className="text-lg font-semibold mb-2">Unable to load data</p>
+              <p className="text-sm text-slate-400">{error}</p>
             </div>
           </CardContent>
         </Card>
-
-        {/* Data Attribution */}
-        <div className="mt-8 text-center text-sm text-slate-500">
-          <p>Data from strategy.com • Updated every 10 seconds • Last refresh: {lastUpdate}</p>
-        </div>
       </div>
+    )
+  }
+
+  const preferreds = preferredsData?.preferreds || {}
+  const preferredsList = Object.entries(preferreds)
+
+  return (
+    <div className="container mx-auto p-6">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center space-x-3 mb-4">
+          <Target className="h-8 w-8 text-blue-400" />
+          <h1 className="text-3xl font-bold">MSTR Preferred Securities</h1>
+        </div>
+        <p className="text-slate-400 text-lg">
+          Advanced volume analysis and trading intelligence for MicroStrategy preferred stocks
+        </p>
+      </div>
+
+      {/* Summary Cards */}
+      {preferredsData?.summary && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <Card className="bg-slate-800 border-slate-700">
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-400">Total Volume</p>
+                  <p className="text-2xl font-bold text-white">
+                    {formatVolume(preferredsData.summary.total_volume)}
+                  </p>
+                </div>
+                <Activity className="h-8 w-8 text-blue-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-slate-800 border-slate-700">
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-400">Securities</p>
+                  <p className="text-2xl font-bold text-white">
+                    {preferredsData.summary.total_symbols}
+                  </p>
+                </div>
+                <Target className="h-8 w-8 text-green-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-slate-800 border-slate-700">
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-400">Avg Dividend</p>
+                  <p className="text-2xl font-bold text-orange-400">
+                    {preferredsData.summary.average_dividend_yield.toFixed(2)}%
+                  </p>
+                </div>
+                <Percent className="h-8 w-8 text-orange-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-slate-800 border-slate-700">
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-400">NAV Premium</p>
+                  <p className={`text-2xl font-bold ${navData?.nav_premium_discount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {navData?.nav_premium_discount >= 0 ? '+' : ''}{navData?.nav_premium_discount.toFixed(1)}%
+                  </p>
+                </div>
+                <DollarSign className="h-8 w-8 text-blue-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Preferreds Overview */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-8">
+        {preferredsList.map(([symbol, data]) => (
+          <Card 
+            key={symbol}
+            className={`bg-slate-800 border-slate-700 cursor-pointer transition-all ${
+              selectedSymbol === symbol ? 'ring-2 ring-blue-400' : 'hover:bg-slate-750'
+            }`}
+            onClick={() => setSelectedSymbol(symbol)}
+          >
+            <CardContent className="pt-4">
+              <div className="text-center">
+                <h3 className="text-lg font-bold text-white mb-1">{symbol}</h3>
+                <p className="text-2xl font-bold text-blue-400 mb-2">
+                  ${data.price.toFixed(2)}
+                </p>
+                <div className={`text-sm ${getChangeColor(data.change_percent)} mb-2`}>
+                  {data.change_percent >= 0 ? (
+                    <TrendingUp className="h-3 w-3 inline mr-1" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3 inline mr-1" />
+                  )}
+                  {formatPercent(data.change_percent)}
+                </div>
+                <div className="space-y-1 text-xs text-slate-400">
+                  <div className="flex justify-between">
+                    <span>Volume:</span>
+                    <span className="text-white font-medium">{formatVolume(data.volume)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Yield:</span>
+                    <span className="text-orange-400 font-medium">{data.dividend_yield.toFixed(2)}%</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Advanced Volume Chart */}
+      {selectedSymbol && preferreds[selectedSymbol] && (
+        <div className="mb-8">
+          <VolumeChart
+            symbol={selectedSymbol}
+            currentVolume={preferreds[selectedSymbol].volume}
+            timeframe={selectedTimeframe}
+            onTimeframeChange={setSelectedTimeframe}
+          />
+        </div>
+      )}
+
+      {/* Detailed Table */}
+      <Card className="bg-slate-800 border-slate-700">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold">Detailed Analysis</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-700">
+                  <th className="text-left py-3 text-slate-400 font-medium">Symbol</th>
+                  <th className="text-right py-3 text-slate-400 font-medium">Price</th>
+                  <th className="text-right py-3 text-slate-400 font-medium">Change</th>
+                  <th className="text-right py-3 text-slate-400 font-medium">Volume</th>
+                  <th className="text-right py-3 text-slate-400 font-medium">Dividend</th>
+                  <th className="text-center py-3 text-slate-400 font-medium">Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                {preferredsList.map(([symbol, data]) => (
+                  <tr 
+                    key={symbol}
+                    className={`border-b border-slate-700/50 hover:bg-slate-700/50 cursor-pointer ${
+                      selectedSymbol === symbol ? 'bg-blue-600/20' : ''
+                    }`}
+                    onClick={() => setSelectedSymbol(symbol)}
+                  >
+                    <td className="py-4 font-medium text-white">
+                      <div className="flex items-center space-x-2">
+                        <span>{symbol}</span>
+                        {selectedSymbol === symbol && <Target className="h-4 w-4 text-blue-400" />}
+                      </div>
+                    </td>
+                    <td className="py-4 text-right font-bold text-blue-400">
+                      ${data.price.toFixed(2)}
+                    </td>
+                    <td className={`py-4 text-right font-medium ${getChangeColor(data.change_percent)}`}>
+                      <div className="flex items-center justify-end space-x-1">
+                        {data.change_percent >= 0 ? (
+                          <TrendingUp className="h-3 w-3" />
+                        ) : (
+                          <TrendingDown className="h-3 w-3" />
+                        )}
+                        <span>{formatPercent(data.change_percent)}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 text-right font-bold text-white">
+                      {formatVolume(data.volume)}
+                    </td>
+                    <td className="py-4 text-right font-medium text-orange-400">
+                      {data.dividend_yield.toFixed(2)}%
+                    </td>
+                    <td className="py-4 text-center">
+                      <span className="px-2 py-1 bg-slate-700 rounded text-xs text-slate-300">
+                        {data.source}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Data Quality Info */}
+      {preferredsData?.data_quality && (
+        <div className="mt-6 text-center text-xs text-slate-500">
+          <p>Data Quality: {preferredsData.data_quality} • Last Updated: {new Date(preferredsData.summary.last_updated).toLocaleString()}</p>
+        </div>
+      )}
     </div>
   )
 }
