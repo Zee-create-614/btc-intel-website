@@ -6,6 +6,7 @@ import Link from 'next/link'
 // Removed old OptionsFlow - now using live data only
 import DualTickerComparison from '../components/DualTickerComparison'
 import FixedNavAnalysis from '../components/FixedNavAnalysis'
+import BtcPerShareChart from '../components/BtcPerShareChart'
 // Removed OptionsFlowLive import - was showing hardcoded data
 
 export default function MSTRPage() {
@@ -465,6 +466,9 @@ export default function MSTRPage() {
           </div>
         </div>
       )}
+
+      {/* BTC per Share Chart */}
+      <BtcPerShareChart />
 
       {/* NAV Analysis */}
       <div className="space-y-6">
