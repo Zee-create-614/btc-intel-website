@@ -8,10 +8,23 @@ import {
 import PoliticianCard from '../components/PoliticianCard'
 import PoliticianPhoto from '../components/PoliticianPhoto'
 import PoliticianSparkline from '../components/PoliticianSparkline'
+import PoliticianSearch from '../components/PoliticianSearch'
 
 export const metadata = {
   title: 'Politician Trading Tracker | BTCIntelVault',
   description: 'Track every stock trade made by US politicians. Real-time alerts, performance tracking, and leaderboards.',
+}
+
+async function SearchBar() {
+  const summaries = await getPoliticianSummaries()
+  const politicians = summaries.map((s: any) => ({
+    name: s.name,
+    party: s.party,
+    chamber: s.chamber,
+    state: s.state,
+    photo_url: s.photo_url,
+  }))
+  return <PoliticianSearch politicians={politicians} />
 }
 
 async function StatsBar() {
@@ -257,6 +270,9 @@ export default function PoliticiansPage() {
           performance tracking, and transparency leaderboards.
         </p>
       </div>
+
+      {/* Search */}
+      <SearchBar />
 
       {/* BETA Banner */}
       <div className="bg-gradient-to-r from-green-500/20 to-blue-500/20 border border-green-500/30 rounded-lg p-4 text-center">

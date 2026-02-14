@@ -125,10 +125,10 @@ export default async function PoliticianPage({ params }: { params: { name: strin
               <p className="text-sm text-gray-400">Total Trades</p>
             </div>
             <div className="text-center">
-              <p className={`text-3xl font-bold ${returnColor(politician.avg_return_pct)}`}>
-                {formatReturn(politician.avg_return_pct)}
+              <p className={`text-3xl font-bold ${returnColor(perf['alltime'] ?? politician.avg_return_pct)}`}>
+                {formatReturn(perf['alltime'] ?? politician.avg_return_pct)}
               </p>
-              <p className="text-sm text-gray-400">Avg Return</p>
+              <p className="text-sm text-gray-400">All-Time Return</p>
             </div>
           </div>
         </div>
