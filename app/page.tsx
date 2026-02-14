@@ -238,18 +238,12 @@ export default function Dashboard() {
         <div className="metric-card">
           <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-center space-x-2 mb-1">
-                <p className="text-sm text-slate-400">Fully Diluted NAV</p>
-                <span className="text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded">COLORS</span>
-              </div>
+              <p className="text-sm text-slate-400 mb-1">Fully Diluted NAV</p>
               <div className={`text-3xl font-bold ${(liveData?.dilutedNavPremium || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {(liveData?.dilutedNavPremium || 0) >= 0 ? '+' : ''}{liveData?.dilutedNavPremium?.toFixed(1) || '0.0'}%
               </div>
               <p className="text-sm text-slate-400">
                 NAV: ${liveData?.dilutedNavPerShare?.toFixed(0) || '86'} | {((liveData?.dilutedShares || 437000000) / 1000000).toFixed(0)}M shares
-              </p>
-              <p className="text-xs text-red-400 font-bold">
-                🚨 DEBUG v2.15: {(liveData?.dilutedNavPremium || 0).toFixed(3)}%
               </p>
             </div>
             <Target className="h-12 w-12 text-orange-500" />
