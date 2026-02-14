@@ -135,12 +135,13 @@ export async function GET(request: NextRequest) {
         openInterest: Math.round(callVolume * (2 + Math.random() * 3))
       })
       
-      // Add puts
+      // Add puts - FIXED: Ensure put delta is negative
+      const putDeltaFixed = putDelta < 0 ? putDelta : -Math.abs(putDelta)
       optionsChain.push({
         type: 'PUT',
         strike: strike,
         volume: putVolume,
-        delta: Math.round(putDelta * 100) / 100,
+        delta: Math.round(putDeltaFixed * 100) / 100, // FIXED: Always negative
         gamma: Math.round(gamma * 10000) / 10000,
         theta: Math.round(putTheta * 100) / 100,
         vega: Math.round(vega * 100) / 100,
@@ -195,7 +196,13 @@ export async function GET(request: NextRequest) {
       timestamp: Date.now()
     }
     
-    console.log('✅ Options flow data prepared:', optionsFlowData)
+    console.log('✅ Options flow data prepared:', {
+      avg_call_delta: optionsFlowData.greeks_summary.avg_call_delta,
+      avg_put_delta: optionsFlowData.greeks_summary.avg_put_delta,
+      total_call_volume: optionsFlowData.greeks_summary.total_call_volume,
+      total_put_volume: optionsFlowData.greeks_summary.total_put_volume,
+      dominant_sentiment: optionsFlowData.greeks_summary.dominant_sentiment
+    })
     
     return NextResponse.json(optionsFlowData, {
       headers: {

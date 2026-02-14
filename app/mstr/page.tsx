@@ -35,6 +35,8 @@ export default function MSTRPage() {
         console.log('MSTR Data:', mstr)
         console.log('Reliable Data:', reliableData)
         console.log('Official Live Data:', officialData)
+        console.log('🚨 JOSH DEBUG - NAV Premium:', accurateData?.nav_premium_discount)
+        console.log('🚨 JOSH DEBUG - Options Data Count:', options.length)
         setMstrData(mstr)
         // Use official live data as primary source
         setAccurateData(officialData || reliableData)
@@ -85,6 +87,9 @@ export default function MSTRPage() {
   }
 
   const formatNAVPremium = (premium: number) => {
+    if (premium === 0 || isNaN(premium)) {
+      console.log('🚨 NAV Premium is zero or NaN:', premium)
+    }
     return `${premium > 0 ? '+' : ''}${premium.toFixed(1)}%`
   }
 
@@ -217,7 +222,7 @@ export default function MSTRPage() {
                 {(accurateData?.btc_holdings || 714644).toLocaleString()}
               </p>
               <p className="text-sm text-gray-400">
-                {(accurateData?.btc_per_share || 0.0425).toFixed(4)} BTC/share
+                {((accurateData?.btc_holdings || 714644) / (332237825)).toFixed(5)} BTC/share
               </p>
             </div>
             <Activity className="h-12 w-12 text-bitcoin-500" />
@@ -556,10 +561,14 @@ export default function MSTRPage() {
           <div className="text-center p-4 bg-gray-800 rounded">
             <p className="text-sm text-gray-400 mb-2">Avg Put Delta</p>
             <p className="text-2xl font-bold text-red-400">
-              {puts.length > 0 
-                ? (puts.reduce((sum, put) => sum + (put.delta || 0), 0) / puts.length).toFixed(2)
-                : '0.00'
-              }
+              {(() => {
+                const avgPutDelta = puts.length > 0 
+                  ? (puts.reduce((sum, put) => sum + (put.delta || 0), 0) / puts.length)
+                  : 0;
+                console.log('🚨 JOSH DEBUG - Avg Put Delta:', avgPutDelta, 'from', puts.length, 'puts');
+                console.log('🚨 First 3 puts:', puts.slice(0, 3).map(p => ({strike: p.strike, delta: p.delta})));
+                return avgPutDelta.toFixed(2);
+              })()}
             </p>
           </div>
           <div className="text-center p-4 bg-gray-800 rounded">

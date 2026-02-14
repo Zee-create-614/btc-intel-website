@@ -107,7 +107,7 @@ export default function Dashboard() {
           100% LIVE DATA - Updates every 5 seconds
         </p>
         <p className="text-xs text-slate-500 mt-2">
-          Build: v2.14.07.52 - Market Cap Card FIXED (API data)
+          Build: v2.14.08.05 - MSTR Analytics Fixed (Put Delta + Premiums)
         </p>
       </div>
       
