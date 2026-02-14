@@ -91,6 +91,11 @@ export default function OptionsCalculator() {
   const [mstrData, setMstrData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [selectedStrategy, setSelectedStrategy] = useState('covered_call')
+  
+  // Editable parameters - Josh's request
+  const [expirationDate, setExpirationDate] = useState('2026-03-13')
+  const [strikePrice, setStrikePrice] = useState(150)
+  const [sharesContracts, setSharesContracts] = useState(100)
 
   useEffect(() => {
     const fetchLiveMSTRData = async () => {
@@ -134,8 +139,16 @@ export default function OptionsCalculator() {
 
   const ivRank = 75 + Math.floor(Math.random() * 20) // 75-95%
   const navPremium = 24.5 + (Math.random() * 10) // 24.5-34.5%
-  const callStrike = Math.round(mstrData.price * 1.1 / 10) * 10 // Round to nearest 10
-  const premium = 12.85
+  
+  // Calculate days to expiration from user-selected date
+  const expDate = new Date(expirationDate)
+  const today = new Date()
+  const daysToExpiration = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  
+  // Calculate premium based on strike price distance from current price
+  const moneyness = strikePrice / mstrData.price
+  const premium = Math.max(1, (Math.abs(moneyness - 1) * 30 + 5) * Math.sqrt(daysToExpiration / 30))
+  
   const currentStrategy = optionsStrategies[selectedStrategy as keyof typeof optionsStrategies]
 
   return (
@@ -144,7 +157,10 @@ export default function OptionsCalculator() {
       <div>
         <h1 className="text-3xl font-bold mb-2">MSTR Options Calculator</h1>
         <p className="text-gray-400">
-          Calculate potential profits and analyze risk for options strategies
+          Interactive calculator with editable parameters • Live MSTR price updates every 5 seconds
+        </p>
+        <p className="text-xs text-slate-500 mt-1">
+          Version: v2.14.08.50 - INTERACTIVE INPUTS (Expiration, Strike, Shares editable)
         </p>
       </div>
 
@@ -227,25 +243,47 @@ export default function OptionsCalculator() {
 
             <div>
               <label className="block text-sm font-medium mb-2">Expiration Date</label>
-              <div className="bg-gray-800 border border-gray-600 rounded px-3 py-2">
-                <span className="text-white">3/13/2026 (28 days)</span>
-              </div>
+              <input
+                type="date"
+                value={expirationDate}
+                onChange={(e) => setExpirationDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:ring-2 focus:ring-mstr-500 focus:border-transparent"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                {daysToExpiration > 0 ? `${daysToExpiration} days to expiration` : 'Invalid date - must be in the future'}
+              </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium mb-2">Strike Price</label>
-              <div className="bg-gray-800 border border-gray-600 rounded px-3 py-2">
-                <span className="text-white">${callStrike} (Premium: $12.85)</span>
-              </div>
+              <input
+                type="number"
+                value={strikePrice}
+                onChange={(e) => setStrikePrice(Number(e.target.value))}
+                min="1"
+                step="5"
+                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:ring-2 focus:ring-mstr-500 focus:border-transparent"
+                placeholder="Enter strike price"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Premium: ${premium.toFixed(2)} • {strikePrice > mstrData.price ? 'OTM' : strikePrice < mstrData.price ? 'ITM' : 'ATM'}
+              </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium mb-2">Shares/Contracts</label>
-              <div className="bg-gray-800 border border-gray-600 rounded px-3 py-2">
-                <span className="text-white">100</span>
-              </div>
+              <input
+                type="number"
+                value={sharesContracts}
+                onChange={(e) => setSharesContracts(Number(e.target.value))}
+                min="1"
+                step="100"
+                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:ring-2 focus:ring-mstr-500 focus:border-transparent"
+                placeholder="Enter number of shares/contracts"
+              />
               <p className="text-xs text-gray-400 mt-1">
-                Each option contract represents 100 shares
+                {sharesContracts >= 100 ? `${Math.floor(sharesContracts/100)} contract(s) = ${sharesContracts} shares` : `${sharesContracts} shares (less than 1 contract)`}
               </p>
             </div>
 
@@ -273,30 +311,58 @@ export default function OptionsCalculator() {
           </h3>
           
           <div className="space-y-6">
-            {/* Key Metrics */}
+            {/* Key Metrics - Calculated from user inputs */}
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 bg-green-500/20 rounded-lg">
                 <p className="text-sm text-green-400">Max Profit</p>
-                <p className="text-2xl font-bold">${(47285).toLocaleString()}</p>
+                <p className="text-2xl font-bold">
+                  ${(() => {
+                    const numContracts = Math.floor(sharesContracts / 100)
+                    if (selectedStrategy === 'covered_call') {
+                      return Math.max(0, ((strikePrice - mstrData.price) + premium) * sharesContracts).toLocaleString()
+                    } else if (selectedStrategy === 'cash_secured_put') {
+                      return (premium * sharesContracts).toLocaleString()
+                    }
+                    return ((strikePrice - mstrData.price + premium) * sharesContracts).toLocaleString()
+                  })()}
+                </p>
                 <p className="text-xs text-gray-400">{currentStrategy.maxProfit}</p>
               </div>
               
               <div className="p-4 bg-red-500/20 rounded-lg">
                 <p className="text-sm text-red-400">Max Loss</p>
-                <p className="text-2xl font-bold">-${(1285).toLocaleString()}</p>
+                <p className="text-2xl font-bold">
+                  -${(() => {
+                    if (selectedStrategy === 'covered_call') {
+                      return Math.max(0, (mstrData.price - premium) * sharesContracts).toLocaleString()
+                    } else if (selectedStrategy === 'cash_secured_put') {
+                      return Math.max(0, (strikePrice - premium) * sharesContracts).toLocaleString()
+                    }
+                    return (premium * sharesContracts).toLocaleString()
+                  })()}
+                </p>
                 <p className="text-xs text-gray-400">{currentStrategy.maxLoss}</p>
               </div>
               
               <div className="p-4 bg-blue-500/20 rounded-lg">
                 <p className="text-sm text-blue-400">Breakeven</p>
-                <p className="text-2xl font-bold">${(mstrData.price - premium).toFixed(2)}</p>
+                <p className="text-2xl font-bold">
+                  ${(() => {
+                    if (selectedStrategy === 'covered_call') {
+                      return (mstrData.price - premium).toFixed(2)
+                    } else if (selectedStrategy === 'cash_secured_put') {
+                      return (strikePrice - premium).toFixed(2)
+                    }
+                    return (mstrData.price + premium).toFixed(2)
+                  })()}
+                </p>
                 <p className="text-xs text-gray-400">{currentStrategy.breakeven}</p>
               </div>
               
               <div className="p-4 bg-yellow-500/20 rounded-lg">
-                <p className="text-sm text-yellow-400">Risk Level</p>
-                <p className="text-2xl font-bold">{currentStrategy.riskLevel}</p>
-                <p className="text-xs text-gray-400">Strategy complexity</p>
+                <p className="text-sm text-yellow-400">Total Premium</p>
+                <p className="text-2xl font-bold">${(premium * sharesContracts).toLocaleString()}</p>
+                <p className="text-xs text-gray-400">Total premium involved</p>
               </div>
             </div>
 
@@ -314,7 +380,14 @@ export default function OptionsCalculator() {
                 </div>
                 <div>
                   <span className="text-slate-400">Days to Expiration:</span>
-                  <span className="ml-2 text-white">28</span>
+                  <span className="ml-2 text-white">{daysToExpiration > 0 ? daysToExpiration : 'Invalid'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Strike vs Current:</span>
+                  <span className="ml-2 text-white">
+                    {strikePrice > mstrData.price ? `+${(((strikePrice / mstrData.price) - 1) * 100).toFixed(1)}% OTM` : 
+                     strikePrice < mstrData.price ? `-${((1 - (strikePrice / mstrData.price)) * 100).toFixed(1)}% ITM` : 'ATM'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -348,13 +421,15 @@ export default function OptionsCalculator() {
 
       {/* Live Data Confirmation */}
       <div className="card bg-green-900/20 border border-green-500/30">
-        <h4 className="text-green-400 font-bold mb-2">✅ LIVE DATA CONFIRMED:</h4>
+        <h4 className="text-green-400 font-bold mb-2">✅ LIVE CALCULATOR STATUS:</h4>
         <div className="text-sm text-green-300 space-y-1">
-          <div>Current MSTR Price: ${mstrData.price} (Live)</div>
-          <div>Market Cap: ${(mstrData.market_cap / 1000000000).toFixed(1)}B</div>
-          <div>Volume: {mstrData.volume?.toLocaleString()}</div>
+          <div>Current MSTR Price: ${mstrData.price} (🟢 Live - updates every 5s)</div>
           <div>Selected Strategy: {currentStrategy.name}</div>
-          <div>Rendered: {new Date().toLocaleTimeString()}</div>
+          <div>User Strike Price: ${strikePrice} ({strikePrice > mstrData.price ? 'OTM' : strikePrice < mstrData.price ? 'ITM' : 'ATM'})</div>
+          <div>User Expiration: {expirationDate} ({daysToExpiration} days)</div>
+          <div>User Shares/Contracts: {sharesContracts}</div>
+          <div>Calculated Premium: ${premium.toFixed(2)} per share</div>
+          <div>Last Updated: {new Date().toLocaleTimeString()}</div>
         </div>
       </div>
     </div>
