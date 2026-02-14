@@ -319,12 +319,11 @@ export async function getDashboardStats() {
     getMSTRData(),
   ]);
 
-  // Get REAL corporate data from bitcointreasuries.net
-  const { getLiveBitcoinTreasuries } = await import('./bitcointreasuries-live');
-  const treasuriesData = await getLiveBitcoinTreasuries();
+  // TEMPORARY: Use fixed corporate data (bitcointreasuries integration later)
+  const treasuriesData = null;
   
-  // Use REAL bitcointreasuries.net data for corporate holdings
-  const realCorporateBTC = treasuriesData.total_btc;
+  // Use fixed corporate data for now 
+  const realCorporateBTC = 811408; // Top companies from bitcointreasuries.net
   
   const etfHoldings = holdings.filter(h => h.entity_type === 'etf');  
   const etfBTC = etfHoldings.reduce((sum, holding) => sum + holding.btc_holdings, 0);
@@ -343,7 +342,7 @@ export async function getDashboardStats() {
     mstrIV: mstrData.iv_30d || _cachedIV,
     navPremium: mstrData.nav_premium,
     totalValue: (realCorporateBTC + forceETFBTC) * btcPrice.price_usd,
-    treasuriesData, // Include full treasuries data
+    treasuriesData: null, // Include full treasuries data
   };
 }
 

@@ -29,14 +29,14 @@ async function DashboardStats() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-400">Bitcoin Price</p>
-              <p className="text-3xl font-bold text-bitcoin-500">
+              <p className="text-3xl font-bold text-yellow-500">
                 {formatCurrency(stats.btcPrice)}
               </p>
               <p className={`text-sm ${(stats.btcChange24h || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {formatPercent(stats.btcChange24h || 0)} 24h
               </p>
             </div>
-            <Bitcoin className="h-12 w-12 text-bitcoin-500" />
+            <Bitcoin className="h-12 w-12 text-yellow-500" />
           </div>
         </div>
 
@@ -59,14 +59,14 @@ async function DashboardStats() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-400">MSTR Price</p>
-              <p className="text-3xl font-bold text-mstr-500">
+              <p className="text-3xl font-bold text-green-500">
                 ${stats.mstrPrice?.toFixed(2)}
               </p>
               <p className="text-sm text-gray-400">
                 IV: {stats.mstrIV?.toFixed(1)}%
               </p>
             </div>
-            <Activity className="h-12 w-12 text-mstr-500" />
+            <Activity className="h-12 w-12 text-green-500" />
           </div>
         </div>
 
@@ -87,7 +87,7 @@ async function DashboardStats() {
       {/* Category Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="card">
-          <h3 className="text-xl font-bold mb-4 text-bitcoin-500">Corporate Holdings</h3>
+          <h3 className="text-xl font-bold mb-4 text-blue-500">Corporate Holdings</h3>
           <div className="text-center mb-4">
             <p className="text-4xl font-bold mb-2">{formatNumber(stats.corporateBTC)}</p>
             <p className="text-gray-400">BTC held by companies</p>
@@ -129,7 +129,7 @@ async function DashboardStats() {
         </div>
 
         <div className="card">
-          <h3 className="text-xl font-bold mb-4 text-mstr-500">ETF Holdings</h3>
+          <h3 className="text-xl font-bold mb-4 text-purple-500">ETF Holdings</h3>
           <div className="text-center">
             <p className="text-4xl font-bold mb-2">{formatNumber(stats.etfBTC)}</p>
             <p className="text-gray-400">BTC held by ETFs</p>
