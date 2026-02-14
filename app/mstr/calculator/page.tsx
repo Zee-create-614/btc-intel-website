@@ -35,7 +35,9 @@ export default function OptionsCalculator() {
   useEffect(() => {
     async function fetchLiveData() {
       try {
-        console.log('🔴 OPTIONS CALCULATOR: Fetching LIVE MSTR data...')
+        console.log('🔴 OPTIONS CALCULATOR: Starting fetch of LIVE MSTR data...')
+        console.log('🔴 Current loading state:', loading)
+        console.log('🔴 Current mstrData state:', mstrData)
         
         // Get live MSTR data from our API
         const mstrResponse = await fetch('/api/v1/live/mstr', { 
@@ -119,12 +121,15 @@ export default function OptionsCalculator() {
           })
         })
         
-        console.log('✅ Setting MSTR data:', mstrData)
+        console.log('✅ Live MSTR data received:', mstrLiveData)
+        console.log('✅ Setting MSTR data state:', mstrData)
         console.log('✅ Setting current price to:', mstrLiveData.price)
         
         setMstrData(mstrData)
         setOptionsData(optionsData)
         setCurrentPrice(mstrLiveData.price) // LIVE CURRENT PRICE!
+        
+        console.log('✅ State updated - mstrData should now be:', mstrData)
         
         // Set defaults based on LIVE price
         const expiriesList = [...new Set(optionsData.map(opt => opt.expiry))].sort()
@@ -270,7 +275,12 @@ export default function OptionsCalculator() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="text-center">
             <p className="text-sm text-gray-400">Current MSTR Price</p>
-            <p className="text-2xl font-bold text-mstr-500">${mstrData?.price.toFixed(2) || '0.00'}</p>
+            <p className="text-2xl font-bold text-mstr-500">
+              ${mstrData?.price?.toFixed(2) || currentPrice?.toFixed(2) || '0.00'}
+            </p>
+            <div className="text-xs text-slate-400 mt-1">
+              {loading ? '⏳ Loading...' : '🟢 Live'}
+            </div>
           </div>
           <div className="text-center">
             <p className="text-sm text-gray-400">IV Rank (30d)</p>
@@ -523,6 +533,21 @@ export default function OptionsCalculator() {
           </div>
         </div>
       </div>
+
+      {/* DEBUG INFO - Remove in production */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="card bg-red-900/20 border border-red-500/30">
+          <h4 className="text-red-400 font-bold mb-2">🐛 DEBUG INFO:</h4>
+          <div className="text-xs text-slate-300 space-y-1">
+            <div>Loading: {loading.toString()}</div>
+            <div>Current Price: {currentPrice}</div>
+            <div>MSTR Data Exists: {mstrData ? 'YES' : 'NO'}</div>
+            <div>MSTR Price: {mstrData?.price || 'null'}</div>
+            <div>MSTR Market Cap: {mstrData?.market_cap || 'null'}</div>
+            <div>Options Data Length: {optionsData.length}</div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
