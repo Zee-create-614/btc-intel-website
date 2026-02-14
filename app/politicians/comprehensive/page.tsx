@@ -77,7 +77,7 @@ async function Leaderboard() {
                 </span>
               </td>
               <td className="py-3 px-2">
-                <Link href={`/politicians/${slugify(p.politician_name)}`} className="hover:text-bitcoin-500 transition-colors">
+                <Link href={`/politicians/${slugify(p.politician_name || p.name || '')}`} className="hover:text-bitcoin-500 transition-colors">
                   <span className="font-medium text-white">{p.politician_name}</span>
                   <span className="text-gray-500 text-xs ml-2">{p.state}</span>
                 </Link>

@@ -4,7 +4,6 @@ import {
   getPoliticianDetail, getPoliticianSummaries,
   partyColor, partyBg, partyName, tradeTypeColor, tradeTypeEmoji,
   returnColor, formatReturn,
-  type TimeframePerformance,
 } from '../../lib/politician-data'
 
 export async function generateMetadata({ params }: { params: { name: string } }) {
@@ -20,13 +19,22 @@ export async function generateStaticParams() {
   return []
 }
 
-// Politician avatar placeholder — initials on party-colored background
-function PoliticianAvatar({ name, party, large = false }: { name: string; party: string; large?: boolean }) {
+function PoliticianAvatar({ name, party, photoUrl, large = false }: { name: string; party: string; photoUrl?: string; large?: boolean }) {
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
   const bgColor = party === 'R' ? 'bg-gradient-to-br from-red-600 to-red-700' : 
                    party === 'D' ? 'bg-gradient-to-br from-blue-600 to-blue-700' : 
                    'bg-gradient-to-br from-purple-600 to-purple-700'
   const size = large ? 'w-20 h-20 text-2xl' : 'w-12 h-12 text-base'
+  
+  if (photoUrl) {
+    return (
+      <img 
+        src={photoUrl} 
+        alt={name}
+        className={`${large ? 'w-20 h-20' : 'w-12 h-12'} rounded-full object-cover shadow-lg border-4 border-gray-700`}
+      />
+    )
+  }
   
   return (
     <div className={`${size} ${bgColor} rounded-full flex items-center justify-center font-bold text-white shadow-lg border-4 border-gray-700`}>
@@ -50,7 +58,7 @@ function TimeframePill({ label, value }: { label: string; value: number | null }
 export default async function PoliticianPage({ params }: { params: { name: string } }) {
   const name = decodeURIComponent(params.name)
   // Fetch with timeframes enabled for detail view
-  const politician = await getPoliticianDetail(name, true)
+  const politician = await getPoliticianDetail(name)
   
   if (!politician) {
     return (
@@ -63,9 +71,9 @@ export default async function PoliticianPage({ params }: { params: { name: strin
     )
   }
 
-  const trades = politician.trades || []
-  const withReturns = trades.filter(t => t.return_pct != null)
-  const perf = politician.performance || {} as TimeframePerformance
+  const trades: any[] = politician.trades || []
+  const withReturns = trades.filter((t: any) => t.return_pct != null)
+  const perf = (politician as any).performance || {} as any
   
   // SEC filing links
   const chamberFilingUrl = politician.chamber === 'Senate'
@@ -84,7 +92,7 @@ export default async function PoliticianPage({ params }: { params: { name: strin
         <div className="flex flex-col md:flex-row md:items-start gap-6">
           {/* Avatar + Info */}
           <div className="flex items-center gap-5">
-            <PoliticianAvatar name={politician.name} party={politician.party} large />
+            <PoliticianAvatar name={politician.name} party={politician.party} photoUrl={politician.photo_url} large />
             <div>
               <h1 className="text-3xl font-bold mb-1">{politician.name}</h1>
               <div className="flex items-center gap-2 flex-wrap">

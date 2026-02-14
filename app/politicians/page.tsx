@@ -6,6 +6,7 @@ import {
   returnColor, formatReturn,
 } from '../lib/politician-data'
 import PoliticianCard from '../components/PoliticianCard'
+import PoliticianPhoto from '../components/PoliticianPhoto'
 
 export const metadata = {
   title: 'Politician Trading Tracker | BTCIntelVault',
@@ -110,13 +111,23 @@ async function RecentTrades() {
   )
 }
 
-// Politician avatar component - enhanced with better styling
-function PoliticianAvatar({ name, party, large = false }: { name: string; party: string; large?: boolean }) {
+// Politician avatar component with photo support
+function PoliticianAvatar({ name, party, photoUrl, large = false }: { name: string; party: string; photoUrl?: string; large?: boolean }) {
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
   const bgColor = party === 'R' ? 'bg-gradient-to-br from-red-600 to-red-700' : 
                    party === 'D' ? 'bg-gradient-to-br from-blue-600 to-blue-700' : 
                    'bg-gradient-to-br from-purple-600 to-purple-700'
   const size = large ? 'w-16 h-16 text-xl' : 'w-12 h-12 text-sm'
+  
+  if (photoUrl) {
+    return (
+      <PoliticianPhoto 
+        src={photoUrl} 
+        alt={name}
+        className={`${large ? 'w-16 h-16' : 'w-12 h-12'} rounded-full object-cover shadow-lg border-2 border-gray-600`}
+      />
+    )
+  }
   
   return (
     <div className={`${size} ${bgColor} rounded-full flex items-center justify-center font-bold text-white shadow-lg border-2 border-gray-600`}>
@@ -150,7 +161,7 @@ async function PoliticianCards() {
           >
             {/* Header with Avatar and Performance */}
             <div className="flex items-start gap-3 mb-4">
-              <PoliticianAvatar name={pol.name} party={pol.party} />
+              <PoliticianAvatar name={pol.name} party={pol.party} photoUrl={pol.photo_url} />
               
               <div className="flex-grow">
                 <h3 className="font-semibold text-white group-hover:text-bitcoin-400 transition-colors">
