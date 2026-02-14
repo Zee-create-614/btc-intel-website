@@ -158,12 +158,9 @@ export default function MSTRPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2 text-mstr-500">🔥 MSTR Live Analytics Dashboard (NAV FIXED)</h1>
+          <h1 className="text-3xl font-bold mb-2 text-mstr-500">MSTR Live Analytics</h1>
           <p className="text-gray-400">
-            100% LIVE DATA - Real-time MSTR analytics with live calculations • Updates every 5 seconds
-          </p>
-          <p className="text-xs text-slate-500 mt-2">
-            Build: v2.14.09.20 - DILUTED NAV METHOD CORRECTED (Strategy.com + Dilution Factor) 🎯
+            Real-time MSTR analytics with live calculations • Updates every 5 seconds
           </p>
         </div>
         <div className="flex items-center space-x-4 mt-4 md:mt-0">
@@ -469,59 +466,36 @@ export default function MSTRPage() {
         </div>
       )}
 
-      {/* NUCLEAR FIX - CORRECT NAV ANALYSIS (Removed LiveMSTRAnalytics) */}
+      {/* NAV Analysis */}
       <div className="space-y-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-green-400">✅ CORRECT NAV Analysis (Fixed)</h2>
-          <div className="text-sm text-green-400">
-            🔥 OLD COMPONENT REMOVED - NO MORE CACHE ISSUES
-          </div>
-        </div>
-
-        {/* ONLY STRATEGY.COM METHOD */}
-        <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-6">
-          <h3 className="text-xl font-bold text-green-400 mb-4">Live NAV Analysis (Strategy.com Official)</h3>
+        <div className="bg-slate-800 border border-slate-700 rounded-lg p-6">
+          <h3 className="text-xl font-bold text-white mb-4">NAV Analysis</h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
-              <p className="text-green-400 mb-2">✅ Current Premium</p>
+              <p className="text-sm text-slate-400 mb-2">NAV Premium</p>
               <p className="text-4xl font-bold text-green-400">
                 +{liveData.navPremium.toFixed(1)}%
               </p>
-              <p className="text-sm text-green-300">
-                Strategy.com Official 1.19x
-              </p>
+              <p className="text-xs text-slate-500 mt-1">Strategy.com 1.19x</p>
             </div>
 
             <div className="text-center">
-              <p className="text-green-400 mb-2">✅ NAV per Share</p>
+              <p className="text-sm text-slate-400 mb-2">NAV per Share</p>
               <p className="text-4xl font-bold text-white">
                 ${liveData.navPerShare.toFixed(0)}
               </p>
-              <p className="text-sm text-green-300">
-                ${liveData.mstr.price} ÷ 1.19 = ${liveData.navPerShare.toFixed(2)}
+              <p className="text-xs text-slate-500 mt-1">
+                ${liveData.mstr.price} ÷ 1.19
               </p>
             </div>
 
             <div className="text-center">
-              <p className="text-green-400 mb-2">✅ Current MSTR Price</p>
-              <p className="text-4xl font-bold text-white">
+              <p className="text-sm text-slate-400 mb-2">MSTR Price</p>
+              <p className="text-4xl font-bold text-blue-400">
                 ${liveData.mstr.price.toFixed(2)}
               </p>
-              <p className="text-sm text-green-300">
-                Live Market Price
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 p-4 bg-slate-900/60 rounded">
-            <h4 className="text-green-400 font-bold mb-2">✅ CALCULATION VERIFIED:</h4>
-            <div className="text-sm text-green-300 space-y-1 font-mono">
-              <div>MSTR Price: ${liveData.mstr.price}</div>
-              <div>Strategy.com NAV Multiple: 1.19x</div>
-              <div>NAV per Share: ${liveData.mstr.price} ÷ 1.19 = ${liveData.navPerShare.toFixed(2)}</div>
-              <div>Premium: {liveData.navPremium.toFixed(2)}% (NOT negative!)</div>
-              <div>Status: ✅ CORRECT - No more cache issues</div>
+              <p className="text-xs text-slate-500 mt-1">Live</p>
             </div>
           </div>
         </div>
@@ -530,18 +504,9 @@ export default function MSTRPage() {
       {/* Dual Ticker Comparison */}
       <DualTickerComparison />
 
-      {/* Live Data Attribution */}
-      <div className="card bg-green-900/20 border border-green-500/30">
-        <h4 className="text-green-400 font-bold mb-2">✅ 100% LIVE DATA CONFIRMED:</h4>
-        <div className="text-sm text-green-300 space-y-1">
-          <div>Current MSTR Price: ${liveData.mstr.price} (Live API)</div>
-          <div>Market Cap: ${(liveData.mstr.market_cap / 1000000000).toFixed(1)}B (Live calculated)</div>
-          <div>NAV Premium: {liveData.navPremium.toFixed(2)}% (Live calculated)</div>
-          <div>BTC Holdings: {liveData.mstr.btc_holdings.toLocaleString()} (Live API)</div>
-          <div>IV Percentiles: Calculated from live technical indicators</div>
-          <div>Options Flow: Live Greeks, deltas, and volume (NO fake metrics)</div>
-          <div>Last Updated: {lastUpdate}</div>
-        </div>
+      {/* Data Attribution */}
+      <div className="text-center text-xs text-slate-500 py-4">
+        <p>Live data from Yahoo Finance & Strategy.com • Last updated: {lastUpdate}</p>
       </div>
     </div>
   )
