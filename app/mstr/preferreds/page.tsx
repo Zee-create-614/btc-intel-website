@@ -64,7 +64,7 @@ export default function MSTRPreferreds() {
     }
 
     fetchData()
-    const interval = setInterval(fetchData, 30000) // Update every 30 seconds
+    const interval = setInterval(fetchData, 10000) // Update every 10 seconds for LIVE data
     return () => clearInterval(interval)
   }, [])
 
@@ -132,6 +132,20 @@ export default function MSTRPreferreds() {
         <p className="text-slate-400 text-lg">
           Advanced volume analysis and trading intelligence for MicroStrategy preferred stocks
         </p>
+        {/* Live Data Indicator */}
+        <div className="flex items-center space-x-2 mt-4">
+          <div className="flex items-center space-x-2 bg-green-900/30 border border-green-700/50 px-3 py-1.5 rounded-full">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <span className="text-green-400 text-sm font-medium">LIVE DATA</span>
+            <span className="text-green-300 text-xs">Updates every 10s</span>
+          </div>
+          {preferredsData?.data_quality && (
+            <div className="text-xs text-slate-500">
+              Source: {preferredsData.data_quality.toUpperCase()} • 
+              Last: {new Date(preferredsData.summary.last_updated).toLocaleTimeString()}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Summary Cards */}

@@ -204,7 +204,7 @@ export function VolumeChart({ symbol, currentVolume, timeframe, onTimeframeChang
           <div className="text-center py-8">
             <Activity className="h-12 w-12 text-blue-400 mx-auto mb-3 animate-pulse" />
             <p className="text-slate-400 text-sm">Live volume data</p>
-            <p className="text-xs text-slate-500 mt-1">Updates every 10 seconds</p>
+            <p className="text-xs text-slate-500 mt-1">Live updates every 10 seconds</p>
           </div>
         )}
 
