@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const period = searchParams.get('period') || '1Y'
 
     // Fetch US M2 from FRED (monthly, billions)
-    const fredKey = process.env.FRED_API_KEY || 'a45b4a23c0e0df8d20bd7ca7ff3ad88c'
+    const fredKey = process.env.FRED_API_KEY || '6640fe5217f7ce0378e770fac029393c'
     
     // Determine date range
     const now = new Date()
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=${id}&api_key=${fredKey}&file_type=json&observation_start=${startStr}&sort_order=asc`)
         .then(r => r.json())
         .then(d => ({ id, observations: d.observations || [] }))
-        .catch(() => ({ id, observations: [] }))
+        .catch(e => { console.error(`FRED ${id} error:`, e.message); return { id, observations: [] } })
     )
 
     // Fetch BTC price history from CoinGecko
