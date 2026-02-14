@@ -89,16 +89,27 @@ export default function OptionsCalculator() {
   const [strikePrice, setStrikePrice] = useState(150)
   const [strikePrice2, setStrikePrice2] = useState(170) // For spreads
   const [contracts, setContracts] = useState(1)
-  const [iv, setIv] = useState(85) // MSTR typically 70-120% IV
+  const [iv, setIv] = useState(85)
   const [tradePlaced, setTradePlaced] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('/api/v1/live/mstr', { cache: 'no-store' })
-        const data = await res.json()
+        const [mstrRes, optionsRes] = await Promise.all([
+          fetch('/api/v1/live/mstr', { cache: 'no-store' }),
+          fetch('/api/v1/live/options-flow', { cache: 'no-store' }),
+        ])
+        const data = await mstrRes.json()
         setMstrData(data)
-        // Set initial strike near current price (round to nearest 5)
+        
+        // Get live IV from options flow
+        try {
+          const optionsData = await optionsRes.json()
+          if (optionsData?.market_data?.implied_volatility) {
+            setIv(Math.round(optionsData.market_data.implied_volatility * 100))
+          }
+        } catch {}
+
         if (loading) {
           const rounded = Math.ceil(data.price / 5) * 5
           setStrikePrice(rounded + 10)
@@ -349,20 +360,15 @@ export default function OptionsCalculator() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Implied Volatility (%)</label>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="range"
-                  min="30"
-                  max="200"
-                  step="5"
-                  value={iv}
-                  onChange={(e) => setIv(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <span className="text-white font-mono w-14 text-right">{iv}%</span>
+              <label className="block text-sm font-medium mb-2">Implied Volatility</label>
+              <div className="bg-gray-800 border border-gray-600 rounded px-3 py-2 relative">
+                <span className="text-white font-mono">{iv}%</span>
+                <div className="absolute right-3 top-2.5 flex items-center space-x-1">
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <span className="text-xs text-slate-400">Live</span>
+                </div>
               </div>
-              <p className="text-xs text-gray-400 mt-1">MSTR typically 70-120%. Higher IV = higher premiums.</p>
+              <p className="text-xs text-gray-400 mt-1">Live IV from MSTR options chain</p>
             </div>
           </div>
         </div>
@@ -375,15 +381,36 @@ export default function OptionsCalculator() {
           </h3>
 
           <div className="space-y-4">
+            {/* Lead metric: Premium Collected for income strategies */}
+            {(selectedStrategy === 'covered_call' || selectedStrategy === 'cash_secured_put') && (
+              <div className="p-5 bg-green-900/20 border-2 border-green-700/50 rounded-lg text-center">
+                <p className="text-sm text-green-400 mb-1">Premium Collected</p>
+                <p className="text-4xl font-bold text-green-400">
+                  ${(calc.premium * shares).toFixed(0)}
+                </p>
+                <p className="text-sm text-slate-400 mt-1">
+                  ${calc.premium.toFixed(2)}/share × {shares} shares
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {selectedStrategy === 'covered_call'
+                    ? `Return on shares: ${((calc.premium / S) * 100).toFixed(2)}% in ${daysToExp} days (${((calc.premium / S) * (365 / Math.max(1, daysToExp)) * 100).toFixed(1)}% annualized)`
+                    : `Return on capital: ${((calc.premium / strikePrice) * 100).toFixed(2)}% in ${daysToExp} days (${((calc.premium / strikePrice) * (365 / Math.max(1, daysToExp)) * 100).toFixed(1)}% annualized)`
+                  }
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 bg-green-900/20 border border-green-700/30 rounded-lg">
-                <p className="text-sm text-green-400 mb-1">Max Profit</p>
+                <p className="text-sm text-green-400 mb-1">
+                  {(selectedStrategy === 'covered_call' || selectedStrategy === 'cash_secured_put') ? 'Max Profit (if assigned)' : 'Max Profit'}
+                </p>
                 <p className="text-2xl font-bold text-green-400">
                   {calc.maxProfit === Infinity ? 'Unlimited' : `$${calc.maxProfit.toFixed(0)}`}
                 </p>
                 <p className="text-xs text-slate-400 mt-1">
-                  {selectedStrategy === 'covered_call' && 'If assigned at strike'}
-                  {selectedStrategy === 'cash_secured_put' && 'If expires worthless'}
+                  {selectedStrategy === 'covered_call' && `Shares called at $${strikePrice} + premium`}
+                  {selectedStrategy === 'cash_secured_put' && 'Option expires worthless, keep premium'}
                   {selectedStrategy === 'protective_put' && 'Unlimited upside'}
                   {selectedStrategy === 'bull_call_spread' && 'At or above short strike'}
                   {selectedStrategy === 'bear_put_spread' && 'At or below short strike'}
@@ -396,8 +423,8 @@ export default function OptionsCalculator() {
                   -${calc.maxLoss.toFixed(0)}
                 </p>
                 <p className="text-xs text-slate-400 mt-1">
-                  {selectedStrategy === 'covered_call' && 'If stock goes to $0'}
-                  {selectedStrategy === 'cash_secured_put' && 'If stock goes to $0'}
+                  {selectedStrategy === 'covered_call' && `Stock to $0, offset by $${(calc.premium * shares).toFixed(0)} premium`}
+                  {selectedStrategy === 'cash_secured_put' && `Assigned at $${strikePrice}, stock to $0`}
                   {selectedStrategy === 'protective_put' && 'Premium + (entry - strike)'}
                   {selectedStrategy === 'bull_call_spread' && 'Net debit paid'}
                   {selectedStrategy === 'bear_put_spread' && 'Net debit paid'}
@@ -413,13 +440,19 @@ export default function OptionsCalculator() {
                 </p>
               </div>
 
-              <div className="p-4 bg-yellow-900/20 border border-yellow-700/30 rounded-lg">
-                <p className="text-sm text-yellow-400 mb-1">Total Premium</p>
-                <p className="text-2xl font-bold text-yellow-400">
-                  ${(calc.premium * shares).toFixed(0)}
+              <div className="p-4 bg-slate-700/30 border border-slate-600/30 rounded-lg">
+                <p className="text-sm text-slate-300 mb-1">
+                  {selectedStrategy === 'covered_call' ? 'Capital Required' : 
+                   selectedStrategy === 'cash_secured_put' ? 'Cash Reserved' : 'Cost'}
+                </p>
+                <p className="text-2xl font-bold text-white">
+                  ${selectedStrategy === 'covered_call' ? (S * shares).toFixed(0) :
+                    selectedStrategy === 'cash_secured_put' ? (strikePrice * shares).toFixed(0) :
+                    (calc.premium * shares).toFixed(0)}
                 </p>
                 <p className="text-xs text-slate-400 mt-1">
-                  ${calc.premium.toFixed(2)}/share × {shares} shares
+                  {selectedStrategy === 'covered_call' && `${shares} shares @ $${S.toFixed(2)}`}
+                  {selectedStrategy === 'cash_secured_put' && `${shares} shares @ $${strikePrice} strike`}
                 </p>
               </div>
             </div>
