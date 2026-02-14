@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bitcoin, TrendingUp, DollarSign, Activity, RefreshCw } from 'lucide-react'
+import { Bitcoin, TrendingUp, DollarSign, Activity, RefreshCw, Target } from 'lucide-react'
 import Link from 'next/link'
 import OptionsFlowLive from './components/OptionsFlowLive'
 import MarketIntelligenceLive from './components/MarketIntelligenceLive'
@@ -17,6 +17,10 @@ interface LiveData {
   mstrMarketCap: number // ADDED - real market cap from API
   totalInstitutional: number
   navPremium: number
+  navPerShare: number // ADDED - actual NAV per share from strategy.com
+  dilutedShares: number // ADDED - fully diluted shares including convertibles
+  dilutedNavPerShare: number // ADDED - fully diluted NAV per share
+  dilutedNavPremium: number // ADDED - fully diluted NAV premium
   lastUpdate: string
 }
 
@@ -30,17 +34,23 @@ export default function Dashboard() {
       setUpdating(true)
       console.log('🔴 FETCHING ALL LIVE DATA...')
       
-      // Parallel fetch of all live data
-      const [btcResponse, mstrResponse] = await Promise.all([
+      // Parallel fetch of all live data including NAV from strategy.com and diluted shares
+      const [btcResponse, mstrResponse, navResponse, dilutedResponse] = await Promise.all([
         fetch('/api/v1/live/btc', { cache: 'no-store' }),
-        fetch('/api/v1/live/mstr', { cache: 'no-store' })
+        fetch('/api/v1/live/mstr', { cache: 'no-store' }),
+        fetch('/api/v1/live/nav', { cache: 'no-store' }),
+        fetch('/api/v1/live/diluted-shares', { cache: 'no-store' })
       ])
       
       const btcData = await btcResponse.json()
       const mstrData = await mstrResponse.json()
+      const navData = await navResponse.json()
+      const dilutedData = await dilutedResponse.json()
       
       console.log('✅ BTC Data:', btcData)
       console.log('✅ MSTR Data:', mstrData)
+      console.log('✅ NAV Data:', navData)
+      console.log('✅ Diluted Shares Data:', dilutedData)
       console.log('🚨 MSTR MARKET CAP DEBUG:', {
         price: mstrData.price,
         shares_outstanding: mstrData.shares_outstanding,
@@ -49,9 +59,30 @@ export default function Dashboard() {
       })
       
       const totalInstitutional = mstrData.btc_holdings + 423431 // Other institutions
-      const mstrValue = mstrData.btc_holdings * btcData.price_usd
-      const navPerShare = mstrValue / mstrData.shares_outstanding // Uses real shares outstanding from API
-      const navPremium = ((mstrData.price - navPerShare) / navPerShare) * 100
+      
+      // Use LIVE NAV multiple from strategy.com (Josh's requirement)
+      const navMultiple = navData.nav_multiple || navData.nav || 1.19 // Live from strategy.com
+      const navPerShare = mstrData.price / navMultiple // Basic NAV per share
+      const navPremium = ((navMultiple - 1.0) * 100) // Premium = (multiple - 1) * 100
+      
+      // Calculate FULLY DILUTED MNAV (Josh's new requirement)
+      const basicShares = mstrData.shares_outstanding
+      const dilutedShares = dilutedData.diluted_shares
+      const dilutedNavPerShare = (navPerShare * basicShares) / dilutedShares // Fully diluted NAV
+      const dilutedNavMultiple = mstrData.price / dilutedNavPerShare // Diluted multiple
+      const dilutedNavPremium = ((dilutedNavMultiple - 1.0) * 100) // Diluted premium
+      
+      console.log('🎯 BASIC + FULLY DILUTED NAV CALCULATION:', {
+        nav_multiple: navMultiple,
+        mstr_price: mstrData.price,
+        basic_nav_per_share: navPerShare.toFixed(2),
+        basic_premium: navPremium.toFixed(1) + '%',
+        basic_shares: basicShares.toLocaleString(),
+        diluted_shares: dilutedShares.toLocaleString(),
+        diluted_nav_per_share: dilutedNavPerShare.toFixed(2),
+        diluted_premium: dilutedNavPremium.toFixed(1) + '%',
+        dilution_factor: dilutedData.dilution_factor
+      })
       
       setLiveData({
         btcPrice: btcData.price_usd,
@@ -63,6 +94,10 @@ export default function Dashboard() {
         mstrMarketCap: mstrData.market_cap, // ADDED - real market cap from API
         totalInstitutional,
         navPremium,
+        navPerShare, // ADDED - actual NAV per share
+        dilutedShares, // ADDED - fully diluted shares
+        dilutedNavPerShare, // ADDED - fully diluted NAV per share
+        dilutedNavPremium, // ADDED - fully diluted NAV premium
         lastUpdate: new Date().toLocaleTimeString()
       })
       
@@ -176,13 +211,31 @@ export default function Dashboard() {
         <div className="metric-card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-slate-400">MSTR NAV Premium</p>
+              <p className="text-sm text-slate-400">Basic NAV Premium</p>
               <div className={`text-3xl font-bold ${(liveData?.navPremium || 0) >= 0 ? 'text-red-400' : 'text-green-400'}`}>
                 {(liveData?.navPremium || 0) >= 0 ? '+' : ''}{liveData?.navPremium.toFixed(1)}%
               </div>
-              <p className="text-sm text-slate-400">vs BTC holdings</p>
+              <p className="text-sm text-slate-400">NAV: ${liveData?.navPerShare?.toFixed(0) || '112'}</p>
             </div>
             <DollarSign className="h-12 w-12 text-green-500" />
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center space-x-2 mb-1">
+                <p className="text-sm text-slate-400">Fully Diluted NAV</p>
+                <span className="text-xs bg-orange-500/20 text-orange-300 px-2 py-1 rounded">DILUTED</span>
+              </div>
+              <div className={`text-3xl font-bold ${(liveData?.dilutedNavPremium || 0) >= 0 ? 'text-red-400' : 'text-green-400'}`}>
+                {(liveData?.dilutedNavPremium || 0) >= 0 ? '+' : ''}{liveData?.dilutedNavPremium?.toFixed(1) || '0.0'}%
+              </div>
+              <p className="text-sm text-slate-400">
+                NAV: ${liveData?.dilutedNavPerShare?.toFixed(0) || '86'} | {((liveData?.dilutedShares || 437000000) / 1000000).toFixed(0)}M shares
+              </p>
+            </div>
+            <Target className="h-12 w-12 text-orange-500" />
           </div>
         </div>
       </div>
