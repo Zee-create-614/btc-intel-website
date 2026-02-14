@@ -198,13 +198,14 @@ export default function MSTRPreferreds() {
       {/* Preferreds Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-8">
         {preferredsList.map(([symbol, data]) => (
-          <Card 
+          <div 
             key={symbol}
-            className={`bg-slate-800 border-slate-700 cursor-pointer transition-all ${
-              selectedSymbol === symbol ? 'ring-2 ring-blue-400' : 'hover:bg-slate-750'
-            }`}
+            className="cursor-pointer transition-all"
             onClick={() => setSelectedSymbol(symbol)}
           >
+            <Card className={`bg-slate-800 border-slate-700 ${
+              selectedSymbol === symbol ? 'ring-2 ring-blue-400' : 'hover:bg-slate-750'
+            }`}>
             <CardContent className="pt-4">
               <div className="text-center">
                 <h3 className="text-lg font-bold text-white mb-1">{symbol}</h3>
@@ -232,6 +233,7 @@ export default function MSTRPreferreds() {
               </div>
             </CardContent>
           </Card>
+          </div>
         ))}
       </div>
 
