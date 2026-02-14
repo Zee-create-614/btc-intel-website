@@ -40,7 +40,7 @@ export default function Dashboard() {
       
       const totalInstitutional = mstrData.btc_holdings + 423431 // Other institutions
       const mstrValue = mstrData.btc_holdings * btcData.price_usd
-      const navPerShare = mstrValue / mstrData.shares_outstanding
+      const navPerShare = mstrValue / mstrData.shares_outstanding // Uses real shares outstanding from API
       const navPremium = ((mstrData.price - navPerShare) / navPerShare) * 100
       
       setLiveData({
