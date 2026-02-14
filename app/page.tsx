@@ -13,6 +13,8 @@ interface LiveData {
   mstrPrice: number
   mstrChange: number
   mstrHoldings: number
+  mstrSharesOutstanding: number // ADDED - real shares from API
+  mstrMarketCap: number // ADDED - real market cap from API
   totalInstitutional: number
   navPremium: number
   lastUpdate: string
@@ -57,6 +59,8 @@ export default function Dashboard() {
         mstrPrice: mstrData.price,
         mstrChange: mstrData.change_percent,
         mstrHoldings: mstrData.btc_holdings,
+        mstrSharesOutstanding: mstrData.shares_outstanding, // ADDED - real shares from API
+        mstrMarketCap: mstrData.market_cap, // ADDED - real market cap from API
         totalInstitutional,
         navPremium,
         lastUpdate: new Date().toLocaleTimeString()
@@ -103,7 +107,7 @@ export default function Dashboard() {
           100% LIVE DATA - Updates every 5 seconds
         </p>
         <p className="text-xs text-slate-500 mt-2">
-          Build: v2.14.07.40 - MSTR Data FIXED ($44.5B) 
+          Build: v2.14.07.52 - Market Cap Card FIXED (API data)
         </p>
       </div>
       
@@ -206,15 +210,15 @@ export default function Dashboard() {
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-white">Market Cap</h3>
-            <span className="text-blue-400 font-mono text-sm">${((liveData?.mstrPrice || 0) * 16800000 / 1000000000).toFixed(2)}B</span>
+            <span className="text-blue-400 font-mono text-sm">${((liveData?.mstrMarketCap || 0) / 1000000000).toFixed(2)}B</span>
           </div>
           <div>
             <p className="text-slate-400">MSTR Market Capitalization</p>
             <p className="text-sm text-slate-500 mt-2">
-              Shares Outstanding: ~16.8M
+              Shares Outstanding: {(liveData?.mstrSharesOutstanding || 0).toLocaleString()}
             </p>
             <p className="text-sm text-slate-500">
-              BTC per Share: {((liveData?.mstrHoldings || 0) / 16800000).toFixed(4)}
+              BTC per Share: {((liveData?.mstrHoldings || 0) / (liveData?.mstrSharesOutstanding || 1)).toFixed(5)}
             </p>
           </div>
         </div>
