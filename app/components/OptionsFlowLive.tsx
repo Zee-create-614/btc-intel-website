@@ -120,6 +120,32 @@ export default function OptionsFlowLive() {
         </div>
       </div>
 
+      {/* Options Flow Sentiment - Josh's Request */}
+      <div className="mb-6 p-6 bg-gradient-to-r from-slate-800/50 to-slate-700/50 rounded-lg border border-slate-600">
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="text-lg font-bold text-slate-300 mb-2">Options Flow Sentiment</h4>
+            <div className={`text-4xl font-bold ${getSentimentColor(optionsData.greeks_summary.dominant_sentiment)}`}>
+              {optionsData.greeks_summary.dominant_sentiment}
+            </div>
+            <p className="text-sm text-slate-400 mt-1">
+              Call/Put Ratio: {optionsData.greeks_summary.call_put_ratio} 
+              {optionsData.greeks_summary.call_put_ratio > 1.5 ? ' (Bullish bias)' : 
+                optionsData.greeks_summary.call_put_ratio < 0.8 ? ' (Bearish bias)' : ' (Neutral)'}
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-2xl">
+              {optionsData.greeks_summary.dominant_sentiment === 'BULLISH' ? '🚀' :
+               optionsData.greeks_summary.dominant_sentiment === 'BEARISH' ? '🐻' : '⚖️'}
+            </div>
+            <div className="text-xs text-slate-500 mt-1">
+              Based on volume & delta
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Real Options Greeks Summary */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-slate-700/30 rounded-lg p-4">

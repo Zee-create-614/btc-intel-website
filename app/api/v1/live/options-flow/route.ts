@@ -157,6 +157,20 @@ export async function GET(request: NextRequest) {
     const avgCallDelta = totalCallVolume > 0 ? totalCallDelta / totalCallVolume : 0
     const avgPutDelta = totalPutVolume > 0 ? totalPutDelta / totalPutVolume : 0
     
+    // Enhanced sentiment calculation for Josh's request
+    const callPutRatio = totalPutVolume > 0 ? totalCallVolume / totalPutVolume : 0
+    let dominantSentiment = 'NEUTRAL'
+    
+    if (callPutRatio > 1.8) {
+      dominantSentiment = 'BULLISH'
+    } else if (callPutRatio < 0.7) {
+      dominantSentiment = 'BEARISH'
+    } else if (totalCallVolume > totalPutVolume * 1.3) {
+      dominantSentiment = 'BULLISH'
+    } else if (totalPutVolume > totalCallVolume * 1.3) {
+      dominantSentiment = 'BEARISH'
+    }
+    
     // Real options flow data from calculations
     const optionsFlowData = {
       symbol: 'MSTR',
@@ -167,9 +181,8 @@ export async function GET(request: NextRequest) {
         avg_put_delta: Math.round(avgPutDelta * 100) / 100,
         total_call_volume: totalCallVolume,
         total_put_volume: totalPutVolume,
-        call_put_ratio: totalPutVolume > 0 ? Math.round((totalCallVolume / totalPutVolume) * 100) / 100 : 0,
-        dominant_sentiment: totalCallVolume > totalPutVolume * 1.5 ? 'BULLISH' : 
-                           totalPutVolume > totalCallVolume * 1.5 ? 'BEARISH' : 'NEUTRAL'
+        call_put_ratio: Math.round(callPutRatio * 100) / 100,
+        dominant_sentiment: dominantSentiment
       },
       market_data: {
         implied_volatility: impliedVolatility,
@@ -208,7 +221,7 @@ export async function GET(request: NextRequest) {
         total_call_volume: 2500,
         total_put_volume: 1800,
         call_put_ratio: 1.39,
-        dominant_sentiment: 'NEUTRAL'
+        dominant_sentiment: 'BULLISH' // 1.39 ratio indicates bullish bias
       },
       market_data: {
         implied_volatility: 1.20,
