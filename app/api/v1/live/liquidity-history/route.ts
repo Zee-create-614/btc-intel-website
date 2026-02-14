@@ -43,11 +43,14 @@ export async function GET(request: NextRequest) {
         .catch(e => { console.error(`FRED ${id} error:`, e.message); return { id, observations: [] } })
     )
 
-    // Fetch BTC price history from CoinGecko
-    const days = Math.ceil((now.getTime() - startDate.getTime()) / 86400000)
-    const btcPromise = fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${days}&interval=daily`)
+    // Fetch BTC price history from Yahoo Finance (more reliable than CoinGecko on Vercel)
+    const period1 = Math.floor(startDate.getTime() / 1000)
+    const period2 = Math.floor(now.getTime() / 1000)
+    const btcPromise = fetch(`https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?period1=${period1}&period2=${period2}&interval=1d`, {
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    })
       .then(r => r.json())
-      .catch(() => ({ prices: [] }))
+      .catch(e => { console.error('BTC Yahoo error:', e.message); return null })
 
     const [fredResults, btcData] = await Promise.all([
       Promise.all(fredPromises),
@@ -66,13 +69,23 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Build BTC price map (date -> price)
+    // Build BTC price map (date -> price) from Yahoo Finance
     const btcPriceMap: Record<string, number> = {}
-    if (btcData.prices) {
-      for (const [ts, price] of btcData.prices) {
-        const date = new Date(ts).toISOString().split('T')[0]
-        btcPriceMap[date] = price
+    try {
+      const result = btcData?.chart?.result?.[0]
+      if (result) {
+        const timestamps = result.timestamp || []
+        const closes = result.indicators?.quote?.[0]?.close || []
+        for (let i = 0; i < timestamps.length; i++) {
+          if (closes[i]) {
+            const date = new Date(timestamps[i] * 1000).toISOString().split('T')[0]
+            btcPriceMap[date] = Math.round(closes[i])
+          }
+        }
       }
+      console.log(`BTC prices loaded: ${Object.keys(btcPriceMap).length} days`)
+    } catch (e: any) {
+      console.error('BTC price parse error:', e.message)
     }
 
     // Get all unique dates from M2 (monthly) and fill forward other series
