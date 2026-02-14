@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
-import { Bitcoin, TrendingUp, RefreshCw, BarChart3, LineChart } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
+import { Bitcoin, TrendingUp, RefreshCw } from 'lucide-react'
 
 interface DataPoint {
   date: string
@@ -19,16 +19,6 @@ interface Stats {
   total_btc: number
   total_shares: number
 }
-
-const PERIODS = [
-  { label: '7D', value: '7d' },
-  { label: '30D', value: '30d' },
-  { label: '3M', value: '3mo' },
-  { label: 'YTD', value: 'ytd' },
-  { label: '1Y', value: '1y' },
-  { label: '5Y', value: '5y' },
-  { label: 'MAX', value: 'max' },
-]
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (!active || !payload?.length) return null
@@ -49,15 +39,12 @@ const CustomTooltip = ({ active, payload }: any) => {
 export default function BtcPerShareChart() {
   const [data, setData] = useState<DataPoint[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
-  const [period, setPeriod] = useState('max')
-  const [chartType, setChartType] = useState<'area' | 'bar'>('bar')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true)
       try {
-        const res = await fetch(`/api/v1/live/btc-per-share-history?period=${period}`)
+        const res = await fetch('/api/v1/live/btc-per-share-history?period=max')
         const json = await res.json()
         if (json.success && json.data?.length > 0) {
           setData(json.data)
@@ -70,7 +57,7 @@ export default function BtcPerShareChart() {
       }
     }
     fetchData()
-  }, [period])
+  }, [])
 
   const isPositive = (stats?.growth_percent ?? 0) >= 0
 
@@ -92,130 +79,55 @@ export default function BtcPerShareChart() {
                 isPositive ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'
               }`}>
                 <TrendingUp className="h-3 w-3 inline mr-1" />
-                {isPositive ? '+' : ''}{stats.growth_percent.toFixed(1)}%
-              </span>
-              <span className="text-xs text-slate-500">
-                {stats.total_btc.toLocaleString()} BTC / {(stats.total_shares / 1000000).toFixed(0)}M shares
+                {isPositive ? '+' : ''}{stats.growth_percent.toFixed(1)}% since Aug 2020
               </span>
             </div>
           )}
         </div>
-        <div className="flex items-center space-x-3 mt-3 md:mt-0">
-          <div className="flex space-x-1 bg-slate-800 rounded-lg p-1">
-            <button
-              onClick={() => setChartType('area')}
-              className={`p-1.5 rounded transition-colors ${
-                chartType === 'area' ? 'bg-orange-600 text-white' : 'text-slate-400 hover:text-white'
-              }`}
-              title="Line chart"
-            >
-              <LineChart className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setChartType('bar')}
-              className={`p-1.5 rounded transition-colors ${
-                chartType === 'bar' ? 'bg-orange-600 text-white' : 'text-slate-400 hover:text-white'
-              }`}
-              title="Bar chart"
-            >
-              <BarChart3 className="h-4 w-4" />
-            </button>
+        {stats && (
+          <div className="text-right text-sm text-slate-400 mt-3 md:mt-0">
+            <p>{stats.total_btc.toLocaleString()} BTC</p>
+            <p>{(stats.total_shares / 1000000).toFixed(0)}M shares</p>
           </div>
-          <div className="flex space-x-1">
-            {PERIODS.map(p => (
-              <button
-                key={p.value}
-                onClick={() => setPeriod(p.value)}
-                className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
-                  period === p.value
-                    ? 'bg-orange-600 text-white'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-700'
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
           <RefreshCw className="h-6 w-6 animate-spin text-slate-500" />
         </div>
-      ) : data.length === 0 ? (
-        <div className="flex items-center justify-center h-64">
-          <p className="text-slate-500">No data for this period</p>
-        </div>
       ) : (
         <ResponsiveContainer width="100%" height={350}>
-          {chartType === 'area' ? (
-            <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="btcPerShareGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis
-                dataKey="label"
-                tick={{ fontSize: 11, fill: '#64748b' }}
-                tickLine={false}
-                axisLine={{ stroke: '#334155' }}
-                interval={Math.max(0, Math.floor(data.length / 8))}
-              />
-              <YAxis
-                tickFormatter={(v: number) => `₿${v.toFixed(4)}`}
-                tick={{ fontSize: 11, fill: '#64748b' }}
-                tickLine={false}
-                axisLine={false}
-                domain={['dataMin', 'dataMax']}
-                width={85}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Area
-                type="monotone"
-                dataKey="btc_per_share"
-                stroke="#f97316"
-                strokeWidth={2}
-                fill="url(#btcPerShareGradient)"
-                dot={false}
-                activeDot={{ r: 5, fill: '#f97316', stroke: '#fff', strokeWidth: 2 }}
-              />
-            </AreaChart>
-          ) : (
-            <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-              <XAxis
-                dataKey="label"
-                tick={{ fontSize: 11, fill: '#64748b' }}
-                tickLine={false}
-                axisLine={{ stroke: '#334155' }}
-                interval={Math.max(0, Math.floor(data.length / 8))}
-              />
-              <YAxis
-                tickFormatter={(v: number) => `₿${v.toFixed(4)}`}
-                tick={{ fontSize: 11, fill: '#64748b' }}
-                tickLine={false}
-                axisLine={false}
-                domain={['dataMin', 'dataMax']}
-                width={85}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar
-                dataKey="btc_per_share"
-                fill="#f97316"
-                opacity={0.85}
-                radius={[3, 3, 0, 0]}
-              />
-            </BarChart>
-          )}
+          <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+            <XAxis
+              dataKey="label"
+              tick={{ fontSize: 10, fill: '#64748b' }}
+              tickLine={false}
+              axisLine={{ stroke: '#334155' }}
+              interval={Math.max(0, Math.floor(data.length / 10))}
+            />
+            <YAxis
+              tickFormatter={(v: number) => `₿${v.toFixed(4)}`}
+              tick={{ fontSize: 11, fill: '#64748b' }}
+              tickLine={false}
+              axisLine={false}
+              domain={[0, 'dataMax']}
+              width={85}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Bar
+              dataKey="btc_per_share"
+              fill="#f97316"
+              opacity={0.85}
+              radius={[3, 3, 0, 0]}
+            />
+          </BarChart>
         </ResponsiveContainer>
       )}
 
       <div className="mt-4 text-center text-xs text-slate-500">
-        Data from SEC filings & Strategy.com • BTC per Share = Total Holdings ÷ Shares Outstanding
+        Each bar = a Bitcoin purchase event • Data from SEC filings & Strategy.com
       </div>
     </div>
   )
