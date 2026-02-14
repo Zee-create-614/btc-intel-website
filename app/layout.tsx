@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import Navigation from './components/Navigation'
-import Analytics from './components/Analytics'
 
 export const metadata: Metadata = {
   title: 'BTCIntelVault - Bitcoin Treasury & MSTR Options Intelligence',
@@ -15,17 +14,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-black text-white min-h-screen">
+      <body className="bg-slate-950 text-white min-h-screen">
         <Navigation />
         <main className="container mx-auto px-4 py-8">
           {children}
         </main>
-        <Analytics 
-          gaId="G-XXXXXXXXXX" 
-          trackClicks={true}
-          trackScroll={true}
-          trackFormSubmits={true}
-        />
       </body>
     </html>
   )
