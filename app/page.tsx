@@ -29,7 +29,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-400">Bitcoin Price</p>
-              <div className="text-3xl font-bold text-orange-400">$66,923</div>
+              <div className="text-3xl font-bold text-orange-400">$69,851</div>
               <div className="text-sm text-green-400">+4.39% 24h</div>
             </div>
             <Bitcoin className="h-12 w-12 text-orange-500" />
