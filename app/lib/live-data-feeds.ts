@@ -39,33 +39,33 @@ interface LiveAnalytics {
   timestamp: string
 }
 
-// Live Bitcoin Price from CoinGecko
+// Live Bitcoin Price via local API endpoint
 export async function getLiveBTCPrice(): Promise<LiveBTCData> {
   try {
-    console.log('🔴 Fetching LIVE Bitcoin price...')
+    console.log('🔴 Fetching LIVE Bitcoin price via API...')
     
-    const response = await fetch(
-      'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true&include_market_cap=true&include_24hr_vol=true',
-      { cache: 'no-store' } // Force fresh data
-    )
+    const response = await fetch('/api/v1/live/btc', { 
+      cache: 'no-store',
+      next: { revalidate: 0 }
+    })
     
     if (!response.ok) {
-      throw new Error(`CoinGecko API error: ${response.status}`)
+      throw new Error(`BTC API error: ${response.status}`)
     }
     
     const data = await response.json()
-    console.log('✅ Live BTC data:', data)
+    console.log('✅ Live BTC data from API:', data)
     
     return {
-      price_usd: data.bitcoin.usd,
-      change_24h: data.bitcoin.usd_24h_change || 0,
-      market_cap: data.bitcoin.usd_market_cap || 0,
-      volume_24h: data.bitcoin.usd_24h_vol || 0,
-      last_updated: new Date().toISOString()
+      price_usd: data.price_usd,
+      change_24h: data.change_24h || 0,
+      market_cap: data.market_cap || 0,
+      volume_24h: data.volume_24h || 0,
+      last_updated: data.last_updated
     }
   } catch (error) {
-    console.error('❌ Error fetching live BTC price:', error)
-    // Fallback data with current real price from Josh
+    console.error('❌ Error fetching live BTC price from API:', error)
+    // Fallback data with Josh's current price
     return {
       price_usd: 69851,
       change_24h: 2.5,
@@ -76,53 +76,44 @@ export async function getLiveBTCPrice(): Promise<LiveBTCData> {
   }
 }
 
-// Live MSTR Stock Price from Yahoo Finance
+// Live MSTR Stock Price via local API endpoint
 export async function getLiveMSTRPrice(): Promise<LiveMSTRData> {
   try {
-    console.log('🔴 Fetching LIVE MSTR stock price...')
+    console.log('🔴 Fetching LIVE MSTR stock price via API...')
     
-    // Using a CORS-enabled financial API
-    const response = await fetch(
-      'https://query1.finance.yahoo.com/v8/finance/chart/MSTR?interval=1m&range=1d',
-      { 
-        cache: 'no-store',
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-      }
-    )
+    const response = await fetch('/api/v1/live/mstr', { 
+      cache: 'no-store',
+      next: { revalidate: 0 }
+    })
     
     if (!response.ok) {
-      throw new Error(`Yahoo Finance API error: ${response.status}`)
+      throw new Error(`MSTR API error: ${response.status}`)
     }
     
     const data = await response.json()
-    console.log('✅ Live MSTR data:', data)
-    
-    const result = data.chart.result[0]
-    const meta = result.meta
+    console.log('✅ Live MSTR data from API:', data)
     
     return {
-      symbol: 'MSTR',
-      price: meta.regularMarketPrice,
-      change: meta.regularMarketPrice - meta.previousClose,
-      change_percent: ((meta.regularMarketPrice - meta.previousClose) / meta.previousClose) * 100,
-      volume: meta.regularMarketVolume || 0,
-      market_cap: meta.regularMarketPrice * 21000000, // Approximate shares outstanding
-      shares_outstanding: 21000000, // Latest estimate
-      last_updated: new Date().toISOString()
+      symbol: data.symbol,
+      price: data.price,
+      change: data.change,
+      change_percent: data.change_percent,
+      volume: data.volume || 0,
+      market_cap: data.market_cap,
+      shares_outstanding: data.shares_outstanding,
+      last_updated: data.last_updated
     }
   } catch (error) {
-    console.error('❌ Error fetching live MSTR price:', error)
-    // Fallback data
+    console.error('❌ Error fetching live MSTR price from API:', error)
+    // Fallback data with Josh's specifications
     return {
       symbol: 'MSTR',
-      price: 185.50,
-      change: -2.30,
-      change_percent: -1.22,
-      volume: 8500000,
-      market_cap: 3895500000,
-      shares_outstanding: 21000000,
+      price: 480.00,
+      change: 5.20,
+      change_percent: 1.10,
+      volume: 2500000,
+      market_cap: 8064000000,
+      shares_outstanding: 16800000,
       last_updated: new Date().toISOString()
     }
   }
