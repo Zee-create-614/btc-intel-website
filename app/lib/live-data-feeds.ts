@@ -65,9 +65,9 @@ export async function getLiveBTCPrice(): Promise<LiveBTCData> {
     }
   } catch (error) {
     console.error('❌ Error fetching live BTC price:', error)
-    // Fallback data with current real price
+    // Fallback data with current real price from Josh
     return {
-      price_usd: 68900,
+      price_usd: 69851,
       change_24h: 2.5,
       market_cap: 1330000000000,
       volume_24h: 28000000000,
@@ -138,8 +138,8 @@ export async function getMSTRBitcoinHoldings(): Promise<MSTRBitcoinHoldings> {
     
     return {
       btc_holdings: 714644, // Latest confirmed holdings (Feb 9, 2026)
-      btc_cost_basis_per_coin: 30664, // Average cost basis from strategy.com
-      total_cost_basis: 21900000000, // Total invested
+      btc_cost_basis_per_coin: 75543, // Average cost basis over $75k (Josh confirmed)
+      total_cost_basis: 54000000000, // Total invested
       unrealized_pnl: 0, // Will calculate with live BTC price
       last_filing_date: '2026-02-12', // Latest 8-K filing
       source: 'SEC Form 8-K'
@@ -148,8 +148,8 @@ export async function getMSTRBitcoinHoldings(): Promise<MSTRBitcoinHoldings> {
     console.error('❌ Error fetching MSTR holdings:', error)
     return {
       btc_holdings: 714644,
-      btc_cost_basis_per_coin: 30664,
-      total_cost_basis: 21900000000,
+      btc_cost_basis_per_coin: 75543,
+      total_cost_basis: 54000000000,
       unrealized_pnl: 0,
       last_filing_date: '2026-02-12',
       source: 'SEC Form 8-K'

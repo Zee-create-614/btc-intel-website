@@ -48,8 +48,8 @@ export async function getStrategyOfficialData(): Promise<StrategyOfficialData> {
     const officialData: StrategyOfficialData = {
       // Official BTC Holdings (accurate as of February 9, 2026)
       btc_holdings: 714644,
-      btc_cost_basis_total: 21900000000, // Total investment for 714,644 BTC
-      btc_cost_basis_per_coin: 30664, // Average cost basis from strategy.com
+      btc_cost_basis_total: 54000000000, // Total investment for 714,644 BTC
+      btc_cost_basis_per_coin: 75543, // Average cost basis over $75k as Josh confirmed
       last_purchase_date: '2026-02-09',
       last_purchase_amount: 3000, // From latest press release
       
