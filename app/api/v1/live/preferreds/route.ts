@@ -1,15 +1,28 @@
-// LIVE MSTR Preferreds Data with Graceful Fallback 
+// LIVE MSTR Preferreds Data - Fixed TypeScript Issues
 import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+
+interface PreferredStock {
+  symbol: string
+  price: number
+  volume: number
+  change: number
+  change_percent: number
+  dividend_yield: number
+  timestamp: string
+  source: string
+  previous_close?: number
+  market_state?: string
+}
 
 export async function GET(request: NextRequest) {
   try {
     console.log('🟢 LIVE PREFERREDS API: Fetching data for STRC, STRF, STRD, STRK...')
     
     const preferreds = ['STRC', 'STRF', 'STRD', 'STRK']
-    let preferredData: any = {}
+    const preferredData: { [key: string]: PreferredStock } = {}
     let successCount = 0
     const timestamp = new Date().toISOString()
     
@@ -32,17 +45,22 @@ export async function GET(request: NextRequest) {
     for (const symbol of preferreds) {
       if (!preferredData[symbol]) {
         preferredData[symbol] = {
-          ...(fallbackData as any)[symbol],
-          source: 'fallback_stable',
-          timestamp
+          symbol: symbol,
+          price: fallbackData[symbol]?.price || 25.0,
+          volume: fallbackData[symbol]?.volume || 50000000,
+          change: fallbackData[symbol]?.change || 0,
+          change_percent: fallbackData[symbol]?.change_percent || 0,
+          dividend_yield: fallbackData[symbol]?.dividend_yield || 11.0,
+          timestamp: timestamp,
+          source: 'fallback_stable'
         }
       }
     }
     
     // Calculate summary metrics
-    const validStocks = Object.values(preferredData).filter(stock => stock !== null)
-    const totalVolume = validStocks.reduce((sum: number, stock: any) => sum + (stock.volume || 0), 0)
-    const avgDividendYield = validStocks.reduce((sum: number, stock: any) => sum + (stock.dividend_yield || 0), 0) / validStocks.length
+    const validStocks = Object.values(preferredData)
+    const totalVolume = validStocks.reduce((sum: number, stock: PreferredStock) => sum + (stock.volume || 0), 0)
+    const avgDividendYield = validStocks.reduce((sum: number, stock: PreferredStock) => sum + (stock.dividend_yield || 0), 0) / validStocks.length
     
     console.log(`🎯 PREFERREDS SUMMARY: ${Object.keys(preferredData).length} symbols, $${formatVolume(totalVolume)} total volume`)
     
@@ -68,8 +86,9 @@ export async function GET(request: NextRequest) {
     console.error('💥 PREFERREDS API ERROR:', error)
     
     // Always return stable fallback data instead of 503
+    const fallbackData = getFallbackPreferredData()
     return NextResponse.json({
-      preferreds: getFallbackPreferredData(),
+      preferreds: fallbackData,
       summary: {
         total_symbols: 4,
         total_volume: 208000000,
@@ -88,7 +107,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function fetchFromYahooFinance(symbol: string) {
+async function fetchFromYahooFinance(symbol: string): Promise<PreferredStock> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d&timestamp=${Date.now()}`
   
   const response = await fetch(url, {
@@ -108,7 +127,7 @@ async function fetchFromYahooFinance(symbol: string) {
   
   return {
     symbol,
-    price: meta.regularMarketPrice || meta.previousClose,
+    price: meta.regularMarketPrice || meta.previousClose || 0,
     volume: meta.regularMarketVolume || 0,
     change: meta.regularMarketChange || 0,
     change_percent: meta.regularMarketChangePercent || 0,
@@ -130,7 +149,7 @@ function getKnownDividendYield(symbol: string): number {
   return yields[symbol] || 11.0
 }
 
-function getFallbackPreferredData() {
+function getFallbackPreferredData(): { [key: string]: PreferredStock } {
   const timestamp = new Date().toISOString()
   return {
     'STRC': {
