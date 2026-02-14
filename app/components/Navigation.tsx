@@ -22,7 +22,7 @@ export default function Navigation() {
   ]
 
   return (
-    <nav className="bg-gray-900 border-b border-gray-700">
+    <nav className="bg-slate-900 border-b border-slate-700">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
