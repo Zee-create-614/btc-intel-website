@@ -1,12 +1,13 @@
 import { Users, TrendingUp, TrendingDown, BarChart3, ArrowRight, Star } from 'lucide-react'
 import Link from 'next/link'
 import {
-  getTradeStats, getTrades, getPoliticianSummaries,
+  getTradeStats, getTrades, getPoliticianSummaries, getPoliticianDetail,
   partyColor, partyBg, partyName, tradeTypeColor, tradeTypeEmoji,
   returnColor, formatReturn,
 } from '../lib/politician-data'
 import PoliticianCard from '../components/PoliticianCard'
 import PoliticianPhoto from '../components/PoliticianPhoto'
+import PoliticianSparkline from '../components/PoliticianSparkline'
 
 export const metadata = {
   title: 'Politician Trading Tracker | BTCIntelVault',
@@ -140,6 +141,15 @@ async function PoliticianCards() {
   const summaries = await getPoliticianSummaries()
   const top = summaries.slice(0, 12)
   
+  // Load trades for sparklines
+  const { trades: allTrades } = await getTrades(1, 100000)
+  const tradesByPolitician: Record<string, any[]> = {}
+  for (const t of allTrades) {
+    const name = t.politician
+    if (!tradesByPolitician[name]) tradesByPolitician[name] = []
+    tradesByPolitician[name].push(t)
+  }
+  
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-6">
@@ -176,18 +186,23 @@ async function PoliticianCards() {
                   {formatReturn(pol.avg_return_pct)} avg
                 </div>
               </div>
+              
+              {/* Sparkline */}
+              <div className="ml-auto">
+                <PoliticianSparkline trades={tradesByPolitician[pol.name] || []} width={70} height={28} />
+              </div>
             </div>
             
             {/* Portfolio Performance Summary */}
             <div className="grid grid-cols-2 gap-2 mb-3">
               <div className="bg-gray-900 rounded p-2 text-center">
-                <p className="text-xs text-gray-500">Best</p>
+                <p className="text-xs text-gray-500">Best Trade</p>
                 <p className={`text-sm font-bold ${returnColor(pol.best_return_pct)}`}>
                   {formatReturn(pol.best_return_pct)}
                 </p>
               </div>
               <div className="bg-gray-900 rounded p-2 text-center">
-                <p className="text-xs text-gray-500">Worst</p>
+                <p className="text-xs text-gray-500">Worst Trade</p>
                 <p className={`text-sm font-bold ${returnColor(pol.worst_return_pct)}`}>
                   {formatReturn(pol.worst_return_pct)}
                 </p>

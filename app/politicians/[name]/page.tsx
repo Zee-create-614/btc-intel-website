@@ -5,6 +5,7 @@ import {
   partyColor, partyBg, partyName, tradeTypeColor, tradeTypeEmoji,
   returnColor, formatReturn,
 } from '../../lib/politician-data'
+import PoliticianPerformanceChart from '../../components/PoliticianPerformanceChart'
 
 export async function generateMetadata({ params }: { params: { name: string } }) {
   const name = decodeURIComponent(params.name)
@@ -154,6 +155,9 @@ export default async function PoliticianPage({ params }: { params: { name: strin
           <TimeframePill label="All-Time" value={perf['alltime'] ?? null} />
         </div>
       </div>
+
+      {/* ──── Performance Chart ──── */}
+      <PoliticianPerformanceChart trades={trades} />
 
       {/* ──── Quick Stats Grid ──── */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
