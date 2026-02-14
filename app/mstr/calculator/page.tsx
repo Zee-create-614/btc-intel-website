@@ -38,11 +38,15 @@ function blackScholes(S: number, K: number, T: number, r: number, sigma: number,
 }
 
 const strategies = {
+  long_call: { name: 'Long Call', description: 'Buy a call option. Unlimited upside, risk limited to premium paid.', riskLevel: 'Moderate', outlook: 'Bullish' },
+  long_put: { name: 'Long Put', description: 'Buy a put option. Profit when stock drops, risk limited to premium paid.', riskLevel: 'Moderate', outlook: 'Bearish' },
   covered_call: { name: 'Covered Call', description: 'Own shares + sell call. Collect premium income, cap upside at strike.', riskLevel: 'Low', outlook: 'Neutral to slightly bullish' },
   cash_secured_put: { name: 'Cash Secured Put', description: 'Sell put with cash to cover. Collect premium, may buy shares at strike.', riskLevel: 'Moderate', outlook: 'Neutral to bullish' },
   protective_put: { name: 'Protective Put', description: 'Own shares + buy put for insurance. Unlimited upside, capped downside.', riskLevel: 'Low', outlook: 'Bullish with protection' },
-  bull_call_spread: { name: 'Bull Call Spread', description: 'Buy call + sell higher call. Defined risk bullish bet.', riskLevel: 'Moderate', outlook: 'Moderately bullish' },
-  bear_put_spread: { name: 'Bear Put Spread', description: 'Buy put + sell lower put. Defined risk bearish bet.', riskLevel: 'Moderate', outlook: 'Moderately bearish' },
+  bull_call_spread: { name: 'Bull Call Spread', description: 'Buy lower call + sell higher call. Defined risk bullish bet.', riskLevel: 'Moderate', outlook: 'Moderately bullish' },
+  bear_put_spread: { name: 'Bear Put Spread', description: 'Buy higher put + sell lower put. Defined risk bearish bet.', riskLevel: 'Moderate', outlook: 'Moderately bearish' },
+  straddle: { name: 'Long Straddle', description: 'Buy call + put at same strike. Profit from big moves in either direction.', riskLevel: 'High', outlook: 'Volatile / direction-neutral' },
+  iron_condor: { name: 'Iron Condor', description: 'Sell OTM call spread + put spread. Profit from low volatility / range-bound.', riskLevel: 'Moderate', outlook: 'Neutral / low volatility' },
 }
 
 export default function OptionsCalculator() {
@@ -73,21 +77,21 @@ export default function OptionsCalculator() {
         // Get live IV — use ATM option IV from chain for accuracy
         try {
           const optData = await optionsRes.json()
+          let gotIV = false
           if (optData?.options_chain?.length > 0) {
-            // Find ATM call IV (closest strike to current price)
             const calls = optData.options_chain.filter((o: any) => o.type === 'CALL' && o.impliedVolatility > 0)
             if (calls.length > 0) {
               const atm = calls.reduce((best: any, o: any) =>
                 Math.abs(o.strike - data.price) < Math.abs(best.strike - data.price) ? o : best
               )
               const liveIV = Math.round(atm.impliedVolatility * 100)
-              if (liveIV > 0 && liveIV < 500) setIv(liveIV)
+              if (liveIV > 0 && liveIV < 500) { setIv(liveIV); gotIV = true }
             }
           }
           // Fallback to market_data field
-          if (iv === 0 && optData?.market_data?.implied_volatility) {
+          if (!gotIV && optData?.market_data?.implied_volatility) {
             const val = optData.market_data.implied_volatility
-            setIv(Math.round(val > 5 ? val : val * 100)) // handle both decimal and percent
+            setIv(Math.round(val > 5 ? val : val * 100))
           }
         } catch {}
 
@@ -113,7 +117,7 @@ export default function OptionsCalculator() {
   const sigma = (iv || 85) / 100
   const S = mstrData?.price || 133.88
   const shares = contracts * 100
-  const needsSpread = selectedStrategy === 'bull_call_spread' || selectedStrategy === 'bear_put_spread'
+  const needsSpread = selectedStrategy === 'bull_call_spread' || selectedStrategy === 'bear_put_spread' || selectedStrategy === 'iron_condor'
 
   const calc = useMemo(() => {
     const call1 = blackScholes(S, strikePrice, T, r, sigma, 'call')
@@ -121,22 +125,28 @@ export default function OptionsCalculator() {
     const call2 = blackScholes(S, strikePrice2, T, r, sigma, 'call')
     const put2 = blackScholes(S, strikePrice2, T, r, sigma, 'put')
     const strat = selectedStrategy
-    let premium = 0, maxProfit = 0, maxLoss = 0, breakeven = 0
+    let premium = 0, maxProfit = 0, maxLoss = 0, breakeven = 0, breakeven2 = 0
 
-    if (strat === 'covered_call') {
-      // SELL call, collect premium
-      premium = call1.price // this DECREASES as strike goes higher (further OTM)
-      // Max profit = premium collected (if stock stays below strike, option expires worthless)
-      // You keep shares + premium = best outcome
-      maxProfit = premium * shares
-      // If assigned: you sell shares at strike. P&L = (strike - entry) + premium
-      // Max loss: stock goes to $0, you lose share value minus premium
-      maxLoss = (S - premium) * shares
+    if (strat === 'long_call') {
+      premium = call1.price
+      maxProfit = Infinity
+      maxLoss = premium * shares
+      breakeven = strikePrice + premium
+    } else if (strat === 'long_put') {
+      premium = put1.price
+      maxProfit = (strikePrice - premium) * shares // stock to $0
+      maxLoss = premium * shares
+      breakeven = strikePrice - premium
+    } else if (strat === 'covered_call') {
+      premium = call1.price
+      // True max profit: stock rises to strike, you get (strike - entry) + premium
+      maxProfit = (strikePrice - S + premium) * shares
+      maxLoss = (S - premium) * shares // stock to $0, offset by premium
       breakeven = S - premium
     } else if (strat === 'cash_secured_put') {
-      premium = put1.price // DECREASES as strike goes lower (further OTM)
-      maxProfit = premium * shares // option expires worthless
-      maxLoss = (strikePrice - premium) * shares // assigned, stock to $0
+      premium = put1.price
+      maxProfit = premium * shares
+      maxLoss = (strikePrice - premium) * shares
       breakeven = strikePrice - premium
     } else if (strat === 'protective_put') {
       premium = put1.price
@@ -144,24 +154,59 @@ export default function OptionsCalculator() {
       maxLoss = (S - strikePrice + premium) * shares
       breakeven = S + premium
     } else if (strat === 'bull_call_spread') {
-      const debit = call1.price - call2.price
+      // Enforce lower < upper
+      const lower = Math.min(strikePrice, strikePrice2)
+      const upper = Math.max(strikePrice, strikePrice2)
+      const longCall = blackScholes(S, lower, T, r, sigma, 'call')
+      const shortCall = blackScholes(S, upper, T, r, sigma, 'call')
+      const debit = longCall.price - shortCall.price
       premium = debit
-      maxProfit = (strikePrice2 - strikePrice - debit) * shares
+      maxProfit = (upper - lower - debit) * shares
       maxLoss = debit * shares
-      breakeven = strikePrice + debit
+      breakeven = lower + debit
     } else if (strat === 'bear_put_spread') {
-      const lowerStrike = Math.min(strikePrice, strikePrice2)
-      const upperStrike = Math.max(strikePrice, strikePrice2)
-      const highPut = blackScholes(S, upperStrike, T, r, sigma, 'put')
-      const lowPut = blackScholes(S, lowerStrike, T, r, sigma, 'put')
+      const lower = Math.min(strikePrice, strikePrice2)
+      const upper = Math.max(strikePrice, strikePrice2)
+      const highPut = blackScholes(S, upper, T, r, sigma, 'put')
+      const lowPut = blackScholes(S, lower, T, r, sigma, 'put')
       const debit = highPut.price - lowPut.price
       premium = debit
-      maxProfit = (upperStrike - lowerStrike - debit) * shares
+      maxProfit = (upper - lower - debit) * shares
       maxLoss = debit * shares
-      breakeven = upperStrike - debit
+      breakeven = upper - debit
+    } else if (strat === 'straddle') {
+      const callPrem = call1.price
+      const putPrem = put1.price
+      premium = callPrem + putPrem
+      maxProfit = Infinity // big move either way
+      maxLoss = premium * shares // stock stays at strike
+      breakeven = strikePrice + premium // upside breakeven
+      breakeven2 = strikePrice - premium // downside breakeven
+    } else if (strat === 'iron_condor') {
+      // Sell OTM put spread + sell OTM call spread
+      // Strike1 = short strikes center (put/call), Strike2 = wing width
+      // For simplicity: put wing = S - strike2 to S - strike1 offset, call wing = S + strike1 offset to S + strike2 offset
+      // Actually let's use: strike1 = short put, strike2 = short call, wings = $5 outside each
+      const shortPutStrike = Math.min(strikePrice, strikePrice2)
+      const shortCallStrike = Math.max(strikePrice, strikePrice2)
+      const longPutStrike = shortPutStrike - 5
+      const longCallStrike = shortCallStrike + 5
+
+      const shortPut = blackScholes(S, shortPutStrike, T, r, sigma, 'put')
+      const longPut = blackScholes(S, longPutStrike, T, r, sigma, 'put')
+      const shortCall = blackScholes(S, shortCallStrike, T, r, sigma, 'call')
+      const longCall = blackScholes(S, longCallStrike, T, r, sigma, 'call')
+
+      const credit = (shortPut.price - longPut.price) + (shortCall.price - longCall.price)
+      premium = credit
+      const wingWidth = 5 // both wings are $5 wide
+      maxProfit = credit * shares
+      maxLoss = (wingWidth - credit) * shares
+      breakeven = shortPutStrike - credit
+      breakeven2 = shortCallStrike + credit
     }
 
-    return { premium: Math.max(0, premium), maxProfit, maxLoss: Math.max(0, maxLoss), breakeven, call: call1, put: put1, call2, put2 }
+    return { premium: Math.max(0, premium), maxProfit, maxLoss: Math.max(0, maxLoss), breakeven, breakeven2, call: call1, put: put1, call2, put2 }
   }, [S, strikePrice, strikePrice2, T, r, sigma, selectedStrategy, shares])
 
   const handleStrikeChange = (val: number) => setStrikePrice(Math.max(5, Math.round(val / 5) * 5))
@@ -208,7 +253,12 @@ export default function OptionsCalculator() {
           <div className="text-center">
             <p className="text-xs text-slate-400">
               {selectedStrategy === 'covered_call' ? 'Call Premium' :
-               selectedStrategy === 'cash_secured_put' ? 'Put Premium' : 'Premium'}
+               selectedStrategy === 'cash_secured_put' ? 'Put Premium' :
+               selectedStrategy === 'long_call' ? 'Call Cost' :
+               selectedStrategy === 'long_put' ? 'Put Cost' :
+               selectedStrategy === 'straddle' ? 'Total Cost' :
+               selectedStrategy === 'iron_condor' ? 'Credit Received' :
+               'Net Premium'}
             </p>
             <p className="text-2xl font-bold text-green-400">${calc.premium.toFixed(2)}</p>
             <p className="text-xs text-slate-500">per share</p>
@@ -240,7 +290,9 @@ export default function OptionsCalculator() {
               <p className="text-xs text-gray-400 mt-1">{daysToExp} days to expiration</p>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Strike Price{needsSpread ? ' (Long)' : ''}</label>
+              <label className="block text-sm font-medium mb-2">
+                {selectedStrategy === 'iron_condor' ? 'Short Put Strike' : selectedStrategy === 'straddle' ? 'Strike Price (ATM)' : needsSpread ? 'Strike Price (Long)' : 'Strike Price'}
+              </label>
               <div className="flex items-center space-x-3">
                 <button onClick={() => handleStrikeChange(strikePrice - 5)} className="px-3 py-2 bg-gray-700 rounded hover:bg-gray-600">-5</button>
                 <input type="number" value={strikePrice} onChange={(e) => handleStrikeChange(Number(e.target.value))} step="5"
@@ -254,7 +306,9 @@ export default function OptionsCalculator() {
             </div>
             {needsSpread && (
               <div>
-                <label className="block text-sm font-medium mb-2">Strike Price (Short)</label>
+                <label className="block text-sm font-medium mb-2">
+                  {selectedStrategy === 'iron_condor' ? 'Short Call Strike' : 'Strike Price (Short)'}
+                </label>
                 <div className="flex items-center space-x-3">
                   <button onClick={() => handleStrike2Change(strikePrice2 - 5)} className="px-3 py-2 bg-gray-700 rounded hover:bg-gray-600">-5</button>
                   <input type="number" value={strikePrice2} onChange={(e) => handleStrike2Change(Number(e.target.value))} step="5"
@@ -297,16 +351,16 @@ export default function OptionsCalculator() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-green-900/20 border border-green-700/30 rounded-lg">
-                    <p className="text-sm text-green-400 mb-1">Max Profit (Expires Worthless)</p>
+                    <p className="text-sm text-green-400 mb-1">Max Profit (at strike)</p>
                     <p className="text-2xl font-bold text-green-400">${calc.maxProfit.toFixed(0)}</p>
-                    <p className="text-xs text-slate-400 mt-1">Keep shares + all premium</p>
+                    <p className="text-xs text-slate-400 mt-1">Stock at ${strikePrice} + premium</p>
                   </div>
                   <div className="p-4 bg-yellow-900/20 border border-yellow-700/30 rounded-lg">
-                    <p className="text-sm text-yellow-400 mb-1">If Assigned at ${strikePrice}</p>
+                    <p className="text-sm text-yellow-400 mb-1">If Flat (expires worthless)</p>
                     <p className="text-2xl font-bold text-yellow-400">
-                      ${((strikePrice - S + calc.premium) * shares).toFixed(0)}
+                      ${(calc.premium * shares).toFixed(0)}
                     </p>
-                    <p className="text-xs text-slate-400 mt-1">Shares sold at strike + premium</p>
+                    <p className="text-xs text-slate-400 mt-1">Keep shares + all premium</p>
                   </div>
                   <div className="p-4 bg-red-900/20 border border-red-700/30 rounded-lg">
                     <p className="text-sm text-red-400 mb-1">Max Loss</p>
@@ -358,8 +412,108 @@ export default function OptionsCalculator() {
               </>
             )}
 
-            {/* Other strategies */}
-            {selectedStrategy !== 'covered_call' && selectedStrategy !== 'cash_secured_put' && (
+            {/* Long Call / Long Put */}
+            {(selectedStrategy === 'long_call' || selectedStrategy === 'long_put') && (
+              <>
+                <div className="p-5 bg-yellow-900/20 border-2 border-yellow-700/50 rounded-lg text-center">
+                  <p className="text-sm text-yellow-400 mb-1">Premium Paid (Cost)</p>
+                  <p className="text-4xl font-bold text-yellow-400">${(calc.premium * shares).toFixed(0)}</p>
+                  <p className="text-sm text-slate-400 mt-1">${calc.premium.toFixed(2)}/share × {shares} shares</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-green-900/20 border border-green-700/30 rounded-lg">
+                    <p className="text-sm text-green-400 mb-1">Max Profit</p>
+                    <p className="text-2xl font-bold text-green-400">{calc.maxProfit === Infinity ? 'Unlimited' : `$${calc.maxProfit.toFixed(0)}`}</p>
+                    <p className="text-xs text-slate-400 mt-1">{selectedStrategy === 'long_call' ? 'No cap on upside' : 'Stock drops to $0'}</p>
+                  </div>
+                  <div className="p-4 bg-red-900/20 border border-red-700/30 rounded-lg">
+                    <p className="text-sm text-red-400 mb-1">Max Loss</p>
+                    <p className="text-2xl font-bold text-red-400">-${calc.maxLoss.toFixed(0)}</p>
+                    <p className="text-xs text-slate-400 mt-1">Limited to premium paid</p>
+                  </div>
+                  <div className="p-4 bg-blue-900/20 border border-blue-700/30 rounded-lg">
+                    <p className="text-sm text-blue-400 mb-1">Breakeven</p>
+                    <p className="text-2xl font-bold text-blue-400">${calc.breakeven.toFixed(2)}</p>
+                    <p className="text-xs text-slate-400 mt-1">{selectedStrategy === 'long_call' ? 'Strike + premium' : 'Strike − premium'}</p>
+                  </div>
+                  <div className="p-4 bg-slate-700/30 rounded-lg">
+                    <p className="text-sm text-slate-300 mb-1">Leverage</p>
+                    <p className="text-2xl font-bold text-white">{((S * shares) / (calc.premium * shares)).toFixed(1)}x</p>
+                    <p className="text-xs text-slate-400 mt-1">vs buying {shares} shares outright</p>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Straddle */}
+            {selectedStrategy === 'straddle' && (
+              <>
+                <div className="p-5 bg-yellow-900/20 border-2 border-yellow-700/50 rounded-lg text-center">
+                  <p className="text-sm text-yellow-400 mb-1">Total Premium Paid (Call + Put)</p>
+                  <p className="text-4xl font-bold text-yellow-400">${(calc.premium * shares).toFixed(0)}</p>
+                  <p className="text-sm text-slate-400 mt-1">${calc.premium.toFixed(2)}/share × {shares} shares</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-green-900/20 border border-green-700/30 rounded-lg">
+                    <p className="text-sm text-green-400 mb-1">Max Profit</p>
+                    <p className="text-2xl font-bold text-green-400">Unlimited</p>
+                    <p className="text-xs text-slate-400 mt-1">Big move in either direction</p>
+                  </div>
+                  <div className="p-4 bg-red-900/20 border border-red-700/30 rounded-lg">
+                    <p className="text-sm text-red-400 mb-1">Max Loss</p>
+                    <p className="text-2xl font-bold text-red-400">-${calc.maxLoss.toFixed(0)}</p>
+                    <p className="text-xs text-slate-400 mt-1">Stock stays at strike</p>
+                  </div>
+                  <div className="p-4 bg-blue-900/20 border border-blue-700/30 rounded-lg">
+                    <p className="text-sm text-blue-400 mb-1">Upper Breakeven</p>
+                    <p className="text-2xl font-bold text-blue-400">${calc.breakeven.toFixed(2)}</p>
+                    <p className="text-xs text-slate-400 mt-1">+{((calc.breakeven / S - 1) * 100).toFixed(1)}% from current</p>
+                  </div>
+                  <div className="p-4 bg-blue-900/20 border border-blue-700/30 rounded-lg">
+                    <p className="text-sm text-blue-400 mb-1">Lower Breakeven</p>
+                    <p className="text-2xl font-bold text-blue-400">${(calc.breakeven2 ?? 0).toFixed(2)}</p>
+                    <p className="text-xs text-slate-400 mt-1">{((1 - (calc.breakeven2 ?? 0) / S) * 100).toFixed(1)}% from current</p>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Iron Condor */}
+            {selectedStrategy === 'iron_condor' && (
+              <>
+                <div className="p-5 bg-green-900/20 border-2 border-green-700/50 rounded-lg text-center">
+                  <p className="text-sm text-green-400 mb-1">Credit Received</p>
+                  <p className="text-4xl font-bold text-green-400">${(calc.premium * shares).toFixed(0)}</p>
+                  <p className="text-sm text-slate-400 mt-1">${calc.premium.toFixed(2)}/share × {shares} shares</p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Sell ${Math.min(strikePrice, strikePrice2)}P / Buy ${Math.min(strikePrice, strikePrice2) - 5}P + Sell ${Math.max(strikePrice, strikePrice2)}C / Buy ${Math.max(strikePrice, strikePrice2) + 5}C
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-green-900/20 border border-green-700/30 rounded-lg">
+                    <p className="text-sm text-green-400 mb-1">Max Profit</p>
+                    <p className="text-2xl font-bold text-green-400">${calc.maxProfit.toFixed(0)}</p>
+                    <p className="text-xs text-slate-400 mt-1">Stock stays between strikes</p>
+                  </div>
+                  <div className="p-4 bg-red-900/20 border border-red-700/30 rounded-lg">
+                    <p className="text-sm text-red-400 mb-1">Max Loss</p>
+                    <p className="text-2xl font-bold text-red-400">-${calc.maxLoss.toFixed(0)}</p>
+                    <p className="text-xs text-slate-400 mt-1">$5 wing width − credit</p>
+                  </div>
+                  <div className="p-4 bg-blue-900/20 border border-blue-700/30 rounded-lg">
+                    <p className="text-sm text-blue-400 mb-1">Lower Breakeven</p>
+                    <p className="text-2xl font-bold text-blue-400">${calc.breakeven.toFixed(2)}</p>
+                  </div>
+                  <div className="p-4 bg-blue-900/20 border border-blue-700/30 rounded-lg">
+                    <p className="text-sm text-blue-400 mb-1">Upper Breakeven</p>
+                    <p className="text-2xl font-bold text-blue-400">${(calc.breakeven2 ?? 0).toFixed(2)}</p>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Other strategies (protective put, spreads) */}
+            {selectedStrategy !== 'covered_call' && selectedStrategy !== 'cash_secured_put' && selectedStrategy !== 'long_call' && selectedStrategy !== 'long_put' && selectedStrategy !== 'straddle' && selectedStrategy !== 'iron_condor' && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-green-900/20 border border-green-700/30 rounded-lg">
                   <p className="text-sm text-green-400 mb-1">Max Profit</p>
@@ -387,7 +541,11 @@ export default function OptionsCalculator() {
                 {[0.80, 0.85, 0.90, 0.95, 1.0, 1.05, 1.10, 1.15, 1.20].map(mult => {
                   const price = Math.round(S * mult)
                   let pnl = 0
-                  if (selectedStrategy === 'covered_call') {
+                  if (selectedStrategy === 'long_call') {
+                    pnl = (Math.max(0, price - strikePrice) - calc.premium) * shares
+                  } else if (selectedStrategy === 'long_put') {
+                    pnl = (Math.max(0, strikePrice - price) - calc.premium) * shares
+                  } else if (selectedStrategy === 'covered_call') {
                     const stockPnl = (price - S) * shares
                     const callPayout = Math.max(0, price - strikePrice) * shares
                     pnl = stockPnl - callPayout + calc.premium * shares
@@ -396,10 +554,21 @@ export default function OptionsCalculator() {
                   } else if (selectedStrategy === 'protective_put') {
                     pnl = (price - S) * shares + Math.max(0, strikePrice - price) * shares - calc.premium * shares
                   } else if (selectedStrategy === 'bull_call_spread') {
-                    pnl = (Math.max(0, price - strikePrice) - Math.max(0, price - strikePrice2) - calc.premium) * shares
+                    const lower = Math.min(strikePrice, strikePrice2), upper = Math.max(strikePrice, strikePrice2)
+                    pnl = (Math.max(0, price - lower) - Math.max(0, price - upper) - calc.premium) * shares
                   } else if (selectedStrategy === 'bear_put_spread') {
                     const upper = Math.max(strikePrice, strikePrice2), lower = Math.min(strikePrice, strikePrice2)
                     pnl = (Math.max(0, upper - price) - Math.max(0, lower - price) - calc.premium) * shares
+                  } else if (selectedStrategy === 'straddle') {
+                    pnl = (Math.max(0, price - strikePrice) + Math.max(0, strikePrice - price) - calc.premium) * shares
+                  } else if (selectedStrategy === 'iron_condor') {
+                    const shortPut = Math.min(strikePrice, strikePrice2)
+                    const shortCall = Math.max(strikePrice, strikePrice2)
+                    const longPut = shortPut - 5
+                    const longCall = shortCall + 5
+                    const putSpreadPnl = Math.max(0, shortPut - price) - Math.max(0, longPut - price)
+                    const callSpreadPnl = Math.max(0, price - shortCall) - Math.max(0, price - longCall)
+                    pnl = (calc.premium - putSpreadPnl - callSpreadPnl) * shares
                   }
                   const isAtPrice = Math.abs(mult - 1.0) < 0.001
                   return (
@@ -450,9 +619,9 @@ export default function OptionsCalculator() {
               <button
                 onClick={() => {
                   const strat = strategies[selectedStrategy as keyof typeof strategies]
-                  const direction = (selectedStrategy === 'covered_call' || selectedStrategy === 'cash_secured_put') ? 'short' as const : 'long' as const
-                  const optionType = needsSpread ? 'spread' as const
-                    : (selectedStrategy === 'covered_call' || selectedStrategy === 'bull_call_spread') ? 'call' as const : 'put' as const
+                  const direction = (selectedStrategy === 'covered_call' || selectedStrategy === 'cash_secured_put' || selectedStrategy === 'iron_condor') ? 'short' as const : 'long' as const
+                  const optionType = (needsSpread || selectedStrategy === 'straddle') ? 'spread' as const
+                    : (selectedStrategy === 'covered_call' || selectedStrategy === 'bull_call_spread' || selectedStrategy === 'long_call') ? 'call' as const : 'put' as const
                   placeTrade({
                     tradeType: 'option',
                     strategy: selectedStrategy,
