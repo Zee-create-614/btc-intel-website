@@ -129,7 +129,7 @@ export default function MSTRPage() {
             100% LIVE DATA - Real-time MSTR analytics with live calculations • Updates every 5 seconds
           </p>
           <p className="text-xs text-slate-500 mt-2">
-            Build: v2.14.08.22 - LIVE OPTIONS CHAIN (Replaced hardcoded 0.00 deltas)
+            Build: v2.14.08.30 - ELIMINATED FAKE METRICS (Real call/put deltas, no more random numbers)
           </p>
         </div>
         <div className="flex items-center space-x-4 mt-4 md:mt-0">
@@ -308,41 +308,41 @@ export default function MSTRPage() {
       {/* LIVE Options Flow */}
       <OptionsFlowLive />
 
-      {/* LIVE Options Metrics */}
+      {/* LIVE Options Flow Metrics - ALL REAL CALCULATIONS */}
       {optionsFlow && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="card text-center">
             <p className="text-sm text-gray-400 mb-2">Call/Put Ratio</p>
             <p className="text-3xl font-bold text-green-400">
-              {optionsFlow.greeks_summary.call_put_ratio}
+              {optionsFlow.greeks_summary.call_put_ratio.toFixed(2)}
             </p>
             <p className="text-xs text-gray-500">
-              {optionsFlow.greeks_summary.dominant_sentiment}
+              {optionsFlow.greeks_summary.dominant_sentiment} • Live
             </p>
           </div>
           
           <div className="card text-center">
-            <p className="text-sm text-gray-400 mb-2">Unusual Activity</p>
-            <p className="text-3xl font-bold text-yellow-400">
-              {Math.floor(Math.random() * 5) + 1}
+            <p className="text-sm text-gray-400 mb-2">Live Call Delta</p>
+            <p className="text-3xl font-bold text-green-400">
+              {optionsFlow.greeks_summary.avg_call_delta.toFixed(2)}
             </p>
-            <p className="text-xs text-gray-500">Large blocks</p>
+            <p className="text-xs text-gray-500">Average delta</p>
           </div>
           
           <div className="card text-center">
-            <p className="text-sm text-gray-400 mb-2">Total Premium</p>
+            <p className="text-sm text-gray-400 mb-2">Live Put Delta</p>
+            <p className="text-3xl font-bold text-red-400">
+              {optionsFlow.greeks_summary.avg_put_delta.toFixed(2)}
+            </p>
+            <p className="text-xs text-gray-500">Average delta</p>
+          </div>
+          
+          <div className="card text-center">
+            <p className="text-sm text-gray-400 mb-2">Total Volume</p>
             <p className="text-3xl font-bold text-blue-400">
-              ${((optionsFlow.greeks_summary.total_call_volume + optionsFlow.greeks_summary.total_put_volume) * 2.5 / 1000000).toFixed(1)}M
+              {(optionsFlow.greeks_summary.total_call_volume + optionsFlow.greeks_summary.total_put_volume).toLocaleString()}
             </p>
-            <p className="text-xs text-gray-500">Last hour</p>
-          </div>
-          
-          <div className="card text-center">
-            <p className="text-sm text-gray-400 mb-2">Institutional %</p>
-            <p className="text-3xl font-bold text-purple-400">
-              {Math.floor(65 + (optionsFlow.greeks_summary.call_put_ratio - 1) * 20)}%
-            </p>
-            <p className="text-xs text-gray-500">Pro money</p>
+            <p className="text-xs text-gray-500">Call + Put volume</p>
           </div>
         </div>
       )}
@@ -463,7 +463,7 @@ export default function MSTRPage() {
           <div>NAV Premium: {liveData.navPremium.toFixed(2)}% (Live calculated)</div>
           <div>BTC Holdings: {liveData.mstr.btc_holdings.toLocaleString()} (Live API)</div>
           <div>IV Percentiles: Calculated from live technical indicators</div>
-          <div>Options Flow: Live Greeks and sentiment analysis</div>
+          <div>Options Flow: Live Greeks, deltas, and volume (NO fake metrics)</div>
           <div>Last Updated: {lastUpdate}</div>
         </div>
       </div>
