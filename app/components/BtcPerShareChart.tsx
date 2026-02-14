@@ -50,7 +50,7 @@ export default function BtcPerShareChart() {
   const [data, setData] = useState<DataPoint[]>([])
   const [stats, setStats] = useState<Stats | null>(null)
   const [period, setPeriod] = useState('max')
-  const [chartType, setChartType] = useState<'area' | 'bar'>('area')
+  const [chartType, setChartType] = useState<'area' | 'bar'>('bar')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
