@@ -88,7 +88,7 @@ export default function OptionsFlowLive() {
     )
   }
 
-  if (!optionsData) {
+  if (!optionsData || !optionsData.greeks_summary || !optionsData.market_data) {
     return (
       <div className="card">
         <div className="text-center p-8">
@@ -154,7 +154,7 @@ export default function OptionsFlowLive() {
             <TrendingUp className="h-4 w-4 text-green-400" />
           </div>
           <div className="text-2xl font-bold text-green-400 mt-1">
-            {optionsData.greeks_summary.avg_call_delta.toFixed(2)}
+            {(optionsData.greeks_summary.avg_call_delta ?? 0).toFixed(2)}
           </div>
         </div>
         
@@ -164,7 +164,7 @@ export default function OptionsFlowLive() {
             <TrendingDown className="h-4 w-4 text-red-400" />
           </div>
           <div className="text-2xl font-bold text-red-400 mt-1">
-            {optionsData.greeks_summary.avg_put_delta.toFixed(2)}
+            {(optionsData.greeks_summary.avg_put_delta ?? 0).toFixed(2)}
           </div>
         </div>
         
@@ -202,7 +202,7 @@ export default function OptionsFlowLive() {
           </div>
           <div>
             <span className="text-slate-400">IV:</span>
-            <span className="ml-2 text-white font-mono">{(optionsData.market_data.implied_volatility * 100).toFixed(0)}%</span>
+            <span className="ml-2 text-white font-mono">{((optionsData.market_data.implied_volatility ?? 0) * 100).toFixed(0)}%</span>
           </div>
           <div>
             <span className="text-slate-400">Call/Put Ratio:</span>
@@ -246,23 +246,23 @@ export default function OptionsFlowLive() {
                   {option.volume.toLocaleString()}
                 </td>
                 <td className={`p-3 font-mono font-bold ${
-                  option.delta >= 0 ? 'text-green-400' : 'text-red-400'
+                  (option.delta ?? 0) >= 0 ? 'text-green-400' : 'text-red-400'
                 }`}>
-                  {option.delta.toFixed(2)}
+                  {(option.delta ?? 0).toFixed(2)}
                 </td>
                 <td className="p-3 font-mono text-blue-400">
-                  {option.gamma.toFixed(4)}
+                  {(option.gamma ?? 0).toFixed(4)}
                 </td>
                 <td className={`p-3 font-mono ${
-                  option.theta < 0 ? 'text-red-400' : 'text-green-400'
+                  (option.theta ?? 0) < 0 ? 'text-red-400' : 'text-green-400'
                 }`}>
-                  {option.theta.toFixed(2)}
+                  {(option.theta ?? 0).toFixed(2)}
                 </td>
                 <td className="p-3 font-mono text-purple-400">
-                  {option.vega.toFixed(2)}
+                  {(option.vega ?? 0).toFixed(2)}
                 </td>
                 <td className="p-3 font-mono text-yellow-400">
-                  {(option.impliedVolatility * 100).toFixed(0)}%
+                  {((option.impliedVolatility ?? 0) * 100).toFixed(0)}%
                 </td>
                 <td className="p-3 text-slate-300 font-mono">
                   {option.openInterest.toLocaleString()}
