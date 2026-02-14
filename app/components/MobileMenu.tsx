@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { X, Menu, Bitcoin, TrendingUp, Calculator, Bell, Users, BarChart3, Target, Waves } from 'lucide-react'
+import { X, Menu, Bitcoin, TrendingUp, Calculator, Bell, Users, BarChart3, Target, Waves, Landmark } from 'lucide-react'
 
 interface MobileMenuProps {
   isOpen: boolean
@@ -16,7 +16,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const navItems = [
     { href: '/', label: 'Dashboard', icon: Bitcoin },
     { href: '/treasuries', label: 'Treasuries', icon: TrendingUp },
-    { href: '/corporate', label: 'Corporate Holdings', icon: Users },
+    { href: '/corporate', label: 'Gov Holdings', icon: Landmark },
     { href: '/politicians', label: 'Politicians', icon: Users },
     { href: '/mstr', label: 'MSTR Analytics', icon: TrendingUp },
     { href: '/mstr/preferreds', label: 'MSTR Preferreds', icon: Target },

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Bitcoin, TrendingUp, Calculator, Bell, Users, Target, BarChart3, Waves } from 'lucide-react'
+import { Bitcoin, TrendingUp, Calculator, Bell, Users, Target, BarChart3, Waves, Landmark } from 'lucide-react'
 import { MobileMenuButton } from './MobileMenu'
 
 export default function Navigation() {
@@ -12,7 +12,7 @@ export default function Navigation() {
   const navItems = [
     { href: '/', label: 'Dashboard', icon: Bitcoin },
     { href: '/treasuries', label: 'Treasuries', icon: TrendingUp },
-    { href: '/corporate', label: 'Corporate Holdings', icon: Users },
+    { href: '/corporate', label: 'Gov Holdings', icon: Landmark },
     { href: '/politicians', label: 'Politicians', icon: Users },
     { href: '/mstr', label: 'MSTR Analytics', icon: TrendingUp },
     { href: '/mstr/preferreds', label: 'MSTR Preferreds', icon: Target },
