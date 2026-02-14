@@ -65,7 +65,7 @@ export default function MarketIntelligenceLive() {
   useEffect(() => {
     const interval = setInterval(() => {
       fetchTechnicalIndicators()
-    }, 15000) // Update every 15 seconds
+    }, 5000) // Update every 5 seconds - Josh's preference!
 
     return () => clearInterval(interval)
   }, [])

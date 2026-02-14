@@ -72,7 +72,7 @@ export default function OptionsFlowLive() {
   useEffect(() => {
     const interval = setInterval(() => {
       fetchOptionsFlow()
-    }, 10000) // Update every 10 seconds
+    }, 5000) // Update every 5 seconds - Josh's preference!
 
     return () => clearInterval(interval)
   }, [])

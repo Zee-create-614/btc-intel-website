@@ -170,8 +170,8 @@ export default function OptionsCalculator() {
 
     fetchLiveData()
     
-    // Update live data every 15 seconds
-    const interval = setInterval(fetchLiveData, 15000)
+    // Update live data every 5 seconds - Josh's preference!
+    const interval = setInterval(fetchLiveData, 5000)
     return () => clearInterval(interval)
   }, [strategy])
 
@@ -398,7 +398,7 @@ export default function OptionsCalculator() {
                 </div>
               </div>
               <p className="text-xs text-gray-400 mt-1">
-                Auto-populated with live MSTR price • Updates every 15 seconds
+                Auto-populated with live MSTR price • Updates every 5 seconds
               </p>
             </div>
           </div>
