@@ -319,41 +319,31 @@ export async function getDashboardStats() {
     getMSTRData(),
   ]);
 
-  // Debug logging
-  console.log('DEBUG: Total holdings count:', holdings.length);
-  console.log('DEBUG: Holdings by type:', holdings.reduce((acc, h) => {
-    acc[h.entity_type] = (acc[h.entity_type] || 0) + 1;
-    return acc;
-  }, {}));
-
-  const totalBTC = holdings.reduce((sum, holding) => sum + holding.btc_holdings, 0);
+  // Get REAL corporate data from bitcointreasuries.net
+  const { getLiveBitcoinTreasuries } = await import('./bitcointreasuries-live');
+  const treasuriesData = await getLiveBitcoinTreasuries();
   
-  const corporateHoldings = holdings.filter(h => h.entity_type === 'company');
-  const corporateBTC = corporateHoldings.reduce((sum, holding) => sum + holding.btc_holdings, 0);
+  // Use REAL bitcointreasuries.net data for corporate holdings
+  const realCorporateBTC = treasuriesData.total_btc;
   
   const etfHoldings = holdings.filter(h => h.entity_type === 'etf');  
   const etfBTC = etfHoldings.reduce((sum, holding) => sum + holding.btc_holdings, 0);
-
-  // Debug logging
-  console.log('DEBUG: Corporate holdings:', corporateHoldings.map(h => `${h.entity_name}: ${h.btc_holdings}`));
-  console.log('DEBUG: ETF holdings:', etfHoldings.map(h => `${h.entity_name}: ${h.btc_holdings}`));
-  console.log('DEBUG: Corporate BTC calculated:', corporateBTC);
-  console.log('DEBUG: ETF BTC calculated:', etfBTC);
-
-  // FORCE CORRECT VALUES - the calculation is clearly wrong
-  const forceCorporateBTC = 759233; // MicroStrategy 714,644 + Marathon 26,842 + Tesla 9,720 + Block 8,027
   const forceETFBTC = etfBTC || 1124000; // 1.124M BTC total ETF holdings
 
+  console.log('🔥 REAL DATA: Corporate BTC from bitcointreasuries.net:', realCorporateBTC);
+  console.log('📊 ETF BTC calculated:', forceETFBTC);
+
   return {
-    totalBTC: forceCorporateBTC + forceETFBTC,
-    corporateBTC: forceCorporateBTC, // FORCE correct corporate total
+    totalBTC: realCorporateBTC + forceETFBTC,
+    corporateBTC: realCorporateBTC, // REAL data from bitcointreasuries.net
     etfBTC: forceETFBTC,
     btcPrice: btcPrice.price_usd,
     btcChange24h: btcPrice.change_24h,
     mstrPrice: mstrData.price,
     mstrIV: mstrData.iv_30d || _cachedIV,
     navPremium: mstrData.nav_premium,
-    totalValue: (forceCorporateBTC + forceETFBTC) * btcPrice.price_usd,
+    totalValue: (realCorporateBTC + forceETFBTC) * btcPrice.price_usd,
+    treasuriesData, // Include full treasuries data
   };
 }
 

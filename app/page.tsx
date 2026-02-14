@@ -88,13 +88,44 @@ async function DashboardStats() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="card">
           <h3 className="text-xl font-bold mb-4 text-bitcoin-500">Corporate Holdings</h3>
-          <div className="text-center">
+          <div className="text-center mb-4">
             <p className="text-4xl font-bold mb-2">{formatNumber(stats.corporateBTC)}</p>
             <p className="text-gray-400">BTC held by companies</p>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-gray-500">
               {formatCurrency((stats.corporateBTC || 0) * (stats.btcPrice || 0))}
             </p>
           </div>
+          
+          {/* Top Corporate Holders from bitcointreasuries.net */}
+          {stats.treasuriesData && (
+            <div className="space-y-2 text-left">
+              <div className="text-xs text-gray-500 mb-2">Top 5 Corporate Holders:</div>
+              {stats.treasuriesData.companies.slice(0, 5).map((company, index) => (
+                <div key={company.ticker} className="flex justify-between items-center text-sm">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-gray-500 w-3">{index + 1}</span>
+                    <span className="text-xs">{company.country_flag}</span>
+                    <span className={`text-xs ${index === 0 ? 'text-orange-400 font-medium' : 'text-white'}`}>
+                      {company.name.length > 18 ? company.name.substring(0, 18) + '...' : company.name}
+                    </span>
+                  </div>
+                  <span className={`font-mono text-xs ${
+                    index === 0 ? 'text-orange-400 font-bold' : 'text-gray-300'
+                  }`}>
+                    ₿ {company.btc_holdings.toLocaleString()}
+                  </span>
+                </div>
+              ))}
+              <div className="pt-2 text-center">
+                <Link 
+                  href="/corporate" 
+                  className="text-orange-400 hover:text-orange-300 text-xs underline"
+                >
+                  View all {stats.treasuriesData.companies.length} companies →
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="card">
