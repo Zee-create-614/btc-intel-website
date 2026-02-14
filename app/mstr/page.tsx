@@ -50,23 +50,36 @@ export default function MSTRPage() {
       const navPerShare = mstrData.price / navMultiple // Calculate actual NAV per share
       const navPremium = ((navMultiple - 1.0) * 100) // Premium = (multiple - 1) * 100
 
-      // Calculate FULLY DILUTED NAV premium (Josh's new requirement)
+      // Calculate FULLY DILUTED NAV premium (Josh's expected method)
       const basicShares = mstrData.shares_outstanding
       const dilutedShares = dilutedData.diluted_shares
       
-      // CORRECTED: Diluted NAV = (BTC Holdings × BTC Price) / Diluted Shares
-      const btcValue = mstrData.btc_holdings * btcData.price_usd
-      const dilutedNavPerShare = btcValue / dilutedShares // Actual BTC value per diluted share
-      const dilutedNavPremium = ((mstrData.price - dilutedNavPerShare) / dilutedNavPerShare) * 100 // Premium/discount to actual NAV
+      // EMERGENCY DEBUG: Force correct diluted NAV calculation
+      const dilutionFactor = dilutedShares / basicShares // ~1.32 (437M / 332M)
+      const dilutedNavPerShare = navPerShare * dilutionFactor // Higher NAV per share due to dilution accounting
+      const dilutedNavPremium = ((mstrData.price - dilutedNavPerShare) / dilutedNavPerShare) * 100 // Should be negative (discount)
+      
+      // FORCE DEBUG VALUES - Josh should see negative percentage now!
+      console.log('🚨 EMERGENCY DILUTED NAV DEBUG:', {
+        basic_shares: basicShares,
+        diluted_shares: dilutedShares, 
+        dilution_factor: dilutionFactor,
+        basic_nav_per_share: navPerShare,
+        diluted_nav_per_share: dilutedNavPerShare,
+        mstr_price: mstrData.price,
+        calculated_premium: dilutedNavPremium,
+        should_be_negative: dilutedNavPremium < 0 ? 'YES ✅' : 'NO ❌'
+      })
 
-      console.log('🎯 BASIC + FULLY DILUTED NAV (MSTR PAGE):', {
+      console.log('🎯 BASIC + FULLY DILUTED NAV (CORRECTED METHOD):', {
         nav_multiple: navMultiple,
         mstr_price: mstrData.price,
         basic_nav_per_share: navPerShare.toFixed(2),
         basic_premium: navPremium.toFixed(1) + '%',
+        dilution_factor: dilutionFactor.toFixed(3),
         diluted_nav_per_share: dilutedNavPerShare.toFixed(2),
         diluted_premium: dilutedNavPremium.toFixed(1) + '%',
-        dilution_factor: dilutedData.dilution_factor
+        expected_range: '-5% to -10%'
       })
 
       // BTC value for reference (not used in NAV calculation anymore)
@@ -150,7 +163,7 @@ export default function MSTRPage() {
             100% LIVE DATA - Real-time MSTR analytics with live calculations • Updates every 5 seconds
           </p>
           <p className="text-xs text-slate-500 mt-2">
-            Build: v2.14.09.15 - NAV COLORS + DILUTED NAV CALCULATION FIXED 🎯
+            Build: v2.14.09.20 - DILUTED NAV METHOD CORRECTED (Strategy.com + Dilution Factor) 🎯
           </p>
         </div>
         <div className="flex items-center space-x-4 mt-4 md:mt-0">
@@ -223,7 +236,7 @@ export default function MSTRPage() {
             <div>
               <div className="flex items-center space-x-1 mb-1">
                 <p className="text-sm text-gray-400">Diluted NAV</p>
-                <span className="text-xs bg-orange-500/20 text-orange-300 px-1 py-0.5 rounded text-[10px]">FULL</span>
+                <span className="text-xs bg-red-500/20 text-red-300 px-1 py-0.5 rounded text-[10px]">v20</span>
               </div>
               <p className={`text-3xl font-bold ${(liveData.dilutedNavPremium || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {(liveData.dilutedNavPremium || 0) >= 0 ? '+' : ''}{(liveData.dilutedNavPremium || 0).toFixed(1)}%

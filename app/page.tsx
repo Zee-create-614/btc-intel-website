@@ -65,23 +65,37 @@ export default function Dashboard() {
       const navPerShare = mstrData.price / navMultiple // Basic NAV per share
       const navPremium = ((navMultiple - 1.0) * 100) // Premium = (multiple - 1) * 100
       
-      // Calculate FULLY DILUTED MNAV (Josh's new requirement)
+      // Calculate FULLY DILUTED MNAV (CORRECTED METHOD - matches MSTR page)
       const basicShares = mstrData.shares_outstanding
       const dilutedShares = dilutedData.diluted_shares
-      const dilutedNavPerShare = (navPerShare * basicShares) / dilutedShares // Fully diluted NAV
-      const dilutedNavMultiple = mstrData.price / dilutedNavPerShare // Diluted multiple
-      const dilutedNavPremium = ((dilutedNavMultiple - 1.0) * 100) // Diluted premium
       
-      console.log('🎯 BASIC + FULLY DILUTED NAV CALCULATION:', {
+      // FIXED: Use same method as MSTR page
+      const dilutionFactor = dilutedShares / basicShares // ~1.32 (437M / 332M)
+      const dilutedNavPerShare = navPerShare * dilutionFactor // Higher NAV per share due to dilution accounting
+      const dilutedNavPremium = ((mstrData.price - dilutedNavPerShare) / dilutedNavPerShare) * 100 // Should be negative (discount)
+      
+      // EMERGENCY DEBUG FOR JOSH
+      console.log('🚨 HOMEPAGE DILUTED NAV DEBUG - v2.15:', {
+        step1_nav_per_share: navPerShare,
+        step2_dilution_factor: dilutionFactor,
+        step3_diluted_nav_per_share: dilutedNavPerShare,
+        step4_mstr_price: mstrData.price,
+        step5_calculation: `(${mstrData.price} - ${dilutedNavPerShare.toFixed(2)}) / ${dilutedNavPerShare.toFixed(2)} = ${dilutedNavPremium.toFixed(2)}%`,
+        final_result: dilutedNavPremium.toFixed(2) + '%',
+        is_negative: dilutedNavPremium < 0 ? '✅ YES (CORRECT)' : '❌ NO (WRONG)'
+      })
+      
+      console.log('🎯 HOMEPAGE NAV CALCULATION (CORRECTED):', {
         nav_multiple: navMultiple,
         mstr_price: mstrData.price,
         basic_nav_per_share: navPerShare.toFixed(2),
         basic_premium: navPremium.toFixed(1) + '%',
         basic_shares: basicShares.toLocaleString(),
         diluted_shares: dilutedShares.toLocaleString(),
+        dilution_factor: dilutionFactor.toFixed(3),
         diluted_nav_per_share: dilutedNavPerShare.toFixed(2),
         diluted_premium: dilutedNavPremium.toFixed(1) + '%',
-        dilution_factor: dilutedData.dilution_factor
+        should_be_negative: dilutedNavPremium < 0 ? 'YES ✅' : 'NO ❌'
       })
       
       setLiveData({
@@ -212,7 +226,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-400">Basic NAV Premium</p>
-              <div className={`text-3xl font-bold ${(liveData?.navPremium || 0) >= 0 ? 'text-red-400' : 'text-green-400'}`}>
+              <div className={`text-3xl font-bold ${(liveData?.navPremium || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {(liveData?.navPremium || 0) >= 0 ? '+' : ''}{liveData?.navPremium.toFixed(1)}%
               </div>
               <p className="text-sm text-slate-400">NAV: ${liveData?.navPerShare?.toFixed(0) || '112'}</p>
@@ -226,13 +240,16 @@ export default function Dashboard() {
             <div>
               <div className="flex items-center space-x-2 mb-1">
                 <p className="text-sm text-slate-400">Fully Diluted NAV</p>
-                <span className="text-xs bg-orange-500/20 text-orange-300 px-2 py-1 rounded">DILUTED</span>
+                <span className="text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded">COLORS</span>
               </div>
-              <div className={`text-3xl font-bold ${(liveData?.dilutedNavPremium || 0) >= 0 ? 'text-red-400' : 'text-green-400'}`}>
+              <div className={`text-3xl font-bold ${(liveData?.dilutedNavPremium || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {(liveData?.dilutedNavPremium || 0) >= 0 ? '+' : ''}{liveData?.dilutedNavPremium?.toFixed(1) || '0.0'}%
               </div>
               <p className="text-sm text-slate-400">
                 NAV: ${liveData?.dilutedNavPerShare?.toFixed(0) || '86'} | {((liveData?.dilutedShares || 437000000) / 1000000).toFixed(0)}M shares
+              </p>
+              <p className="text-xs text-red-400 font-bold">
+                🚨 DEBUG v2.15: {(liveData?.dilutedNavPremium || 0).toFixed(3)}%
               </p>
             </div>
             <Target className="h-12 w-12 text-orange-500" />

@@ -168,12 +168,12 @@ export default function LiveDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-400">NAV Premium/Discount</p>
-              <div className={`text-3xl font-bold ${nav_premium_discount >= 0 ? 'text-red-400' : 'text-green-400'}`}>
+              <div className={`text-3xl font-bold ${nav_premium_discount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {formatLivePercent(nav_premium_discount)}
               </div>
               <p className="text-sm text-slate-400">NAV: ${analytics.nav_per_share?.toFixed(0) || '112'}</p>
             </div>
-            <DollarSign className={`h-12 w-12 ${nav_premium_discount >= 0 ? 'text-red-500' : 'text-green-500'}`} />
+            <DollarSign className={`h-12 w-12 ${nav_premium_discount >= 0 ? 'text-green-500' : 'text-red-500'}`} />
           </div>
         </div>
       </div>
