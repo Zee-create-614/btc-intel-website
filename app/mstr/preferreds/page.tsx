@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
-import { VolumeChart } from '../../components/VolumeChart'
+// import { VolumeChart } from '../../components/VolumeChart'
 import { TrendingUp, TrendingDown, Target, DollarSign, Activity, Percent } from 'lucide-react'
 
 interface PreferredStock {
@@ -252,7 +252,8 @@ export default function MSTRPreferreds() {
       </div>
 
       {/* Advanced Volume Chart */}
-      {selectedSymbol && preferreds[selectedSymbol] && (
+      {/* TEMPORARILY DISABLED - VolumeChart causing client-side error */}
+      {/* {selectedSymbol && preferreds[selectedSymbol] && (
         <div className="mb-8">
           <VolumeChart
             symbol={selectedSymbol}
@@ -261,7 +262,7 @@ export default function MSTRPreferreds() {
             onTimeframeChange={setSelectedTimeframe}
           />
         </div>
-      )}
+      )} */}
 
       {/* Detailed Table */}
       <Card className="bg-slate-800 border-slate-700">
