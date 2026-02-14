@@ -128,11 +128,11 @@ export default function MarketIntelligenceLive() {
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-2xl font-bold text-orange-400">Market Intelligence</h3>
+        <h3 className="text-2xl font-bold text-orange-400">MSTR Market Intelligence</h3>
         <div className="flex items-center space-x-3">
           <div className={`w-2 h-2 rounded-full ${updating ? 'bg-orange-500 animate-pulse' : 'bg-green-500'}`}></div>
           <span className="text-xs text-slate-400">
-            100% Live Data • Last: {new Date(techData.last_updated).toLocaleTimeString()}
+            Live MSTR Technical Analysis • Last: {new Date(techData.last_updated).toLocaleTimeString()}
           </span>
           {updating && <RefreshCw className="h-4 w-4 animate-spin text-orange-400" />}
         </div>
@@ -141,10 +141,10 @@ export default function MarketIntelligenceLive() {
       {/* Technical Indicators Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
-        {/* RSI Indicator */}
+        {/* MSTR RSI Indicator */}
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center space-x-3">
-            <div className="text-slate-400">RSI ({techData.technical_indicators.rsi.period})</div>
+            <div className="text-slate-400">MSTR RSI ({techData.technical_indicators.rsi.period})</div>
             {getSignalIcon(techData.technical_indicators.rsi.signal)}
           </div>
           <div className={`text-2xl font-bold ${getRSIColor(techData.technical_indicators.rsi.value)}`}>
@@ -152,10 +152,10 @@ export default function MarketIntelligenceLive() {
           </div>
         </div>
 
-        {/* MACD Signal */}
+        {/* MSTR MACD Signal */}
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center space-x-3">
-            <div className="text-slate-400">MACD Signal</div>
+            <div className="text-slate-400">MSTR MACD Signal</div>
             {getSignalIcon(techData.technical_indicators.macd.signal)}
           </div>
           <div className={`text-2xl font-bold ${getSignalColor(techData.technical_indicators.macd.signal)}`}>
@@ -179,17 +179,17 @@ export default function MarketIntelligenceLive() {
       <div className="mt-6 pt-4 border-t border-slate-700">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-slate-400">MACD Value:</span>
+            <span className="text-slate-400">MSTR MACD Value:</span>
             <span className="ml-2 text-slate-300">{techData.technical_indicators.macd.value}</span>
           </div>
           <div>
-            <span className="text-slate-400">Overall Sentiment:</span>
+            <span className="text-slate-400">MSTR Sentiment:</span>
             <span className={`ml-2 font-bold ${getSignalColor(techData.market_sentiment)}`}>
               {techData.market_sentiment.replace('_', ' ')}
             </span>
           </div>
           <div>
-            <span className="text-slate-400">RSI Signal:</span>
+            <span className="text-slate-400">MSTR RSI Signal:</span>
             <span className={`ml-2 ${getRSIColor(techData.technical_indicators.rsi.value)}`}>
               {techData.technical_indicators.rsi.signal}
             </span>
@@ -204,7 +204,10 @@ export default function MarketIntelligenceLive() {
       {/* Descriptions */}
       <div className="mt-4 text-xs text-slate-500">
         <div className="mb-1">
-          <strong>MACD:</strong> {techData.technical_indicators.macd.description}
+          <strong>MSTR MACD:</strong> {techData.technical_indicators.macd.description}
+        </div>
+        <div className="mb-1">
+          <strong>MSTR RSI:</strong> {techData.technical_indicators.rsi.signal} zone based on 14-day price momentum
         </div>
         <div>
           <strong>Institutional:</strong> {techData.technical_indicators.institutional_bias.description}
