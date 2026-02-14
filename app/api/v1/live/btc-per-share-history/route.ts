@@ -78,30 +78,68 @@ export async function GET(request: NextRequest) {
   const period = searchParams.get('period') || '1y'
 
   try {
-    // Calculate BTC per share for each data point
-    const allData = MSTR_HISTORY.map(([date, btc, shares]) => ({
-      date,
-      timestamp: new Date(date).getTime(),
-      btc_holdings: btc,
-      shares_outstanding: shares,
-      btc_per_share: btc / shares,
-      label: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: period === 'max' || period === '5y' ? '2-digit' : undefined }),
-    }))
-
-    // Filter by period
+    // Build daily interpolated data from purchase events
+    const DAY = 86400000
     const now = Date.now()
+    
     const periodMs: Record<string, number> = {
-      '7d': 7 * 86400000,
-      '30d': 30 * 86400000,
-      '3mo': 90 * 86400000,
+      '7d': 7 * DAY,
+      '30d': 30 * DAY,
+      '3mo': 90 * DAY,
       'ytd': now - new Date(new Date().getFullYear(), 0, 1).getTime(),
-      '1y': 365 * 86400000,
-      '5y': 5 * 365 * 86400000,
+      '1y': 365 * DAY,
+      '5y': 5 * 365 * DAY,
       'max': now,
     }
-
+    
     const cutoff = now - (periodMs[period] || periodMs['1y'])
-    const filtered = allData.filter(d => d.timestamp >= cutoff)
+    
+    // Generate daily data points by carrying forward the most recent purchase data
+    const dailyData: any[] = []
+    const startDate = Math.max(new Date(MSTR_HISTORY[0][0]).getTime(), cutoff)
+    const endDate = now
+    
+    // Determine label format based on period
+    const useYear = period === 'max' || period === '5y' || period === '1y'
+    const dateOpts: Intl.DateTimeFormatOptions = useYear 
+      ? { month: 'short', day: 'numeric', year: '2-digit' }
+      : { month: 'short', day: 'numeric' }
+    
+    // Walk through each day, find the most recent purchase data
+    for (let ts = startDate; ts <= endDate; ts += DAY) {
+      // Find the most recent MSTR_HISTORY entry at or before this date
+      let btc = 0, shares = 1
+      for (let i = MSTR_HISTORY.length - 1; i >= 0; i--) {
+        const entryTs = new Date(MSTR_HISTORY[i][0]).getTime()
+        if (entryTs <= ts) {
+          btc = MSTR_HISTORY[i][1]
+          shares = MSTR_HISTORY[i][2]
+          break
+        }
+      }
+      
+      if (btc === 0) continue // Before first purchase
+      
+      const d = new Date(ts)
+      dailyData.push({
+        date: d.toISOString().split('T')[0],
+        timestamp: ts,
+        btc_holdings: btc,
+        shares_outstanding: shares,
+        btc_per_share: btc / shares,
+        label: d.toLocaleDateString('en-US', dateOpts),
+      })
+    }
+    
+    // For longer periods, thin out data to avoid overcrowding
+    let filtered = dailyData
+    if (period === 'max' || period === '5y') {
+      // Weekly data points
+      filtered = dailyData.filter((_, i) => i % 7 === 0 || i === dailyData.length - 1)
+    } else if (period === '1y') {
+      // Every 3 days
+      filtered = dailyData.filter((_, i) => i % 3 === 0 || i === dailyData.length - 1)
+    }
 
     // Calculate growth stats
     const first = filtered[0]
