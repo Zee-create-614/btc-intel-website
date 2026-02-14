@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { TrendingUp, TrendingDown, Target, DollarSign, Activity, Percent } from 'lucide-react'
+import PreferredVolumeChart from '../../components/PreferredVolumeChart'
 
 interface PreferredStock {
   symbol: string
@@ -338,6 +339,19 @@ export default function MSTRPreferreds() {
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+
+      {/* Volume Charts */}
+      <div className="mt-8 mb-8">
+        <h2 className="text-xl font-semibold mb-4 flex items-center space-x-2">
+          <Activity className="h-5 w-5 text-blue-400" />
+          <span>Volume Analysis</span>
+        </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {preferredsList.map(([symbol]) => (
+            <PreferredVolumeChart key={symbol} symbol={symbol} />
+          ))}
         </div>
       </div>
 
