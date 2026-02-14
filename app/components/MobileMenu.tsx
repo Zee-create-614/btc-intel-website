@@ -23,7 +23,6 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     { href: '/liquidity', label: 'Liquidity Tracker', icon: Waves },
     { href: '/mstr/calculator', label: 'Options Calculator', icon: Calculator },
     { href: '/alerts', label: 'Alerts', icon: Bell },
-    { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   ]
 
   if (!isOpen) return null

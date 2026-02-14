@@ -36,12 +36,37 @@ interface AnalyticsSummary {
   recentActivity: (PageView | AnalyticsEvent)[]
 }
 
+const ADMIN_PASSWORD = 'vault2026'
+
 export default function AnalyticsAdminPage() {
+  const [authed, setAuthed] = useState(false)
+  const [pw, setPw] = useState('')
+  const [pwError, setPwError] = useState(false)
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null)
   const [pageviews, setPageviews] = useState<PageView[]>([])
   const [events, setEvents] = useState<AnalyticsEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'pageviews' | 'events'>('overview')
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && sessionStorage.getItem('admin_auth') === 'true') setAuthed(true)
+  }, [])
+
+  if (!authed) {
+    return (
+      <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
+        <div className="bg-slate-800 border border-slate-700 rounded-lg p-8 w-full max-w-sm">
+          <h1 className="text-xl font-bold mb-4 text-center">🔒 Admin Access</h1>
+          <input type="password" value={pw} onChange={e => { setPw(e.target.value); setPwError(false) }}
+            onKeyDown={e => { if (e.key === 'Enter') { if (pw === ADMIN_PASSWORD) { setAuthed(true); sessionStorage.setItem('admin_auth', 'true') } else setPwError(true) }}}
+            placeholder="Password" className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white mb-3 focus:ring-2 focus:ring-blue-500" autoFocus />
+          {pwError && <p className="text-red-400 text-sm mb-3">Wrong password</p>}
+          <button onClick={() => { if (pw === ADMIN_PASSWORD) { setAuthed(true); sessionStorage.setItem('admin_auth', 'true') } else setPwError(true) }}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded transition-colors">Enter</button>
+        </div>
+      </div>
+    )
+  }
 
   useEffect(() => {
     loadAnalyticsData()

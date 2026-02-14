@@ -20,7 +20,6 @@ export default function Navigation() {
     // { href: '/halving', label: 'Halving Tracker', icon: Clock },
     { href: '/mstr/calculator', label: 'Options Calculator', icon: Calculator },
     { href: '/alerts', label: 'Alerts', icon: Bell },
-    { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   ]
 
   return (
