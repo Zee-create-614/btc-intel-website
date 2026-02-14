@@ -1,244 +1,273 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Calculator, TrendingUp, DollarSign } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { Calculator, TrendingUp, DollarSign, AlertTriangle } from 'lucide-react'
 
-// Options strategy definitions with explanations - Josh's request
-const optionsStrategies = {
-  'covered_call': {
-    name: 'Covered Call',
-    description: 'Own shares + sell call option for income',
-    explanation: 'You own 100 shares of MSTR and sell a call option. You collect premium income. If MSTR stays below the strike, you keep the premium and your shares.',
-    riskLevel: 'Low',
-    marketOutlook: 'Neutral to slightly bullish',
-    maxProfit: 'Limited (Strike price - Purchase price + Premium)',
-    maxLoss: 'Substantial (If stock goes to zero, minus premium)',
-    breakeven: 'Purchase price - Premium collected'
-  },
-  'cash_secured_put': {
-    name: 'Cash Secured Put', 
-    description: 'Sell put option to potentially buy shares at lower price',
-    explanation: 'You sell a put option while holding enough cash to buy 100 shares. You collect premium. If MSTR drops below strike, you buy shares at the strike price.',
-    riskLevel: 'Moderate',
-    marketOutlook: 'Neutral to bullish',
-    maxProfit: 'Limited (Premium collected)',
-    maxLoss: 'Substantial (Strike price - Premium if stock goes to zero)',
-    breakeven: 'Strike price - Premium collected'
-  },
-  'protective_put': {
-    name: 'Protective Put',
-    description: 'Own shares + buy put option for downside protection', 
-    explanation: 'You own 100 shares and buy a put option for insurance. The put protects you from losses below the strike price.',
-    riskLevel: 'Low',
-    marketOutlook: 'Bullish with downside protection',
-    maxProfit: 'Unlimited (Stock price can rise indefinitely)',
-    maxLoss: 'Limited (Purchase price - Strike price + Premium paid)',
-    breakeven: 'Purchase price + Premium paid'
-  },
-  'iron_condor': {
-    name: 'Iron Condor',
-    description: 'Sell call spread + sell put spread for neutral income',
-    explanation: 'Sell OTM call + buy further OTM call, AND sell OTM put + buy further OTM put. Profit if MSTR stays between the short strikes.',
-    riskLevel: 'Moderate',
-    marketOutlook: 'Neutral (low volatility)',
-    maxProfit: 'Limited (Net premium collected)',
-    maxLoss: 'Limited (Spread width - Net premium)',
-    breakeven: 'Two breakevens: Short put + net credit, Short call - net credit'
-  },
-  'long_straddle': {
-    name: 'Long Straddle',
-    description: 'Buy call + buy put at same strike for volatility play',
-    explanation: 'Buy a call and put at the same strike. Profit if MSTR moves significantly in either direction. Bet on high volatility.',
-    riskLevel: 'High',
-    marketOutlook: 'High volatility (unsure of direction)',
-    maxProfit: 'Unlimited (upside), Substantial (downside)',
-    maxLoss: 'Limited (Total premium paid)',
-    breakeven: 'Two breakevens: Strike + total premium, Strike - total premium'
-  },
-  'bull_call_spread': {
-    name: 'Bull Call Spread',
-    description: 'Buy call + sell higher strike call for limited upside',
-    explanation: 'Buy a call and sell a higher strike call. Lower cost than buying call alone, but limits upside. Bullish strategy with defined risk.',
-    riskLevel: 'Moderate',
-    marketOutlook: 'Moderately bullish',
-    maxProfit: 'Limited (Spread width - Net premium paid)',
-    maxLoss: 'Limited (Net premium paid)',
-    breakeven: 'Lower strike + Net premium paid'
-  },
-  'bear_put_spread': {
-    name: 'Bear Put Spread', 
-    description: 'Buy put + sell lower strike put for limited downside profit',
-    explanation: 'Buy a put and sell a lower strike put. Lower cost than buying put alone, but limits profit. Bearish strategy with defined risk.',
-    riskLevel: 'Moderate',
-    marketOutlook: 'Moderately bearish',
-    maxProfit: 'Limited (Spread width - Net premium paid)', 
-    maxLoss: 'Limited (Net premium paid)',
-    breakeven: 'Higher strike - Net premium paid'
-  },
-  'collar': {
-    name: 'Collar',
-    description: 'Own shares + sell call + buy put for protection',
-    explanation: 'You own shares, sell a call above current price, and buy a put below current price. Provides downside protection while limiting upside.',
-    riskLevel: 'Low',
-    marketOutlook: 'Neutral (seeking protection)',
-    maxProfit: 'Limited (Call strike - Stock price + Net credit)',
-    maxLoss: 'Limited (Stock price - Put strike + Net debit)',
-    breakeven: 'Stock purchase price +/- Net credit/debit'
+// Black-Scholes pricing model
+function normalCDF(x: number): number {
+  const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741
+  const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911
+  const sign = x < 0 ? -1 : 1
+  x = Math.abs(x) / Math.sqrt(2)
+  const t = 1.0 / (1.0 + p * x)
+  const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x)
+  return 0.5 * (1.0 + sign * y)
+}
+
+function blackScholes(S: number, K: number, T: number, r: number, sigma: number, type: 'call' | 'put') {
+  if (T <= 0 || sigma <= 0 || S <= 0 || K <= 0) return { price: 0, delta: 0, theta: 0 }
+  
+  const d1 = (Math.log(S / K) + (r + sigma * sigma / 2) * T) / (sigma * Math.sqrt(T))
+  const d2 = d1 - sigma * Math.sqrt(T)
+  
+  let price: number, delta: number, theta: number
+  const nd1 = normalCDF(d1)
+  const nd2 = normalCDF(d2)
+  const nnd1 = normalCDF(-d1)
+  const nnd2 = normalCDF(-d2)
+  const pdf_d1 = Math.exp(-d1 * d1 / 2) / Math.sqrt(2 * Math.PI)
+  
+  if (type === 'call') {
+    price = S * nd1 - K * Math.exp(-r * T) * nd2
+    delta = nd1
+    theta = (-S * pdf_d1 * sigma / (2 * Math.sqrt(T)) - r * K * Math.exp(-r * T) * nd2) / 365
+  } else {
+    price = K * Math.exp(-r * T) * nnd2 - S * nnd1
+    delta = nd1 - 1
+    theta = (-S * pdf_d1 * sigma / (2 * Math.sqrt(T)) + r * K * Math.exp(-r * T) * nnd2) / 365
   }
+  
+  return { price: Math.max(0, price), delta, theta }
+}
+
+const strategies = {
+  covered_call: {
+    name: 'Covered Call',
+    description: 'Own shares + sell call option for income. Collect premium, cap upside at strike.',
+    riskLevel: 'Low',
+    outlook: 'Neutral to slightly bullish',
+  },
+  cash_secured_put: {
+    name: 'Cash Secured Put',
+    description: 'Sell put with cash to cover. Collect premium, may buy shares at strike if assigned.',
+    riskLevel: 'Moderate',
+    outlook: 'Neutral to bullish',
+  },
+  protective_put: {
+    name: 'Protective Put',
+    description: 'Own shares + buy put for insurance. Unlimited upside, limited downside.',
+    riskLevel: 'Low',
+    outlook: 'Bullish with protection',
+  },
+  bull_call_spread: {
+    name: 'Bull Call Spread',
+    description: 'Buy call + sell higher call. Defined risk bullish bet.',
+    riskLevel: 'Moderate',
+    outlook: 'Moderately bullish',
+  },
+  bear_put_spread: {
+    name: 'Bear Put Spread',
+    description: 'Buy put + sell lower put. Defined risk bearish bet.',
+    riskLevel: 'Moderate',
+    outlook: 'Moderately bearish',
+  },
 }
 
 export default function OptionsCalculator() {
   const [mstrData, setMstrData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [selectedStrategy, setSelectedStrategy] = useState('covered_call')
-  
-  // Editable parameters - Josh's request
-  const [expirationDate, setExpirationDate] = useState('2026-03-13')
+  const [expirationDate, setExpirationDate] = useState(() => {
+    // Default to ~30 days out, next Friday
+    const d = new Date()
+    d.setDate(d.getDate() + 30)
+    while (d.getDay() !== 5) d.setDate(d.getDate() + 1)
+    return d.toISOString().split('T')[0]
+  })
   const [strikePrice, setStrikePrice] = useState(150)
-  const [sharesContracts, setSharesContracts] = useState(100)
+  const [strikePrice2, setStrikePrice2] = useState(170) // For spreads
+  const [contracts, setContracts] = useState(1)
+  const [iv, setIv] = useState(85) // MSTR typically 70-120% IV
 
   useEffect(() => {
-    const fetchLiveMSTRData = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/v1/live/mstr', { cache: 'no-store' })
-        const data = await response.json()
+        const res = await fetch('/api/v1/live/mstr', { cache: 'no-store' })
+        const data = await res.json()
         setMstrData(data)
+        // Set initial strike near current price (round to nearest 5)
+        if (loading) {
+          const rounded = Math.ceil(data.price / 5) * 5
+          setStrikePrice(rounded + 10)
+          setStrikePrice2(rounded + 30)
+        }
         setLoading(false)
-      } catch (error) {
-        // Fallback data
-        setMstrData({
-          price: 133.88,
-          market_cap: 44480000000,
-          volume: 23000000,
-          btc_holdings: 714644,
-          change_percent: 5.5
-        })
+      } catch {
+        setMstrData({ price: 133.88, market_cap: 44480000000, volume: 23000000, btc_holdings: 714644, change_percent: 0 })
         setLoading(false)
       }
     }
-
-    fetchLiveMSTRData()
-    
-    // Update every 5 seconds
-    const interval = setInterval(fetchLiveMSTRData, 5000)
+    fetchData()
+    const interval = setInterval(fetchData, 10000)
     return () => clearInterval(interval)
   }, [])
+
+  const daysToExp = useMemo(() => {
+    const diff = new Date(expirationDate).getTime() - Date.now()
+    return Math.max(0, Math.ceil(diff / 86400000))
+  }, [expirationDate])
+
+  const T = daysToExp / 365
+  const r = 0.045 // risk-free rate ~4.5%
+  const sigma = iv / 100
+  const S = mstrData?.price || 133.88
+  const shares = contracts * 100
+
+  // Calculate option prices using Black-Scholes
+  const calc = useMemo(() => {
+    const call1 = blackScholes(S, strikePrice, T, r, sigma, 'call')
+    const put1 = blackScholes(S, strikePrice, T, r, sigma, 'put')
+    const call2 = blackScholes(S, strikePrice2, T, r, sigma, 'call')
+    const put2 = blackScholes(S, strikePrice2, T, r, sigma, 'put')
+
+    const strat = selectedStrategy
+    let premium = 0, maxProfit = 0, maxLoss = 0, breakeven = 0, breakeven2 = 0
+
+    if (strat === 'covered_call') {
+      // Sell call, collect premium
+      premium = call1.price
+      maxProfit = (strikePrice - S + premium) * shares
+      maxLoss = (S - premium) * shares // stock goes to 0
+      breakeven = S - premium
+    } else if (strat === 'cash_secured_put') {
+      // Sell put, collect premium
+      premium = put1.price
+      maxProfit = premium * shares
+      maxLoss = (strikePrice - premium) * shares // stock goes to 0
+      breakeven = strikePrice - premium
+    } else if (strat === 'protective_put') {
+      // Buy put, pay premium
+      premium = put1.price
+      maxProfit = Infinity
+      maxLoss = (S - strikePrice + premium) * shares
+      breakeven = S + premium
+    } else if (strat === 'bull_call_spread') {
+      // Buy lower call, sell higher call
+      const debit = call1.price - call2.price
+      premium = debit
+      maxProfit = (strikePrice2 - strikePrice - debit) * shares
+      maxLoss = debit * shares
+      breakeven = strikePrice + debit
+    } else if (strat === 'bear_put_spread') {
+      // Buy higher put, sell lower put (strike2 < strike1 here, so swap)
+      const higherPut = blackScholes(S, strikePrice, T, r, sigma, 'put')
+      const lowerPut = blackScholes(S, strikePrice2 < strikePrice ? strikePrice2 : strikePrice - 20, T, r, sigma, 'put')
+      const debit = higherPut.price - lowerPut.price
+      premium = debit
+      const lowerStrike = strikePrice2 < strikePrice ? strikePrice2 : strikePrice - 20
+      maxProfit = (strikePrice - lowerStrike - debit) * shares
+      maxLoss = debit * shares
+      breakeven = strikePrice - debit
+    }
+
+    return {
+      premium: Math.max(0, premium),
+      maxProfit,
+      maxLoss: Math.max(0, maxLoss),
+      breakeven,
+      breakeven2,
+      call: call1,
+      put: put1,
+      call2,
+      put2,
+    }
+  }, [S, strikePrice, strikePrice2, T, r, sigma, selectedStrategy, shares])
+
+  const handleContractsChange = (val: number) => {
+    setContracts(Math.max(1, Math.round(val)))
+  }
+
+  const handleStrikeChange = (val: number) => {
+    setStrikePrice(Math.max(5, Math.round(val / 5) * 5))
+  }
+
+  const handleStrike2Change = (val: number) => {
+    setStrikePrice2(Math.max(5, Math.round(val / 5) * 5))
+  }
 
   if (loading || !mstrData) {
     return (
       <div className="min-h-screen bg-gray-900 text-white p-8">
         <div className="flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mstr-500 mx-auto mb-4"></div>
-            <p className="text-gray-400">Loading calculator...</p>
-          </div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-mstr-500 mx-auto mb-4"></div>
+          <p className="text-gray-400 ml-4">Loading calculator...</p>
         </div>
       </div>
     )
   }
 
-  const ivRank = 75 + Math.floor(Math.random() * 20) // 75-95%
-  const navPremium = 24.5 + (Math.random() * 10) // 24.5-34.5%
-  
-  // Calculate days to expiration from user-selected date
-  const expDate = new Date(expirationDate)
-  const today = new Date()
-  const daysToExpiration = Math.ceil((expDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-  
-  // Calculate premium based on strike price distance from current price
-  const moneyness = strikePrice / mstrData.price
-  const premium = Math.max(1, (Math.abs(moneyness - 1) * 30 + 5) * Math.sqrt(daysToExpiration / 30))
-  
-  const currentStrategy = optionsStrategies[selectedStrategy as keyof typeof optionsStrategies]
+  const isOTM = selectedStrategy === 'covered_call' || selectedStrategy === 'bull_call_spread'
+    ? strikePrice > S
+    : strikePrice < S
+  const needsSpread = selectedStrategy === 'bull_call_spread' || selectedStrategy === 'bear_put_spread'
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
         <h1 className="text-3xl font-bold mb-2">MSTR Options Calculator</h1>
         <p className="text-gray-400">
-          Interactive calculator with editable parameters • Live MSTR price updates every 5 seconds
-        </p>
-        <p className="text-xs text-slate-500 mt-1">
-          Version: v2.14.08.50 - INTERACTIVE INPUTS (Expiration, Strike, Shares editable)
+          Black-Scholes pricing with live MSTR data • Updates every 10 seconds
         </p>
       </div>
 
-      {/* Live MSTR Data */}
+      {/* Live Data Bar */}
       <div className="card">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center">
-            <p className="text-sm text-gray-400">Current MSTR Price</p>
-            <p className="text-2xl font-bold text-mstr-500">
-              ${mstrData.price.toFixed(2)}
-            </p>
-            <div className="text-xs text-green-400 mt-1">
-              🟢 Live
+            <p className="text-xs text-slate-400">MSTR Price</p>
+            <p className="text-2xl font-bold text-blue-400">${S.toFixed(2)}</p>
+            <div className="flex items-center justify-center space-x-1 mt-1">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              <span className="text-xs text-green-400">Live</span>
             </div>
           </div>
           <div className="text-center">
-            <p className="text-sm text-gray-400">IV Rank (30d)</p>
-            <p className="text-2xl font-bold text-yellow-400">
-              {ivRank}%
-            </p>
+            <p className="text-xs text-slate-400">Days to Exp</p>
+            <p className="text-2xl font-bold text-white">{daysToExp}</p>
           </div>
           <div className="text-center">
-            <p className="text-sm text-gray-400">Market Cap</p>
-            <p className="text-2xl font-bold">
-              ${(mstrData.market_cap / 1000000000).toFixed(1)}B
-            </p>
+            <p className="text-xs text-slate-400">IV</p>
+            <p className="text-2xl font-bold text-yellow-400">{iv}%</p>
           </div>
           <div className="text-center">
-            <p className="text-sm text-gray-400">NAV Premium</p>
-            <p className="text-2xl font-bold text-green-400">
-              +{navPremium.toFixed(1)}%
-            </p>
+            <p className="text-xs text-slate-400">Option Premium</p>
+            <p className="text-2xl font-bold text-green-400">${calc.premium.toFixed(2)}</p>
+            <p className="text-xs text-slate-500">per share</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Strategy Calculator */}
+        {/* Inputs */}
         <div className="card">
           <h3 className="text-xl font-bold mb-6 flex items-center space-x-2">
             <Calculator className="h-6 w-6" />
-            <span>Strategy Calculator</span>
+            <span>Parameters</span>
           </h3>
-          
-          <div className="space-y-6">
-            {/* Strategy Selection Dropdown - Josh's Request */}
+
+          <div className="space-y-5">
             <div>
               <label className="block text-sm font-medium mb-2">Strategy</label>
               <select
                 value={selectedStrategy}
                 onChange={(e) => setSelectedStrategy(e.target.value)}
-                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 focus:ring-2 focus:ring-mstr-500"
+                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 focus:ring-2 focus:ring-blue-500"
               >
-                {Object.entries(optionsStrategies).map(([key, strategy]) => (
-                  <option key={key} value={key}>
-                    {strategy.name}
-                  </option>
+                {Object.entries(strategies).map(([key, s]) => (
+                  <option key={key} value={key}>{s.name}</option>
                 ))}
               </select>
-              <p className="text-xs text-gray-400 mt-1">
-                {currentStrategy.description}
-              </p>
-            </div>
-
-            {/* Strategy Info Panel - Josh's Request */}
-            <div className="bg-blue-900/20 border border-blue-700/30 rounded-lg p-4">
-              <h4 className="font-semibold text-blue-300 mb-2">{currentStrategy.name} Strategy</h4>
-              <p className="text-sm text-blue-200 mb-3">{currentStrategy.explanation}</p>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <span className="text-blue-300">Risk Level:</span>
-                  <span className="ml-2 text-white">{currentStrategy.riskLevel}</span>
-                </div>
-                <div>
-                  <span className="text-blue-300">Outlook:</span>
-                  <span className="ml-2 text-white">{currentStrategy.marketOutlook}</span>
-                </div>
-              </div>
+              <p className="text-xs text-gray-400 mt-1">{strategies[selectedStrategy as keyof typeof strategies].description}</p>
             </div>
 
             <div>
@@ -248,146 +277,216 @@ export default function OptionsCalculator() {
                 value={expirationDate}
                 onChange={(e) => setExpirationDate(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
-                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:ring-2 focus:ring-mstr-500 focus:border-transparent"
+                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:ring-2 focus:ring-blue-500"
               />
-              <p className="text-xs text-gray-400 mt-1">
-                {daysToExpiration > 0 ? `${daysToExpiration} days to expiration` : 'Invalid date - must be in the future'}
-              </p>
+              <p className="text-xs text-gray-400 mt-1">{daysToExp} days to expiration</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Strike Price</label>
-              <input
-                type="number"
-                value={strikePrice}
-                onChange={(e) => setStrikePrice(Number(e.target.value))}
-                min="1"
-                step="5"
-                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:ring-2 focus:ring-mstr-500 focus:border-transparent"
-                placeholder="Enter strike price"
-              />
-              <p className="text-xs text-gray-400 mt-1">
-                Premium: ${premium.toFixed(2)} • {strikePrice > mstrData.price ? 'OTM' : strikePrice < mstrData.price ? 'ITM' : 'ATM'}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Shares/Contracts</label>
-              <input
-                type="number"
-                value={sharesContracts}
-                onChange={(e) => setSharesContracts(Number(e.target.value))}
-                min="1"
-                step="100"
-                className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white focus:ring-2 focus:ring-mstr-500 focus:border-transparent"
-                placeholder="Enter number of shares/contracts"
-              />
-              <p className="text-xs text-gray-400 mt-1">
-                {sharesContracts >= 100 ? `${Math.floor(sharesContracts/100)} contract(s) = ${sharesContracts} shares` : `${sharesContracts} shares (less than 1 contract)`}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Current Stock Price</label>
-              <div className="bg-gray-800 border border-gray-600 rounded px-3 py-2 relative">
-                <span className="text-white">${mstrData.price.toFixed(2)}</span>
-                <div className="absolute right-3 top-2.5 flex items-center space-x-1">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span className="text-xs text-slate-400">Live</span>
-                </div>
+              <label className="block text-sm font-medium mb-2">
+                Strike Price {needsSpread ? '(Long)' : ''}
+              </label>
+              <div className="flex items-center space-x-3">
+                <button onClick={() => handleStrikeChange(strikePrice - 5)} className="px-3 py-2 bg-gray-700 rounded hover:bg-gray-600">-5</button>
+                <input
+                  type="number"
+                  value={strikePrice}
+                  onChange={(e) => handleStrikeChange(Number(e.target.value))}
+                  step="5"
+                  className="flex-1 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white text-center focus:ring-2 focus:ring-blue-500"
+                />
+                <button onClick={() => handleStrikeChange(strikePrice + 5)} className="px-3 py-2 bg-gray-700 rounded hover:bg-gray-600">+5</button>
               </div>
               <p className="text-xs text-gray-400 mt-1">
-                Auto-populated with live MSTR price • Updates every 5 seconds
+                {strikePrice > S ? `${((strikePrice / S - 1) * 100).toFixed(1)}% OTM` :
+                 strikePrice < S ? `${((1 - strikePrice / S) * 100).toFixed(1)}% ITM` : 'ATM'}
+                {' • '}
+                {selectedStrategy === 'covered_call' || selectedStrategy === 'bull_call_spread'
+                  ? `Call: $${calc.call.price.toFixed(2)} (Δ ${calc.call.delta.toFixed(3)})`
+                  : `Put: $${calc.put.price.toFixed(2)} (Δ ${calc.put.delta.toFixed(3)})`
+                }
               </p>
+            </div>
+
+            {needsSpread && (
+              <div>
+                <label className="block text-sm font-medium mb-2">Strike Price (Short)</label>
+                <div className="flex items-center space-x-3">
+                  <button onClick={() => handleStrike2Change(strikePrice2 - 5)} className="px-3 py-2 bg-gray-700 rounded hover:bg-gray-600">-5</button>
+                  <input
+                    type="number"
+                    value={strikePrice2}
+                    onChange={(e) => handleStrike2Change(Number(e.target.value))}
+                    step="5"
+                    className="flex-1 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white text-center focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button onClick={() => handleStrike2Change(strikePrice2 + 5)} className="px-3 py-2 bg-gray-700 rounded hover:bg-gray-600">+5</button>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  Spread width: ${Math.abs(strikePrice2 - strikePrice)}
+                </p>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Contracts (1 contract = 100 shares)</label>
+              <div className="flex items-center space-x-3">
+                <button onClick={() => handleContractsChange(contracts - 1)} className="px-3 py-2 bg-gray-700 rounded hover:bg-gray-600">-1</button>
+                <input
+                  type="number"
+                  value={contracts}
+                  onChange={(e) => handleContractsChange(Number(e.target.value))}
+                  min="1"
+                  step="1"
+                  className="flex-1 bg-gray-800 border border-gray-600 rounded px-3 py-2 text-white text-center focus:ring-2 focus:ring-blue-500"
+                />
+                <button onClick={() => handleContractsChange(contracts + 1)} className="px-3 py-2 bg-gray-700 rounded hover:bg-gray-600">+1</button>
+              </div>
+              <p className="text-xs text-gray-400 mt-1">{contracts} contract(s) = {shares} shares</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Implied Volatility (%)</label>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="range"
+                  min="30"
+                  max="200"
+                  step="5"
+                  value={iv}
+                  onChange={(e) => setIv(Number(e.target.value))}
+                  className="flex-1"
+                />
+                <span className="text-white font-mono w-14 text-right">{iv}%</span>
+              </div>
+              <p className="text-xs text-gray-400 mt-1">MSTR typically 70-120%. Higher IV = higher premiums.</p>
             </div>
           </div>
         </div>
 
-        {/* Strategy Analysis */}
+        {/* Results */}
         <div className="card">
           <h3 className="text-xl font-bold mb-6 flex items-center space-x-2">
             <TrendingUp className="h-6 w-6" />
-            <span>Strategy Analysis</span>
+            <span>Analysis — {strategies[selectedStrategy as keyof typeof strategies].name}</span>
           </h3>
-          
-          <div className="space-y-6">
-            {/* Key Metrics - Calculated from user inputs */}
+
+          <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-green-500/20 rounded-lg">
-                <p className="text-sm text-green-400">Max Profit</p>
-                <p className="text-2xl font-bold">
-                  ${(() => {
-                    const numContracts = Math.floor(sharesContracts / 100)
-                    if (selectedStrategy === 'covered_call') {
-                      return Math.max(0, ((strikePrice - mstrData.price) + premium) * sharesContracts).toLocaleString()
-                    } else if (selectedStrategy === 'cash_secured_put') {
-                      return (premium * sharesContracts).toLocaleString()
-                    }
-                    return ((strikePrice - mstrData.price + premium) * sharesContracts).toLocaleString()
-                  })()}
+              <div className="p-4 bg-green-900/20 border border-green-700/30 rounded-lg">
+                <p className="text-sm text-green-400 mb-1">Max Profit</p>
+                <p className="text-2xl font-bold text-green-400">
+                  {calc.maxProfit === Infinity ? 'Unlimited' : `$${calc.maxProfit.toFixed(0)}`}
                 </p>
-                <p className="text-xs text-gray-400">{currentStrategy.maxProfit}</p>
-              </div>
-              
-              <div className="p-4 bg-red-500/20 rounded-lg">
-                <p className="text-sm text-red-400">Max Loss</p>
-                <p className="text-2xl font-bold">
-                  -${(() => {
-                    if (selectedStrategy === 'covered_call') {
-                      return Math.max(0, (mstrData.price - premium) * sharesContracts).toLocaleString()
-                    } else if (selectedStrategy === 'cash_secured_put') {
-                      return Math.max(0, (strikePrice - premium) * sharesContracts).toLocaleString()
-                    }
-                    return (premium * sharesContracts).toLocaleString()
-                  })()}
+                <p className="text-xs text-slate-400 mt-1">
+                  {selectedStrategy === 'covered_call' && 'If assigned at strike'}
+                  {selectedStrategy === 'cash_secured_put' && 'If expires worthless'}
+                  {selectedStrategy === 'protective_put' && 'Unlimited upside'}
+                  {selectedStrategy === 'bull_call_spread' && 'At or above short strike'}
+                  {selectedStrategy === 'bear_put_spread' && 'At or below short strike'}
                 </p>
-                <p className="text-xs text-gray-400">{currentStrategy.maxLoss}</p>
               </div>
-              
-              <div className="p-4 bg-blue-500/20 rounded-lg">
-                <p className="text-sm text-blue-400">Breakeven</p>
-                <p className="text-2xl font-bold">
-                  ${(() => {
-                    if (selectedStrategy === 'covered_call') {
-                      return (mstrData.price - premium).toFixed(2)
-                    } else if (selectedStrategy === 'cash_secured_put') {
-                      return (strikePrice - premium).toFixed(2)
-                    }
-                    return (mstrData.price + premium).toFixed(2)
-                  })()}
+
+              <div className="p-4 bg-red-900/20 border border-red-700/30 rounded-lg">
+                <p className="text-sm text-red-400 mb-1">Max Loss</p>
+                <p className="text-2xl font-bold text-red-400">
+                  -${calc.maxLoss.toFixed(0)}
                 </p>
-                <p className="text-xs text-gray-400">{currentStrategy.breakeven}</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  {selectedStrategy === 'covered_call' && 'If stock goes to $0'}
+                  {selectedStrategy === 'cash_secured_put' && 'If stock goes to $0'}
+                  {selectedStrategy === 'protective_put' && 'Premium + (entry - strike)'}
+                  {selectedStrategy === 'bull_call_spread' && 'Net debit paid'}
+                  {selectedStrategy === 'bear_put_spread' && 'Net debit paid'}
+                </p>
               </div>
-              
-              <div className="p-4 bg-yellow-500/20 rounded-lg">
-                <p className="text-sm text-yellow-400">Total Premium</p>
-                <p className="text-2xl font-bold">${(premium * sharesContracts).toLocaleString()}</p>
-                <p className="text-xs text-gray-400">Total premium involved</p>
+
+              <div className="p-4 bg-blue-900/20 border border-blue-700/30 rounded-lg">
+                <p className="text-sm text-blue-400 mb-1">Breakeven</p>
+                <p className="text-2xl font-bold text-blue-400">${calc.breakeven.toFixed(2)}</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  {calc.breakeven > S ? `${((calc.breakeven / S - 1) * 100).toFixed(1)}% above current` :
+                   `${((1 - calc.breakeven / S) * 100).toFixed(1)}% below current`}
+                </p>
+              </div>
+
+              <div className="p-4 bg-yellow-900/20 border border-yellow-700/30 rounded-lg">
+                <p className="text-sm text-yellow-400 mb-1">Total Premium</p>
+                <p className="text-2xl font-bold text-yellow-400">
+                  ${(calc.premium * shares).toFixed(0)}
+                </p>
+                <p className="text-xs text-slate-400 mt-1">
+                  ${calc.premium.toFixed(2)}/share × {shares} shares
+                </p>
               </div>
             </div>
 
-            {/* Strategy Details */}
+            {/* P&L Scenarios */}
             <div className="bg-slate-700/30 rounded-lg p-4">
-              <h4 className="font-semibold text-slate-300 mb-2">Strategy Details</h4>
+              <h4 className="font-semibold text-slate-300 mb-3">P&L at Expiration</h4>
               <div className="space-y-2 text-sm">
+                {[0.85, 0.9, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2].map(mult => {
+                  const price = Math.round(S * mult)
+                  let pnl = 0
+                  if (selectedStrategy === 'covered_call') {
+                    const stockPnl = (price - S) * shares
+                    const callPayout = Math.max(0, price - strikePrice) * shares
+                    pnl = stockPnl - callPayout + calc.premium * shares
+                  } else if (selectedStrategy === 'cash_secured_put') {
+                    const putPayout = Math.max(0, strikePrice - price) * shares
+                    pnl = calc.premium * shares - putPayout
+                  } else if (selectedStrategy === 'protective_put') {
+                    const stockPnl = (price - S) * shares
+                    const putPayout = Math.max(0, strikePrice - price) * shares
+                    pnl = stockPnl + putPayout - calc.premium * shares
+                  } else if (selectedStrategy === 'bull_call_spread') {
+                    const longCall = Math.max(0, price - strikePrice)
+                    const shortCall = Math.max(0, price - strikePrice2)
+                    pnl = (longCall - shortCall - calc.premium) * shares
+                  } else if (selectedStrategy === 'bear_put_spread') {
+                    const longPut = Math.max(0, strikePrice - price)
+                    const shortPut = Math.max(0, (strikePrice2 < strikePrice ? strikePrice2 : strikePrice - 20) - price)
+                    pnl = (longPut - shortPut - calc.premium) * shares
+                  }
+                  return (
+                    <div key={mult} className="flex items-center justify-between">
+                      <span className="text-slate-400 font-mono">${price} ({mult >= 1 ? '+' : ''}{((mult - 1) * 100).toFixed(0)}%)</span>
+                      <span className={`font-bold font-mono ${pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {pnl >= 0 ? '+' : ''}{pnl.toFixed(0)}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Greeks */}
+            <div className="bg-slate-700/30 rounded-lg p-4">
+              <h4 className="font-semibold text-slate-300 mb-3">Greeks</h4>
+              <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
-                  <span className="text-slate-400">Market Outlook:</span>
-                  <span className="ml-2 text-white">{currentStrategy.marketOutlook}</span>
+                  <span className="text-slate-400">Call Delta:</span>
+                  <span className="ml-2 text-white font-mono">{calc.call.delta.toFixed(4)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400">Risk Level:</span>
-                  <span className="ml-2 text-white">{currentStrategy.riskLevel}</span>
+                  <span className="text-slate-400">Put Delta:</span>
+                  <span className="ml-2 text-white font-mono">{calc.put.delta.toFixed(4)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400">Days to Expiration:</span>
-                  <span className="ml-2 text-white">{daysToExpiration > 0 ? daysToExpiration : 'Invalid'}</span>
+                  <span className="text-slate-400">Call Theta:</span>
+                  <span className="ml-2 text-red-400 font-mono">${calc.call.theta.toFixed(4)}/day</span>
                 </div>
                 <div>
-                  <span className="text-slate-400">Strike vs Current:</span>
-                  <span className="ml-2 text-white">
-                    {strikePrice > mstrData.price ? `+${(((strikePrice / mstrData.price) - 1) * 100).toFixed(1)}% OTM` : 
-                     strikePrice < mstrData.price ? `-${((1 - (strikePrice / mstrData.price)) * 100).toFixed(1)}% ITM` : 'ATM'}
-                  </span>
+                  <span className="text-slate-400">Put Theta:</span>
+                  <span className="ml-2 text-red-400 font-mono">${calc.put.theta.toFixed(4)}/day</span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Call Price:</span>
+                  <span className="ml-2 text-green-400 font-mono">${calc.call.price.toFixed(2)}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Put Price:</span>
+                  <span className="ml-2 text-green-400 font-mono">${calc.put.price.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -395,41 +494,18 @@ export default function OptionsCalculator() {
         </div>
       </div>
 
-      {/* Strategy Summary */}
+      {/* Strategy Info */}
       <div className="card">
-        <h3 className="text-xl font-bold mb-4">Strategy Summary</h3>
-        <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-          <p className="text-blue-300 mb-2">
-            <strong>{currentStrategy.name} Strategy:</strong> {currentStrategy.explanation}
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 text-sm">
-            <div>
-              <span className="text-blue-400">Max Profit: </span>
-              <span className="text-white">{currentStrategy.maxProfit}</span>
-            </div>
-            <div>
-              <span className="text-blue-400">Max Loss: </span>
-              <span className="text-white">{currentStrategy.maxLoss}</span>
-            </div>
-            <div>
-              <span className="text-blue-400">Breakeven: </span>
-              <span className="text-white">{currentStrategy.breakeven}</span>
-            </div>
+        <div className="bg-blue-900/20 border border-blue-700/30 rounded-lg p-4">
+          <div className="flex items-center space-x-2 mb-2">
+            <AlertTriangle className="h-4 w-4 text-blue-400" />
+            <h4 className="font-semibold text-blue-300">{strategies[selectedStrategy as keyof typeof strategies].name}</h4>
+            <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded">{strategies[selectedStrategy as keyof typeof strategies].riskLevel} Risk</span>
           </div>
-        </div>
-      </div>
-
-      {/* Live Data Confirmation */}
-      <div className="card bg-green-900/20 border border-green-500/30">
-        <h4 className="text-green-400 font-bold mb-2">✅ LIVE CALCULATOR STATUS:</h4>
-        <div className="text-sm text-green-300 space-y-1">
-          <div>Current MSTR Price: ${mstrData.price} (🟢 Live - updates every 5s)</div>
-          <div>Selected Strategy: {currentStrategy.name}</div>
-          <div>User Strike Price: ${strikePrice} ({strikePrice > mstrData.price ? 'OTM' : strikePrice < mstrData.price ? 'ITM' : 'ATM'})</div>
-          <div>User Expiration: {expirationDate} ({daysToExpiration} days)</div>
-          <div>User Shares/Contracts: {sharesContracts}</div>
-          <div>Calculated Premium: ${premium.toFixed(2)} per share</div>
-          <div>Last Updated: {new Date().toLocaleTimeString()}</div>
+          <p className="text-sm text-blue-200">{strategies[selectedStrategy as keyof typeof strategies].description}</p>
+          <p className="text-xs text-slate-500 mt-2">
+            Pricing uses Black-Scholes model. Real market premiums may differ due to supply/demand, skew, and term structure.
+          </p>
         </div>
       </div>
     </div>
