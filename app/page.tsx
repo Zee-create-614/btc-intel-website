@@ -5,6 +5,7 @@ import { Bitcoin, TrendingUp, DollarSign, Activity, RefreshCw } from 'lucide-rea
 import Link from 'next/link'
 import OptionsFlowLive from './components/OptionsFlowLive'
 import MarketIntelligenceLive from './components/MarketIntelligenceLive'
+import BitcoinIntelligenceLive from './components/BitcoinIntelligenceLive'
 
 interface LiveData {
   btcPrice: number
@@ -268,6 +269,9 @@ export default function Dashboard() {
 
       {/* LIVE Market Intelligence */}
       <MarketIntelligenceLive />
+      
+      {/* LIVE Bitcoin Intelligence */}
+      <BitcoinIntelligenceLive />
       
       {/* LIVE Options Flow */}
       <OptionsFlowLive />
