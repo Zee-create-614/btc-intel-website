@@ -1,0 +1,4 @@
+NAV FIX DEPLOYMENT - v2.14.09.15
+Deployed: 2026-02-14 10:09 EST
+Changes: Fixed +19% green color + diluted NAV calculation
+Trigger: Force new Vercel deployment
