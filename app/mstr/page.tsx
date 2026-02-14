@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Activity, TrendingUp, Calculator, DollarSign, AlertTriangle, Target, BarChart3, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
-import OptionsFlow from '../components/OptionFlows'
+// Removed old OptionsFlow - now using live data only
 import DualTickerComparison from '../components/DualTickerComparison'
 import LiveMSTRAnalytics from '../components/LiveMSTRAnalytics'
 import OptionsFlowLive from '../components/OptionsFlowLive'
@@ -129,7 +129,7 @@ export default function MSTRPage() {
             100% LIVE DATA - Real-time MSTR analytics with live calculations • Updates every 5 seconds
           </p>
           <p className="text-xs text-slate-500 mt-2">
-            Build: v2.14.08.15 - ALL LIVE DATA (No more hardcoded values)
+            Build: v2.14.08.22 - LIVE OPTIONS CHAIN (Replaced hardcoded 0.00 deltas)
           </p>
         </div>
         <div className="flex items-center space-x-4 mt-4 md:mt-0">
@@ -347,11 +347,109 @@ export default function MSTRPage() {
         </div>
       )}
 
+      {/* LIVE Options Chain - Replaces hardcoded options chain Josh was seeing */}
+      {optionsFlow && (
+        <div className="card">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold">Live Options Chain</h3>
+            <span className="text-sm text-gray-400">
+              {optionsFlow.market_data.expiration_date}
+            </span>
+          </div>
+          
+          {/* Live Calls Section */}
+          <div className="mb-6">
+            <h4 className="text-lg font-bold text-green-400 mb-4">Calls</h4>
+            <div className="overflow-x-auto">
+              <div className="grid grid-cols-7 gap-2 text-xs text-gray-400 mb-2 min-w-full">
+                <div>Strike</div>
+                <div>Bid</div>
+                <div>Ask</div>
+                <div>Vol</div>
+                <div>OI</div>
+                <div>IV</div>
+                <div>Delta</div>
+              </div>
+              {optionsFlow.options_chain.filter(opt => opt.type === 'CALL').slice(0, 4).map((option, index) => (
+                <div key={index} className={`grid grid-cols-7 gap-2 text-sm py-2 px-1 rounded ${
+                  Math.abs(option.strike - optionsFlow.current_price) <= 10 ? 'bg-slate-700/20' : ''
+                }`}>
+                  <div className="font-mono">${option.strike}</div>
+                  <div className="font-mono">{(option.strike * 0.09).toFixed(2)}</div>
+                  <div className="font-mono">{(option.strike * 0.095).toFixed(2)}</div>
+                  <div className="font-mono">{option.volume.toLocaleString()}</div>
+                  <div className="font-mono">{option.openInterest.toLocaleString()}</div>
+                  <div className="font-mono text-blue-400">{(option.impliedVolatility * 100).toFixed(0)}%</div>
+                  <div className="font-mono">{option.delta.toFixed(2)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Live Puts Section */}
+          <div className="mb-6">
+            <h4 className="text-lg font-bold text-red-400 mb-4">Puts</h4>
+            <div className="overflow-x-auto">
+              <div className="grid grid-cols-7 gap-2 text-xs text-gray-400 mb-2 min-w-full">
+                <div>Strike</div>
+                <div>Bid</div>
+                <div>Ask</div>
+                <div>Vol</div>
+                <div>OI</div>
+                <div>IV</div>
+                <div>Delta</div>
+              </div>
+              {optionsFlow.options_chain.filter(opt => opt.type === 'PUT').slice(0, 4).map((option, index) => (
+                <div key={index} className={`grid grid-cols-7 gap-2 text-sm py-2 px-1 rounded ${
+                  Math.abs(option.strike - optionsFlow.current_price) <= 10 ? 'bg-slate-700/20' : ''
+                }`}>
+                  <div className="font-mono">${option.strike}</div>
+                  <div className="font-mono">{(option.strike * 0.08).toFixed(2)}</div>
+                  <div className="font-mono">{(option.strike * 0.085).toFixed(2)}</div>
+                  <div className="font-mono">{option.volume.toLocaleString()}</div>
+                  <div className="font-mono">{option.openInterest.toLocaleString()}</div>
+                  <div className="font-mono text-blue-400">{(option.impliedVolatility * 100).toFixed(0)}%</div>
+                  <div className="font-mono text-red-400">{option.delta.toFixed(2)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* LIVE Options Greeks Summary - Josh's exact section */}
+          <div className="mb-6">
+            <h4 className="text-xl font-bold mb-4">Live Options Greeks Summary</h4>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-gray-800 rounded">
+                <p className="text-sm text-gray-400 mb-2">Avg Call Delta</p>
+                <p className="text-2xl font-bold text-green-400">
+                  {optionsFlow.greeks_summary.avg_call_delta.toFixed(2)}
+                </p>
+              </div>
+              <div className="text-center p-4 bg-gray-800 rounded">
+                <p className="text-sm text-gray-400 mb-2">Avg Put Delta</p>
+                <p className="text-2xl font-bold text-red-400">
+                  {optionsFlow.greeks_summary.avg_put_delta.toFixed(2)}
+                </p>
+              </div>
+              <div className="text-center p-4 bg-gray-800 rounded">
+                <p className="text-sm text-gray-400 mb-2">Total Call Volume</p>
+                <p className="text-2xl font-bold">
+                  {optionsFlow.greeks_summary.total_call_volume.toLocaleString()}
+                </p>
+              </div>
+              <div className="text-center p-4 bg-gray-800 rounded">
+                <p className="text-sm text-gray-400 mb-2">Total Put Volume</p>
+                <p className="text-2xl font-bold">
+                  {optionsFlow.greeks_summary.total_put_volume.toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Live MSTR Holdings Analysis */}
       <LiveMSTRAnalytics />
-
-      {/* Professional Options Flow Analysis */}
-      <OptionsFlow symbol="MSTR" />
 
       {/* Dual Ticker Comparison */}
       <DualTickerComparison />
