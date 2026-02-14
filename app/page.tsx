@@ -23,7 +23,7 @@ export default function Dashboard() {
         <p className="text-slate-400 text-sm mt-1">Platform in active development • Data feeds stabilizing • More features coming soon</p>
       </div>
       
-      {/* Hero Stats */}
+      {/* Original Top 4 Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="metric-card glow-bitcoin">
           <div className="flex items-center justify-between">
@@ -40,12 +40,12 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-400">Total Institutional BTC</p>
-              <div className="text-3xl font-bold text-white">1,138,075</div>
+              <div className="text-3xl font-bold text-blue-400">1,138,075.119</div>
               <p className="text-sm text-slate-400">
-                $76.16B total value
+                $76,163,401,197
               </p>
             </div>
-            <TrendingUp className="h-12 w-12 text-green-500" />
+            <TrendingUp className="h-12 w-12 text-blue-500" />
           </div>
         </div>
 
@@ -74,7 +74,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Data Sections */}
+      {/* Original 3 Column Data Sections */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="card">
           <div className="flex items-center justify-between mb-4">
@@ -87,6 +87,34 @@ export default function Dashboard() {
               MicroStrategy dominates with 714,644 BTC
             </p>
           </div>
+          
+          {/* Top Bitcoin Holders Section */}
+          <div className="mt-4 pt-4 border-t border-slate-700">
+            <div className="text-xs text-slate-500 mb-2">Top Bitcoin Holders:</div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-sm">
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs text-slate-500">1</span>
+                  <span className="text-xs">🇺🇸</span>
+                  <span className="text-xs text-orange-400 font-medium">Strategy Company</span>
+                </div>
+                <span className="font-mono text-xs text-orange-400 font-bold">₿ 714,644</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs text-slate-500">2</span>
+                  <span className="text-xs">🇺🇸</span>
+                  <span className="text-xs text-white">MARA Holdings</span>
+                </div>
+                <span className="font-mono text-xs text-slate-300">₿ 23,560</span>
+              </div>
+            </div>
+            <div className="pt-2 text-center">
+              <Link href="/corporate" className="text-xs text-orange-400 hover:text-orange-300">
+                View All →
+              </Link>
+            </div>
+          </div>
         </div>
 
         <div className="card">
@@ -97,6 +125,9 @@ export default function Dashboard() {
           <div>
             <p className="text-slate-400">BTC held by ETFs</p>
             <p className="text-sm text-slate-500 mt-2">
+              $0
+            </p>
+            <p className="text-sm text-slate-500 mt-2">
               ETF data coming soon
             </p>
           </div>
@@ -105,18 +136,18 @@ export default function Dashboard() {
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-white">Total Value</h3>
-            <span className="text-green-400 font-mono text-sm">$76.16B</span>
+            <span className="text-green-400 font-mono text-sm">$76,163,401,197</span>
           </div>
           <div>
             <p className="text-slate-400">Total institutional value</p>
             <p className="text-sm text-slate-500 mt-2">
-              Combined treasury holdings
+              1,138,075.119 BTC
             </p>
           </div>
         </div>
       </div>
 
-      {/* Action Cards */}
+      {/* Bottom Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Link href="/politicians" className="card hover:bg-slate-800 transition-colors">
           <div className="text-center">
