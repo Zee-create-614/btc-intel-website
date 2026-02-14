@@ -39,6 +39,12 @@ export default function Dashboard() {
       
       console.log('✅ BTC Data:', btcData)
       console.log('✅ MSTR Data:', mstrData)
+      console.log('🚨 MSTR MARKET CAP DEBUG:', {
+        price: mstrData.price,
+        shares_outstanding: mstrData.shares_outstanding,
+        market_cap: mstrData.market_cap,
+        calculated_market_cap: mstrData.price * mstrData.shares_outstanding
+      })
       
       const totalInstitutional = mstrData.btc_holdings + 423431 // Other institutions
       const mstrValue = mstrData.btc_holdings * btcData.price_usd
@@ -95,6 +101,9 @@ export default function Dashboard() {
         </h1>
         <p className="text-xl text-slate-400">
           100% LIVE DATA - Updates every 5 seconds
+        </p>
+        <p className="text-xs text-slate-500 mt-2">
+          Build: v2.14.07.35 - Market Cap Fix Applied
         </p>
       </div>
       
