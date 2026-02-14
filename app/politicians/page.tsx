@@ -150,9 +150,12 @@ function PoliticianAvatar({ name, party, photoUrl, large = false }: { name: stri
   )
 }
 
-async function PoliticianCards() {
+async function PoliticianCards({ page }: { page: number }) {
   const summaries = await getPoliticianSummaries()
-  const top = summaries.slice(0, 12)
+  const perPage = 24
+  const currentPage = Math.max(1, Math.min(page, Math.ceil(summaries.length / perPage)))
+  const totalPages = Math.ceil(summaries.length / perPage)
+  const top = summaries.slice((currentPage - 1) * perPage, currentPage * perPage)
   
   // Load trades for sparklines
   const { trades: allTrades } = await getTrades(1, 100000)
@@ -253,11 +256,47 @@ async function PoliticianCards() {
           </Link>
         ))}
       </div>
+      
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 mt-8">
+          {currentPage > 1 ? (
+            <Link
+              href={`/politicians?page=${currentPage - 1}`}
+              className="px-5 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white hover:border-bitcoin-500/50 transition-colors"
+            >
+              ← Previous
+            </Link>
+          ) : (
+            <span className="px-5 py-2.5 bg-gray-800/50 border border-gray-800 rounded-lg text-gray-600 cursor-not-allowed">
+              ← Previous
+            </span>
+          )}
+          
+          <span className="text-gray-400 text-sm">
+            Page {currentPage} of {totalPages} · {summaries.length} politicians
+          </span>
+          
+          {currentPage < totalPages ? (
+            <Link
+              href={`/politicians?page=${currentPage + 1}`}
+              className="px-5 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white hover:border-bitcoin-500/50 transition-colors"
+            >
+              Next →
+            </Link>
+          ) : (
+            <span className="px-5 py-2.5 bg-gray-800/50 border border-gray-800 rounded-lg text-gray-600 cursor-not-allowed">
+              Next →
+            </span>
+          )}
+        </div>
+      )}
     </div>
   )
 }
 
-export default function PoliticiansPage() {
+export default async function PoliticiansPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  const params = await searchParams
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -290,7 +329,7 @@ export default function PoliticiansPage() {
       <StatsBar />
       
       {/* Politician Cards */}
-      <PoliticianCards />
+      <PoliticianCards page={parseInt(params.page || '1', 10)} />
       
       {/* Recent Trades Table */}
       <RecentTrades />
