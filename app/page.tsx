@@ -107,6 +107,7 @@ export default function Dashboard() {
         mstrSharesOutstanding: mstrData.shares_outstanding, // ADDED - real shares from API
         mstrMarketCap: mstrData.market_cap, // ADDED - real market cap from API
         totalInstitutional,
+        btcPerShare: mstrData.btc_per_share || (mstrData.btc_holdings / mstrData.shares_outstanding),
         navPremium,
         navPerShare, // ADDED - actual NAV per share
         dilutedShares, // ADDED - fully diluted shares
@@ -247,6 +248,27 @@ export default function Dashboard() {
               </p>
             </div>
             <Target className="h-12 w-12 text-orange-500" />
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center space-x-2 mb-1">
+                <p className="text-sm text-slate-400">BTC per Share</p>
+                <span className="text-xs bg-orange-500/20 text-orange-300 px-2 py-1 rounded">LIVE</span>
+              </div>
+              <div className="text-3xl font-bold text-orange-400">
+                ₿ {liveData?.btcPerShare?.toFixed(6) || '0.002151'}
+              </div>
+              <p className="text-sm text-slate-400">
+                {liveData?.mstrHoldings?.toLocaleString()} BTC / {((liveData?.mstrSharesOutstanding || 332000000) / 1000000).toFixed(0)}M shares
+              </p>
+              <p className="text-xs text-slate-500">
+                ≈ ${((liveData?.btcPerShare || 0.002151) * (liveData?.btcPrice || 0)).toFixed(2)} per share in BTC value
+              </p>
+            </div>
+            <Bitcoin className="h-12 w-12 text-orange-500" />
           </div>
         </div>
       </div>
