@@ -132,7 +132,7 @@ export default function MarketIntelligenceLive() {
         <div className="flex items-center space-x-3">
           <div className={`w-2 h-2 rounded-full ${updating ? 'bg-orange-500 animate-pulse' : 'bg-green-500'}`}></div>
           <span className="text-xs text-slate-400">
-            Live technical analysis • Last: {new Date(techData.last_updated).toLocaleTimeString()}
+            100% Live Data • Last: {new Date(techData.last_updated).toLocaleTimeString()}
           </span>
           {updating && <RefreshCw className="h-4 w-4 animate-spin text-orange-400" />}
         </div>
@@ -195,8 +195,8 @@ export default function MarketIntelligenceLive() {
             </span>
           </div>
           <div>
-            <span className="text-slate-400">Data Source:</span>
-            <span className="ml-2 text-slate-300">{techData.source}</span>
+            <span className="text-slate-400">Last Updated:</span>
+            <span className="ml-2 text-slate-300">{new Date(techData.last_updated).toLocaleTimeString()}</span>
           </div>
         </div>
       </div>
