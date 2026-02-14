@@ -1,0 +1,4 @@
+FORCE DEPLOYMENT FOR PREFERREDS PAGE
+Deployed: 2026-02-14 10:32 EST
+Includes: NAV color fixes + MSTR Preferreds page + UI card component
+Target: Fix preferreds 404 on live site
