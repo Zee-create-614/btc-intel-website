@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Bitcoin, TrendingUp, Calculator, Bell, Users, Target, BarChart3 } from 'lucide-react'
+import { MobileMenuButton } from './MobileMenu'
 
 export default function Navigation() {
   const pathname = usePathname()
@@ -21,7 +22,7 @@ export default function Navigation() {
   ]
 
   return (
-    <nav className="bg-bitcoin-900 border-b border-bitcoin-700">
+    <nav className="bg-gray-900 border-b border-gray-700">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -48,7 +49,7 @@ export default function Navigation() {
                   href={item.href}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-bitcoin-500 text-white'
+                      ? 'bg-blue-600 text-white'
                       : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                   }`}
                 >
@@ -60,16 +61,7 @@ export default function Navigation() {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              type="button"
-              className="text-gray-300 hover:text-white focus:outline-none focus:text-white"
-            >
-              <svg className="h-6 w-6 fill-current" viewBox="0 0 24 24">
-                <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
-              </svg>
-            </button>
-          </div>
+          <MobileMenuButton />
         </div>
       </div>
     </nav>

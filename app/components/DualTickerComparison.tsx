@@ -94,10 +94,10 @@ export default function DualTickerComparison() {
       {/* Side-by-Side Price Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* MSTR Card */}
-        <div className="bg-gradient-to-br from-mstr-500/20 to-orange-500/10 border border-mstr-500/30 rounded-lg p-6">
+        <div className="bg-gradient-to-br from-blue-500/20 to-blue-400/10 border border-blue-500/30 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-mstr-500 rounded-lg flex items-center justify-center">
+              <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
                 <span className="font-bold text-white text-sm">MSTR</span>
               </div>
               <div>

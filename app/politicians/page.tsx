@@ -199,7 +199,7 @@ async function PoliticianCards() {
                 </p>
                 <div className="flex flex-wrap gap-1">
                   {pol.top_tickers.slice(0, 5).map(ticker => (
-                    <span key={ticker} className="text-xs bg-gradient-to-r from-bitcoin-500/20 to-orange-500/20 border border-bitcoin-500/30 text-bitcoin-400 px-2 py-1 rounded font-mono font-bold">
+                    <span key={ticker} className="text-xs bg-gradient-to-r from-blue-500/20 to-blue-400/20 border border-blue-500/30 text-blue-400 px-2 py-1 rounded font-mono font-bold">
                       {ticker}
                     </span>
                   ))}
@@ -233,11 +233,11 @@ export default function PoliticiansPage() {
       </div>
 
       {/* BETA Banner */}
-      <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 rounded-lg p-4 text-center">
+      <div className="bg-gradient-to-r from-green-500/20 to-blue-500/20 border border-green-500/30 rounded-lg p-4 text-center">
         <div className="flex items-center justify-center space-x-2">
-          <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-          <span className="text-orange-400 font-semibold">LIVE DATA</span>
-          <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span className="text-green-400 font-semibold">LIVE DATA</span>
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
         </div>
         <p className="text-gray-400 text-sm mt-1">
           Sourced from Capitol Trades • Updated every 30 minutes • Follow @BTCIntelVault for instant alerts
