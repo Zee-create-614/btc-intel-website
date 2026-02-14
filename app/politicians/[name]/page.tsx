@@ -7,6 +7,7 @@ import {
   returnColor, formatReturn,
 } from '../../lib/politician-data'
 import PoliticianPerformanceChart from '../../components/PoliticianPerformanceChart'
+// import TradeHistoryWithLivePrices from '../components/TradeHistoryWithLivePrices'
 
 export async function generateMetadata({ params }: { params: { name: string } }) {
   const name = decodeURIComponent(params.name)
@@ -16,8 +17,9 @@ export async function generateMetadata({ params }: { params: { name: string } })
   }
 }
 
+export const dynamic = 'force-dynamic'
+
 export async function generateStaticParams() {
-  // Return empty array during build - pages will be generated dynamically
   return []
 }
 
@@ -239,9 +241,8 @@ export default async function PoliticianPage({ params }: { params: { name: strin
         
         {/* Timeline-style trade list */}
         <div className="space-y-4">
-          {trades.map((trade, i) => {
+          {trades.map((trade: any, i: number) => {
             const prevTrade = trades[i - 1]
-            // Show month/year divider when the month changes
             const curMonth = trade.trade_date_display?.slice(0, 3) + ' ' + trade.trade_date_display?.slice(-4)
             const prevMonth = prevTrade
               ? prevTrade.trade_date_display?.slice(0, 3) + ' ' + prevTrade.trade_date_display?.slice(-4)
@@ -250,72 +251,37 @@ export default async function PoliticianPage({ params }: { params: { name: strin
 
             return (
               <div key={trade.id || i}>
-                {/* Month divider */}
                 {showDivider && (
                   <div className="flex items-center gap-3 mb-4 mt-6 first:mt-0">
                     <div className="h-px flex-1 bg-gray-700" />
-                    <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">
-                      {curMonth}
-                    </span>
+                    <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">{curMonth}</span>
                     <div className="h-px flex-1 bg-gray-700" />
                   </div>
                 )}
-
-                {/* Trade card */}
                 <div className="bg-gray-800/60 border border-gray-700/60 rounded-lg p-4 hover:border-gray-600 transition-colors">
                   <div className="flex flex-col md:flex-row md:items-center gap-4">
-                    {/* Date column */}
                     <div className="md:w-36 flex-shrink-0">
-                      <p className="text-white font-semibold text-sm">
-                        {trade.trade_date_display || trade.trade_date || 'Unknown'}
-                      </p>
-                      {trade.days_held != null && (
-                        <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                          <Clock className="h-3 w-3" />
-                          {trade.days_held === 0 ? 'Today' : trade.days_held === 1 ? '1 day ago' : `${trade.days_held} days ago`}
-                        </p>
-                      )}
+                      <p className="text-white font-semibold text-sm">{trade.trade_date_display || trade.trade_date || 'Unknown'}</p>
                     </div>
-
-                    {/* Trade direction */}
                     <div className="md:w-20 flex-shrink-0">
                       <span className={`inline-flex items-center gap-1 text-sm font-medium ${tradeTypeColor(trade.trade_type)}`}>
                         {tradeTypeEmoji(trade.trade_type)} {trade.trade_type}
                       </span>
                     </div>
-
-                    {/* Ticker & Asset */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-baseline gap-2">
-                        {trade.ticker ? (
-                          <span className="text-white font-bold font-mono text-lg">${trade.ticker}</span>
-                        ) : null}
-                        <span className="text-gray-400 text-sm truncate">
-                          {trade.asset_name || ''}
-                        </span>
+                        {trade.ticker ? <span className="text-white font-bold font-mono text-lg">${trade.ticker}</span> : null}
+                        <span className="text-gray-400 text-sm truncate">{trade.asset_name || ''}</span>
                       </div>
                       <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                         <span>Size: {trade.size_range || 'N/A'}</span>
-                        {trade.owner && trade.owner !== 'Self' && (
-                          <span className="flex items-center gap-1">
-                            <User className="h-3 w-3" />
-                            {trade.owner}
-                          </span>
-                        )}
-                        {trade.published && (
-                          <span>Published: {trade.published}</span>
-                        )}
                       </div>
                     </div>
-
-                    {/* Price & Return */}
                     <div className="md:text-right flex-shrink-0">
                       <div className="flex items-center gap-4 md:justify-end">
                         <div>
-                          <p className="text-xs text-gray-500">Trade Price</p>
-                          <p className="text-white font-medium">
-                            {trade.purchase_price ? `$${trade.purchase_price.toFixed(2)}` : (trade.price || 'N/A')}
-                          </p>
+                          <p className="text-xs text-gray-500">Price</p>
+                          <p className="text-white font-medium">{trade.purchase_price ? `$${trade.purchase_price.toFixed(2)}` : (trade.price || 'N/A')}</p>
                         </div>
                         {trade.current_price && (
                           <div>
@@ -325,32 +291,9 @@ export default async function PoliticianPage({ params }: { params: { name: strin
                         )}
                         <div>
                           <p className="text-xs text-gray-500">Return</p>
-                          <p className={`text-lg font-bold ${returnColor(trade.return_pct)}`}>
-                            {formatReturn(trade.return_pct)}
-                          </p>
+                          <p className={`text-lg font-bold ${returnColor(trade.return_pct)}`}>{formatReturn(trade.return_pct)}</p>
                         </div>
                       </div>
-                      
-                      {/* Mini timeframe returns (if available) */}
-                      {(trade.return_1d != null || trade.return_5d != null || trade.return_30d != null) && (
-                        <div className="flex items-center gap-2 mt-2 md:justify-end text-xs">
-                          {trade.return_1d != null && (
-                            <span className={`${returnColor(trade.return_1d)} bg-gray-900 px-1.5 py-0.5 rounded`}>
-                              1D: {formatReturn(trade.return_1d)}
-                            </span>
-                          )}
-                          {trade.return_5d != null && (
-                            <span className={`${returnColor(trade.return_5d)} bg-gray-900 px-1.5 py-0.5 rounded`}>
-                              5D: {formatReturn(trade.return_5d)}
-                            </span>
-                          )}
-                          {trade.return_30d != null && (
-                            <span className={`${returnColor(trade.return_30d)} bg-gray-900 px-1.5 py-0.5 rounded`}>
-                              30D: {formatReturn(trade.return_30d)}
-                            </span>
-                          )}
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>

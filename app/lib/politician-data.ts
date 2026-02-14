@@ -144,19 +144,15 @@ export async function getPoliticianDetail(name: string): Promise<PoliticianSumma
   )
   if (!summary) return null
   
-  // Try loading per-politician file first (much smaller than full trades.json)
+  // Load per-politician trade file (much smaller than full trades.json)
   const safeName = summary.name.replace(/ /g, '_').replace(/\./g, '').replace(/'/g, '')
   let rawTrades: any[] = []
   try {
     const polFile = join(dataDir, 'politician-trades', `${safeName}.json`)
     rawTrades = JSON.parse(readFileSync(polFile, 'utf-8'))
   } catch {
-    // Fallback to full trades file
-    const allTrades = getTrades_()
-    rawTrades = allTrades
-      .filter((t: any) => t.politician_name === summary.name)
-      .sort((a: any, b: any) => (b.transaction_date || '').localeCompare(a.transaction_date || ''))
-      .slice(0, 500)
+    // Per-politician file not found — return empty trades rather than loading 9MB file
+    rawTrades = []
   }
   
   const trades = rawTrades.map(mapTrade)
