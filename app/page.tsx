@@ -20,7 +20,7 @@ async function DashboardStats() {
           <span className="text-blue-400 font-semibold text-lg">BETA MODE</span>
           <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
         </div>
-        <p className="text-gray-400 text-sm mt-1">Platform in active development • Data feeds stabilizing • More features coming soon</p>
+        <p className="text-slate-400 text-sm mt-1">Platform in active development • Data feeds stabilizing • More features coming soon</p>
       </div>
       
       {/* Hero Stats */}
@@ -28,7 +28,7 @@ async function DashboardStats() {
         <div className="metric-card glow-bitcoin">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Bitcoin Price</p>
+              <p className="text-sm text-slate-400">Bitcoin Price</p>
               <p className="text-3xl font-bold text-yellow-500">
                 {formatCurrency(stats.btcPrice)}
               </p>
@@ -43,11 +43,11 @@ async function DashboardStats() {
         <div className="metric-card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Total Institutional BTC</p>
+              <p className="text-sm text-slate-400">Total Institutional BTC</p>
               <p className="text-3xl font-bold">
                 {formatNumber(stats.totalBTC)}
               </p>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-slate-400">
                 {formatCurrency(stats.totalValue)}
               </p>
             </div>
@@ -58,11 +58,11 @@ async function DashboardStats() {
         <div className="metric-card glow-mstr">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">MSTR Price</p>
+              <p className="text-sm text-slate-400">MSTR Price</p>
               <p className="text-3xl font-bold text-green-500">
                 ${stats.mstrPrice?.toFixed(2)}
               </p>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-slate-400">
                 IV: {stats.mstrIV?.toFixed(1)}%
               </p>
             </div>
@@ -73,11 +73,11 @@ async function DashboardStats() {
         <div className="metric-card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">MSTR NAV Premium</p>
+              <p className="text-sm text-slate-400">MSTR NAV Premium</p>
               <p className={`text-3xl font-bold ${(stats.navPremium || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {formatPercent(stats.navPremium || 0)}
               </p>
-              <p className="text-sm text-gray-400">vs BTC holdings</p>
+              <p className="text-sm text-slate-400">vs BTC holdings</p>
             </div>
             <DollarSign className="h-12 w-12 text-green-400" />
           </div>
@@ -90,8 +90,8 @@ async function DashboardStats() {
           <h3 className="text-xl font-bold mb-4 text-blue-500">Corporate Holdings</h3>
           <div className="text-center mb-4">
             <p className="text-4xl font-bold mb-2">{formatNumber(stats.corporateBTC)}</p>
-            <p className="text-gray-400">BTC held by companies</p>
-            <p className="text-sm text-gray-500">
+            <p className="text-slate-400">BTC held by companies</p>
+            <p className="text-sm text-slate-500">
               {formatCurrency((stats.corporateBTC || 0) * (stats.btcPrice || 0))}
             </p>
           </div>
@@ -99,18 +99,18 @@ async function DashboardStats() {
           {/* Top Corporate Holders from bitcointreasuries.net */}
           {stats.treasuriesData && (
             <div className="space-y-2 text-left">
-              <div className="text-xs text-gray-500 mb-2">Top 5 Corporate Holders:</div>
+              <div className="text-xs text-slate-500 mb-2">Top 5 Corporate Holders:</div>
               {stats.treasuriesData.companies.slice(0, 5).map((company, index) => (
                 <div key={company.ticker} className="flex justify-between items-center text-sm">
                   <div className="flex items-center space-x-2">
-                    <span className="text-xs text-gray-500 w-3">{index + 1}</span>
+                    <span className="text-xs text-slate-500 w-3">{index + 1}</span>
                     <span className="text-xs">{company.country_flag}</span>
-                    <span className={`text-xs ${index === 0 ? 'text-blue-400 font-medium' : 'text-white'}`}>
+                    <span className={`text-xs ${index === 0 ? 'text-orange-400 font-medium' : 'text-white'}`}>
                       {company.name.length > 18 ? company.name.substring(0, 18) + '...' : company.name}
                     </span>
                   </div>
                   <span className={`font-mono text-xs ${
-                    index === 0 ? 'text-blue-400 font-bold' : 'text-gray-300'
+                    index === 0 ? 'text-orange-400 font-bold' : 'text-slate-300'
                   }`}>
                     ₿ {company.btc_holdings.toLocaleString()}
                   </span>
@@ -132,8 +132,8 @@ async function DashboardStats() {
           <h3 className="text-xl font-bold mb-4 text-purple-500">ETF Holdings</h3>
           <div className="text-center">
             <p className="text-4xl font-bold mb-2">{formatNumber(stats.etfBTC)}</p>
-            <p className="text-gray-400">BTC held by ETFs</p>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-slate-400">BTC held by ETFs</p>
+            <p className="text-sm text-slate-500 mt-2">
               {formatCurrency((stats.etfBTC || 0) * (stats.btcPrice || 0))}
             </p>
           </div>
@@ -143,8 +143,8 @@ async function DashboardStats() {
           <h3 className="text-xl font-bold mb-4 text-green-400">Total Value</h3>
           <div className="text-center">
             <p className="text-4xl font-bold mb-2">{formatCurrency(stats.totalValue)}</p>
-            <p className="text-gray-400">Total institutional value</p>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-slate-400">Total institutional value</p>
+            <p className="text-sm text-slate-500 mt-2">
               {formatNumber(stats.totalBTC)} BTC
             </p>
           </div>
@@ -165,19 +165,19 @@ async function DashboardStats() {
         
         <div className="space-y-4">
           {topHolders.map((holder, index) => (
-            <div key={holder.id} className="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
+            <div key={holder.id} className="flex items-center justify-between p-4 bg-slate-800 rounded-lg">
               <div className="flex items-center space-x-4">
                 <div className="bg-bitcoin-500 text-black text-sm font-bold rounded-full w-8 h-8 flex items-center justify-center">
                   {index + 1}
                 </div>
                 <div>
                   <p className="font-semibold">{holder.entity_name}</p>
-                  <p className="text-sm text-gray-400 capitalize">{holder.entity_type}</p>
+                  <p className="text-sm text-slate-400 capitalize">{holder.entity_type}</p>
                 </div>
               </div>
               <div className="text-right">
                 <p className="font-bold">{formatNumber(holder.btc_holdings)} BTC</p>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-slate-400">
                   {formatCurrency(holder.btc_holdings * (stats.btcPrice || 0))}
                 </p>
               </div>
@@ -187,12 +187,12 @@ async function DashboardStats() {
       </div>
 
       {/* Politician Trading Preview */}
-      <Link href="/politicians" className="card hover:bg-gray-800 transition-colors">
+      <Link href="/politicians" className="card hover:bg-slate-800 transition-colors">
         <h3 className="text-xl font-bold mb-4 text-bitcoin-500">🏛️ Politician Trading Activity</h3>
         <div className="text-center">
           <p className="text-4xl font-bold mb-2 text-white">96+</p>
-          <p className="text-gray-400">Live trades tracked</p>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-slate-400">Live trades tracked</p>
+          <p className="text-sm text-slate-500 mt-2">
             25+ Politicians • Real-time alerts
           </p>
         </div>
@@ -200,41 +200,41 @@ async function DashboardStats() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Link href="/treasuries" className="card hover:bg-gray-800 transition-colors">
+        <Link href="/treasuries" className="card hover:bg-slate-800 transition-colors">
           <div className="text-center">
             <TrendingUp className="h-12 w-12 text-bitcoin-500 mx-auto mb-4" />
             <h3 className="text-lg font-bold mb-2">Treasury Tracker</h3>
-            <p className="text-gray-400 text-sm">
+            <p className="text-slate-400 text-sm">
               View all institutional Bitcoin holdings with real-time valuations
             </p>
           </div>
         </Link>
 
-        <Link href="/mstr" className="card hover:bg-gray-800 transition-colors">
+        <Link href="/mstr" className="card hover:bg-slate-800 transition-colors">
           <div className="text-center">
             <Activity className="h-12 w-12 text-mstr-500 mx-auto mb-4" />
             <h3 className="text-lg font-bold mb-2">MSTR Analytics</h3>
-            <p className="text-gray-400 text-sm">
+            <p className="text-slate-400 text-sm">
               Deep dive into MicroStrategy options, volatility, and NAV analysis
             </p>
           </div>
         </Link>
 
-        <Link href="/politicians" className="card hover:bg-gray-800 transition-colors">
+        <Link href="/politicians" className="card hover:bg-slate-800 transition-colors">
           <div className="text-center">
             <Users className="h-12 w-12 text-blue-400 mx-auto mb-4" />
             <h3 className="text-lg font-bold mb-2">Politician Trades</h3>
-            <p className="text-gray-400 text-sm">
+            <p className="text-slate-400 text-sm">
               Track Congress stock trades with performance analytics and alerts
             </p>
           </div>
         </Link>
 
-        <Link href="/mstr/calculator" className="card hover:bg-gray-800 transition-colors">
+        <Link href="/mstr/calculator" className="card hover:bg-slate-800 transition-colors">
           <div className="text-center">
             <DollarSign className="h-12 w-12 text-green-400 mx-auto mb-4" />
             <h3 className="text-lg font-bold mb-2">Options Calculator</h3>
-            <p className="text-gray-400 text-sm">
+            <p className="text-slate-400 text-sm">
               Calculate premiums for covered calls and cash-secured puts
             </p>
           </div>
@@ -251,7 +251,7 @@ export default function Dashboard() {
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-bitcoin-500 to-mstr-500 bg-clip-text text-transparent">
           Bitcoin Treasury & MSTR Intelligence
         </h1>
-        <p className="text-xl text-gray-400">
+        <p className="text-xl text-slate-400">
           Real-time tracking of institutional Bitcoin holdings and MSTR options analytics
         </p>
       </div>

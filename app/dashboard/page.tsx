@@ -21,19 +21,19 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="text-white text-lg">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-black px-4 py-8">
+    <div className="min-h-screen bg-slate-950 px-4 py-8">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-white mb-8">Dashboard</h1>
-        <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-6">
+        <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-6">
           <h2 className="text-xl font-bold text-white mb-4">Welcome to BTCIntelVault</h2>
-          <p className="text-gray-300">Your account dashboard is loading...</p>
+          <p className="text-slate-300">Your account dashboard is loading...</p>
         </div>
       </div>
     </div>

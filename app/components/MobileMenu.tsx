@@ -35,15 +35,15 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       />
       
       {/* Menu Panel */}
-      <div className="absolute top-0 right-0 h-full w-80 max-w-[85vw] bg-gray-900 border-l border-gray-700 shadow-2xl">
+      <div className="absolute top-0 right-0 h-full w-80 max-w-[85vw] bg-slate-900 border-l border-slate-700 shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-700">
+        <div className="flex items-center justify-between p-6 border-b border-slate-700">
           <h2 className="text-lg font-bold text-white">Navigation</h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-800 transition-colors"
+            className="p-2 rounded-lg hover:bg-slate-800 transition-colors"
           >
-            <X className="h-5 w-5 text-gray-400" />
+            <X className="h-5 w-5 text-slate-400" />
           </button>
         </div>
         
@@ -61,8 +61,8 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   onClick={onClose}
                   className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? 'bg-bitcoin-600 text-white shadow-lg'
-                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                      ? 'bg-blue-600 text-white shadow-lg'
+                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                   }`}
                 >
                   <Icon className="h-5 w-5" />
@@ -73,12 +73,12 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           </div>
           
           {/* User Section */}
-          <div className="mt-8 pt-6 border-t border-gray-700">
+          <div className="mt-8 pt-6 border-t border-slate-700">
             <div className="space-y-1">
               <Link
                 href="/login"
                 onClick={onClose}
-                className="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all duration-200"
+                className="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-200"
               >
                 <Users className="h-5 w-5" />
                 <span>Sign In</span>
@@ -87,7 +87,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               <Link
                 href="/register"
                 onClick={onClose}
-                className="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium bg-bitcoin-600 text-white hover:bg-bitcoin-700 transition-all duration-200"
+                className="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200"
               >
                 <Users className="h-5 w-5" />
                 <span>Sign Up Free</span>
@@ -96,7 +96,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           </div>
           
           {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-gray-700 text-xs text-gray-500">
+          <div className="mt-8 pt-6 border-t border-slate-700 text-xs text-slate-500">
             <p>© 2026 BTCIntelVault</p>
             <p>Bitcoin Treasury Intelligence</p>
           </div>
@@ -113,7 +113,7 @@ export function MobileMenuButton() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="lg:hidden p-2 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+        className="lg:hidden p-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
       >
         <Menu className="h-6 w-6" />
       </button>
