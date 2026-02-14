@@ -157,13 +157,13 @@ async function PoliticianCards({ page }: { page: number }) {
   const totalPages = Math.ceil(summaries.length / perPage)
   const top = summaries.slice((currentPage - 1) * perPage, currentPage * perPage)
   
-  // Load trades for sparklines
-  const { trades: allTrades } = await getTrades(1, 100000)
+  // Load recent trades for sparklines (limit to avoid payload issues)
+  const { trades: allTrades } = await getTrades(1, 5000)
   const tradesByPolitician: Record<string, any[]> = {}
   for (const t of allTrades) {
     const name = t.politician
     if (!tradesByPolitician[name]) tradesByPolitician[name] = []
-    tradesByPolitician[name].push(t)
+    if (tradesByPolitician[name].length < 50) tradesByPolitician[name].push(t)
   }
   
   return (

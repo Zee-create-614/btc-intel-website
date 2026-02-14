@@ -147,6 +147,8 @@ export async function getPoliticianDetail(name: string): Promise<PoliticianSumma
   const allTrades = getTrades_()
   const trades = allTrades
     .filter((t: any) => t.politician_name === summary.name)
+    .sort((a: any, b: any) => (b.transaction_date || '').localeCompare(a.transaction_date || ''))
+    .slice(0, 500)
     .map(mapTrade)
   
   return { ...summary, trades }
