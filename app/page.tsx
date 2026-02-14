@@ -103,7 +103,7 @@ export default function Dashboard() {
           100% LIVE DATA - Updates every 5 seconds
         </p>
         <p className="text-xs text-slate-500 mt-2">
-          Build: v2.14.07.35 - Market Cap Fix Applied
+          Build: v2.14.07.40 - MSTR Data FIXED ($44.5B) 
         </p>
       </div>
       
