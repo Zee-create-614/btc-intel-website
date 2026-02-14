@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
         })
       }
     } catch (error) {
-      console.log('⚠️ Liquidity tracker data not available:', error.message)
+      console.log('⚠️ Liquidity tracker data not available:', error)
     }
     
     // Fallback with recent data structure

@@ -190,7 +190,7 @@ export async function getLiveAnalytics(): Promise<LiveAnalytics> {
         throw new Error('NAV API failed')
       }
     } catch (error) {
-      console.log('⚠️ NAV API failed, using Josh confirmed value:', error.message)
+      console.log('⚠️ NAV API failed, using Josh confirmed value:', error)
       const navMultiple = 1.19 // Josh's confirmed NAV multiple from strategy.com
       navPerShare = mstrData.price / navMultiple // Calculate actual NAV per share
       navPremiumDiscount = ((navMultiple - 1.0) * 100) // Premium = (multiple - 1) * 100

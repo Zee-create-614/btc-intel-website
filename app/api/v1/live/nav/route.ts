@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         })
       }
     } catch (error) {
-      console.log('⚠️ Strategy scraper data not available:', error.message)
+      console.log('⚠️ Strategy scraper data not available:', error)
     }
     
     // Fallback: Use Josh's confirmed NAV value

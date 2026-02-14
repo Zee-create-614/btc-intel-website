@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
             }
           }
         } catch (error) {
-          console.log(`⚠️ Could not fetch live ${symbol} data:`, error.message)
+          console.log(`⚠️ Could not fetch live ${symbol} data:`, error)
         }
       }
     }
