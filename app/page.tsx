@@ -16,6 +16,7 @@ interface LiveData {
   mstrSharesOutstanding: number // ADDED - real shares from API
   mstrMarketCap: number // ADDED - real market cap from API
   totalInstitutional: number
+  btcPerShare: number
   navPremium: number
   navPerShare: number // ADDED - actual NAV per share from strategy.com
   dilutedShares: number // ADDED - fully diluted shares including convertibles
