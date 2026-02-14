@@ -103,7 +103,7 @@ export async function GET(request: NextRequest) {
       change: dailyChange,
       change_percent: dailyChangePercent,
       volume: currentVolume || 23739692,
-      market_cap: actualMarketCap || (currentPrice * sharesOutstanding), // Real market cap $44.48B
+      market_cap: actualMarketCap || (currentPrice * (sharesOutstanding || 332300000)), // Real market cap $44.48B
       shares_outstanding: sharesOutstanding || 332300000, // Real shares outstanding
       
       // Bitcoin holdings data (Josh's confirmed numbers)

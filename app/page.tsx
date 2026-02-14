@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Bitcoin, TrendingUp, DollarSign, Activity, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import OptionsFlowLive from './components/OptionsFlowLive'
+import MarketIntelligenceLive from './components/MarketIntelligenceLive'
 
 interface LiveData {
   btcPrice: number
@@ -265,6 +266,9 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* LIVE Market Intelligence */}
+      <MarketIntelligenceLive />
+      
       {/* LIVE Options Flow */}
       <OptionsFlowLive />
 
