@@ -50,11 +50,11 @@ export async function getRealMSTRData(): Promise<RealMSTRData> {
     // REAL MSTR numbers (as of Feb 13, 2026)
     const realPrice = meta.regularMarketPrice || 133.88
     const realVolume = meta.regularMarketVolume || 23739692
-    const realShares = 16800000 // Actual MSTR shares outstanding
+    const realShares = 332237825 // CORRECTED MSTR shares outstanding
     const realMarketCap = realPrice * realShares
     
-    // REAL BTC Holdings (MicroStrategy official numbers)
-    const realBtcHoldings = 190000 // Actual BTC held by MicroStrategy
+    // REAL BTC Holdings (MicroStrategy official numbers - CORRECTED)
+    const realBtcHoldings = 714644 // CORRECTED BTC held by MicroStrategy
     const avgCostBasis = 29803 // Average cost per BTC
     const totalBtcCost = realBtcHoldings * avgCostBasis
     

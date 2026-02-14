@@ -43,11 +43,11 @@ export async function getReliableMSTRData(): Promise<ReliableMSTRData> {
   
   // Always return reliable data - will enhance with live API later
   const reliableData: ReliableMSTRData = {
-    // Real MSTR stock data (as of Feb 13, 2026 5:30 PM EST)
+    // Real MSTR stock data (CORRECTED - Feb 14, 2026)
     price: 133.88,
     volume: 23739692,
-    market_cap: 2249184000, // 16.8M shares × $133.88
-    shares_outstanding: 16800000,
+    market_cap: 44476966900, // 332.2M shares × $133.88
+    shares_outstanding: 332237825, // CORRECT shares outstanding
     
     // Real BTC treasury holdings (CORRECTED from institutional data)
     btc_holdings: 714644, // Strategy Company from Josh's institutional tracker
@@ -55,10 +55,10 @@ export async function getReliableMSTRData(): Promise<ReliableMSTRData> {
     total_btc_cost: 21303132732, // 714,644 × $29,803
     unrealized_pnl: 28022644268, // $49.16B current value - $21.3B cost = $27.86B profit!
     
-    // Accurate NAV calculations (CORRECTED with real BTC holdings)
-    nav_per_share: 2956.31, // ($49.16B BTC + $500M other) / 16.8M shares
-    nav_premium_discount: -95.47, // ($133.88 - $2956.31) / $2956.31 × 100 = -95.47%!
-    btc_per_share: 0.0425, // 714,644 BTC / 16.8M shares = 0.0425
+    // Accurate NAV calculations (CORRECTED with 332M shares)
+    nav_per_share: 149.09, // ($49.16B BTC + $500M other) / 332.2M shares
+    nav_premium_discount: -10.22, // ($133.88 - $149.09) / $149.09 × 100 = -10.22%
+    btc_per_share: 0.00215, // 714,644 BTC / 332.2M shares = 0.00215
     
     // IV percentile data
     iv_rank_30d: 67.5, // Current IV rank (0-100)

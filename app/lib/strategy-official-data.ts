@@ -53,15 +53,15 @@ export async function getStrategyOfficialData(): Promise<StrategyOfficialData> {
       last_purchase_date: '2026-02-09',
       last_purchase_amount: 3000, // From latest press release
       
-      // Stock Data (NASDAQ: MSTR)
+      // Stock Data (NASDAQ: MSTR) - CORRECTED
       ticker: 'MSTR',
-      shares_outstanding: 16800000, // As of latest filings
+      shares_outstanding: 332237825, // CORRECTED shares outstanding
       
       // Calculated metrics
       market_cap: 0, // Will calculate with live price
       nav_per_share: 0, // Will calculate
       nav_premium_discount: 0, // Will calculate
-      btc_per_share: 714644 / 16800000, // 0.0425 BTC per share
+      btc_per_share: 714644 / 332237825, // CORRECTED: ~0.00215 BTC per share
       unrealized_pnl: 0, // Will calculate with current BTC price
       
       // Source attribution
