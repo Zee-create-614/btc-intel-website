@@ -40,9 +40,9 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-400">Total Institutional BTC</p>
-              <div className="text-3xl font-bold text-blue-400">1,138,075.119</div>
+              <div className="text-3xl font-bold text-blue-400">613,431</div>
               <p className="text-sm text-slate-400">
-                $76,163,401,197
+                $41,064,200,000
               </p>
             </div>
             <TrendingUp className="h-12 w-12 text-blue-500" />
@@ -79,12 +79,12 @@ export default function Dashboard() {
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-white">Corporate Holdings</h3>
-            <span className="text-orange-400 font-mono text-sm">₿ 714,644</span>
+            <span className="text-orange-400 font-mono text-sm">₿ 190,000</span>
           </div>
           <div>
             <p className="text-slate-400">BTC held by companies</p>
             <p className="text-sm text-slate-500 mt-2">
-              MicroStrategy dominates with 714,644 BTC
+              MicroStrategy dominates with 190,000 BTC
             </p>
           </div>
           
@@ -98,7 +98,7 @@ export default function Dashboard() {
                   <span className="text-xs">🇺🇸</span>
                   <span className="text-xs text-orange-400 font-medium">Strategy Company</span>
                 </div>
-                <span className="font-mono text-xs text-orange-400 font-bold">₿ 714,644</span>
+                <span className="font-mono text-xs text-orange-400 font-bold">₿ 190,000</span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <div className="flex items-center space-x-2">
@@ -136,12 +136,12 @@ export default function Dashboard() {
         <div className="card">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-white">Total Value</h3>
-            <span className="text-green-400 font-mono text-sm">$76,163,401,197</span>
+            <span className="text-green-400 font-mono text-sm">$41,064,200,000</span>
           </div>
           <div>
             <p className="text-slate-400">Total institutional value</p>
             <p className="text-sm text-slate-500 mt-2">
-              1,138,075.119 BTC
+              613,431 BTC
             </p>
           </div>
         </div>

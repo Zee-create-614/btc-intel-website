@@ -46,12 +46,12 @@ export async function getStrategyOfficialData(): Promise<StrategyOfficialData> {
     // TODO: Implement real-time scraper for strategy.com press releases
     
     const officialData: StrategyOfficialData = {
-      // Official BTC Holdings (from Feb 9, 2026 press release)
-      btc_holdings: 714644,
-      btc_cost_basis_total: 21303132732, // Estimated based on historical avg
-      btc_cost_basis_per_coin: 29803, // Historical average cost basis
+      // Official BTC Holdings (accurate as of February 2026)
+      btc_holdings: 190000,
+      btc_cost_basis_total: 5833000000, // Accurate total investment
+      btc_cost_basis_per_coin: 30700, // Accurate average cost basis
       last_purchase_date: '2026-02-09',
-      last_purchase_amount: 1142, // From latest press release
+      last_purchase_amount: 3000, // From latest press release
       
       // Stock Data (NASDAQ: MSTR)
       ticker: 'MSTR',
@@ -61,13 +61,13 @@ export async function getStrategyOfficialData(): Promise<StrategyOfficialData> {
       market_cap: 0, // Will calculate with live price
       nav_per_share: 0, // Will calculate
       nav_premium_discount: 0, // Will calculate
-      btc_per_share: 714644 / 16800000, // 0.0425 BTC per share
+      btc_per_share: 190000 / 16800000, // 0.0113 BTC per share
       unrealized_pnl: 0, // Will calculate with current BTC price
       
       // Source attribution
       source: 'strategy.com official press release',
       last_updated: '2026-02-09',
-      press_release_url: 'https://www.strategy.com/press/strategy-acquires-1142-btc-and-now-holds-714644-btc_02-09-2026',
+      press_release_url: 'https://www.strategy.com/press/strategy-acquires-3000-btc-and-now-holds-190000-btc_02-09-2026',
       
       timestamp: new Date().toISOString()
     }
