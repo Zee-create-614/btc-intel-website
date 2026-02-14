@@ -6,7 +6,7 @@ import Link from 'next/link'
 // Removed old OptionsFlow - now using live data only
 import DualTickerComparison from '../components/DualTickerComparison'
 import LiveMSTRAnalytics from '../components/LiveMSTRAnalytics'
-import OptionsFlowLive from '../components/OptionsFlowLive'
+// Removed OptionsFlowLive import - was showing hardcoded data
 
 export default function MSTRPage() {
   const [liveData, setLiveData] = useState<any>(null)
@@ -129,7 +129,7 @@ export default function MSTRPage() {
             100% LIVE DATA - Real-time MSTR analytics with live calculations • Updates every 5 seconds
           </p>
           <p className="text-xs text-slate-500 mt-2">
-            Build: v2.14.08.30 - ELIMINATED FAKE METRICS (Real call/put deltas, no more random numbers)
+            Build: v2.14.08.40 - REMOVED OptionsFlowLive COMPONENT (Was showing Josh's hardcoded 3.69, 3, $5.0M, 75%)
           </p>
         </div>
         <div className="flex items-center space-x-4 mt-4 md:mt-0">
@@ -305,8 +305,7 @@ export default function MSTRPage() {
         </div>
       </div>
 
-      {/* LIVE Options Flow */}
-      <OptionsFlowLive />
+      {/* REMOVED OptionsFlowLive - was showing hardcoded data Josh was seeing */}
 
       {/* LIVE Options Flow Metrics - ALL REAL CALCULATIONS */}
       {optionsFlow && (
