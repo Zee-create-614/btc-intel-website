@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import LiquidityChart from '../components/LiquidityChart'
 
 interface LiquidityData {
   composite_score: number
@@ -162,6 +163,9 @@ export default function LiquidityTracker() {
             </div>
           </div>
         </div>
+
+        {/* Interactive Chart */}
+        <LiquidityChart />
 
         {/* Components Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
