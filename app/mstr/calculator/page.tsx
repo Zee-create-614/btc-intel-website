@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Calculator, TrendingUp, DollarSign, AlertTriangle } from 'lucide-react'
+import { Calculator, TrendingUp, DollarSign, AlertTriangle, CheckCircle } from 'lucide-react'
+import Link from 'next/link'
+import { placeTrade } from '../../lib/paper-trading'
 
 // Black-Scholes pricing model
 function normalCDF(x: number): number {
@@ -88,6 +90,7 @@ export default function OptionsCalculator() {
   const [strikePrice2, setStrikePrice2] = useState(170) // For spreads
   const [contracts, setContracts] = useState(1)
   const [iv, setIv] = useState(85) // MSTR typically 70-120% IV
+  const [tradePlaced, setTradePlaced] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -494,19 +497,65 @@ export default function OptionsCalculator() {
         </div>
       </div>
 
-      {/* Strategy Info */}
+      {/* Paper Trade Action */}
       <div className="card">
-        <div className="bg-blue-900/20 border border-blue-700/30 rounded-lg p-4">
-          <div className="flex items-center space-x-2 mb-2">
-            <AlertTriangle className="h-4 w-4 text-blue-400" />
-            <h4 className="font-semibold text-blue-300">{strategies[selectedStrategy as keyof typeof strategies].name}</h4>
-            <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded">{strategies[selectedStrategy as keyof typeof strategies].riskLevel} Risk</span>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-bold text-white mb-1">Paper Trade This Strategy</h3>
+            <p className="text-sm text-slate-400">
+              Practice with $100K virtual balance. Track your trades and performance.
+            </p>
           </div>
-          <p className="text-sm text-blue-200">{strategies[selectedStrategy as keyof typeof strategies].description}</p>
-          <p className="text-xs text-slate-500 mt-2">
-            Pricing uses Black-Scholes model. Real market premiums may differ due to supply/demand, skew, and term structure.
-          </p>
+          <div className="flex items-center space-x-3">
+            {tradePlaced ? (
+              <div className="flex items-center space-x-2 text-green-400">
+                <CheckCircle className="h-5 w-5" />
+                <span className="font-medium">Trade placed!</span>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  const strat = strategies[selectedStrategy as keyof typeof strategies]
+                  const direction = (selectedStrategy === 'covered_call' || selectedStrategy === 'cash_secured_put') ? 'short' as const : 'long' as const
+                  const optionType = needsSpread ? 'spread' as const
+                    : (selectedStrategy === 'covered_call' || selectedStrategy === 'bull_call_spread') ? 'call' as const : 'put' as const
+                  placeTrade({
+                    strategy: selectedStrategy,
+                    strategyName: strat.name,
+                    symbol: 'MSTR',
+                    direction,
+                    optionType,
+                    strikePrice,
+                    strikePrice2: needsSpread ? strikePrice2 : undefined,
+                    contracts,
+                    shares,
+                    entryPrice: S,
+                    premium: calc.premium,
+                    totalPremium: calc.premium * shares,
+                    expirationDate,
+                    iv,
+                  })
+                  setTradePlaced(true)
+                  setTimeout(() => setTradePlaced(false), 3000)
+                }}
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors"
+              >
+                Place Paper Trade
+              </button>
+            )}
+            <Link
+              href="/paper-trading"
+              className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-lg transition-colors"
+            >
+              View Dashboard →
+            </Link>
+          </div>
         </div>
+      </div>
+
+      {/* Strategy Info */}
+      <div className="text-center text-xs text-slate-500 py-2">
+        Black-Scholes pricing model • Real market premiums may differ due to supply/demand, skew, and term structure
       </div>
     </div>
   )
