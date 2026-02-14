@@ -369,7 +369,7 @@ export default function MSTRPage() {
                 <div>IV</div>
                 <div>Delta</div>
               </div>
-              {optionsFlow.options_chain.filter(opt => opt.type === 'CALL').slice(0, 4).map((option, index) => (
+              {optionsFlow.options_chain.filter((opt: any) => opt.type === 'CALL').slice(0, 4).map((option: any, index: number) => (
                 <div key={index} className={`grid grid-cols-7 gap-2 text-sm py-2 px-1 rounded ${
                   Math.abs(option.strike - optionsFlow.current_price) <= 10 ? 'bg-slate-700/20' : ''
                 }`}>
@@ -398,7 +398,7 @@ export default function MSTRPage() {
                 <div>IV</div>
                 <div>Delta</div>
               </div>
-              {optionsFlow.options_chain.filter(opt => opt.type === 'PUT').slice(0, 4).map((option, index) => (
+              {optionsFlow.options_chain.filter((opt: any) => opt.type === 'PUT').slice(0, 4).map((option: any, index: number) => (
                 <div key={index} className={`grid grid-cols-7 gap-2 text-sm py-2 px-1 rounded ${
                   Math.abs(option.strike - optionsFlow.current_price) <= 10 ? 'bg-slate-700/20' : ''
                 }`}>
