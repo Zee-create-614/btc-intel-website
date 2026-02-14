@@ -8,6 +8,7 @@ import { getReliableMSTRData, formatReliableCurrency, formatReliableNumber, getR
 import { getStrategyOfficialData, formatOfficialBTCHoldings, formatOfficialNAV, getOfficialDataSource, getLastOfficialUpdate } from '../lib/strategy-official-data'
 import OptionsFlow from '../components/OptionFlows'
 import DualTickerComparison from '../components/DualTickerComparison'
+// import FundingAnalysis from '../components/FundingAnalysis'
 import type { MSTRStockData, OptionData, BTCPriceData, TreasuryHolding } from '../lib/data'
 
 export default function MSTRPage() {
@@ -574,6 +575,14 @@ export default function MSTRPage() {
             </p>
           </div>
         </div>
+      </div>
+      
+      {/* SEC Filing Funding Analysis - Coming Soon */}
+      <div className="mb-8 bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+        <h3 className="text-xl font-bold text-white mb-4">🆕 SEC Filing Funding Analysis</h3>
+        <p className="text-gray-400">
+          Coming soon: Track exactly how MicroStrategy funds Bitcoin purchases through preferred equity vs common stock sales.
+        </p>
       </div>
     </div>
   )

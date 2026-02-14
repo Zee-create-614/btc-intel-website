@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Bitcoin, TrendingUp, Calculator, Bell, Users } from 'lucide-react'
+import { Bitcoin, TrendingUp, Calculator, Bell, Users, Target } from 'lucide-react'
 
 export default function Navigation() {
   const pathname = usePathname()
@@ -13,12 +13,13 @@ export default function Navigation() {
     { href: '/treasuries', label: 'Treasuries', icon: TrendingUp },
     { href: '/politicians', label: 'Politicians', icon: Users },
     { href: '/mstr', label: 'MSTR Analytics', icon: TrendingUp },
+    // { href: '/halving', label: 'Halving Tracker', icon: Clock },
     { href: '/mstr/calculator', label: 'Options Calculator', icon: Calculator },
     { href: '/alerts', label: 'Alerts', icon: Bell },
   ]
 
   return (
-    <nav className="bg-gray-900 border-b border-gray-800">
+    <nav className="bg-bitcoin-900 border-b border-bitcoin-700">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}

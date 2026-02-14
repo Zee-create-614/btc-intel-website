@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-black text-white;
+    @apply bg-bitcoin-950 text-orange-50;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -14,7 +14,7 @@
 
 @layer components {
   .card {
-    @apply bg-gray-900 rounded-lg border border-gray-800 p-6;
+    @apply bg-bitcoin-900/30 rounded-lg border border-bitcoin-700/30 p-6;
   }
   
   .btn-primary {
@@ -22,26 +22,26 @@
   }
   
   .btn-secondary {
-    @apply bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition-colors;
+    @apply bg-bitcoin-800 hover:bg-bitcoin-700 text-orange-50 font-bold py-2 px-4 rounded transition-colors;
   }
   
   .table-header {
-    @apply bg-gray-800 text-gray-200 font-semibold py-3 px-6 text-left;
+    @apply bg-bitcoin-800/50 text-orange-100 font-semibold py-3 px-6 text-left;
   }
   
   .table-cell {
-    @apply py-4 px-6 border-b border-gray-800;
+    @apply py-4 px-6 border-b border-bitcoin-700/30;
   }
   
   .metric-card {
-    @apply bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg p-6 border border-gray-700;
+    @apply bg-gradient-to-br from-bitcoin-900/40 to-bitcoin-800/30 rounded-lg p-6 border border-bitcoin-600/30;
   }
   
   .glow-bitcoin {
-    box-shadow: 0 0 20px rgba(235, 157, 66, 0.3);
+    box-shadow: 0 0 20px rgba(255, 140, 0, 0.4);
   }
   
   .glow-mstr {
-    box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+    box-shadow: 0 0 20px rgba(255, 140, 0, 0.3);
   }
 }

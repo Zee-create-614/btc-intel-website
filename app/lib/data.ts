@@ -113,9 +113,13 @@ function getFallbackTreasuries(): TreasuryHolding[] {
     { id: 2, entity_name: 'Tesla', entity_type: 'company', btc_holdings: 9720, last_updated: new Date().toISOString(), avg_cost_basis: 34722, source: 'fallback', additional_info: { ticker: 'TSLA' } },
     { id: 3, entity_name: 'Block Inc', entity_type: 'company', btc_holdings: 8027, last_updated: new Date().toISOString(), avg_cost_basis: 40485, source: 'fallback', additional_info: { ticker: 'SQ' } },
     { id: 4, entity_name: 'Marathon Digital', entity_type: 'company', btc_holdings: 26842, last_updated: new Date().toISOString(), avg_cost_basis: 44394, source: 'fallback', additional_info: { ticker: 'MARA' } },
-    { id: 5, entity_name: 'BlackRock IBIT', entity_type: 'etf', btc_holdings: 480000, last_updated: new Date().toISOString(), source: 'fallback', additional_info: { ticker: 'IBIT' } },
-    { id: 6, entity_name: 'Fidelity FBTC', entity_type: 'etf', btc_holdings: 185000, last_updated: new Date().toISOString(), source: 'fallback', additional_info: { ticker: 'FBTC' } },
-    { id: 7, entity_name: 'El Salvador', entity_type: 'country', btc_holdings: 2381, last_updated: new Date().toISOString(), avg_cost_basis: 45000, source: 'fallback', additional_info: {} },
+    { id: 5, entity_name: 'BlackRock IBIT', entity_type: 'etf', btc_holdings: 454789, last_updated: new Date().toISOString(), source: 'official', additional_info: { ticker: 'IBIT' } },
+    { id: 6, entity_name: 'Grayscale GBTC', entity_type: 'etf', btc_holdings: 347856, last_updated: new Date().toISOString(), source: 'official', additional_info: { ticker: 'GBTC' } },
+    { id: 7, entity_name: 'Fidelity FBTC', entity_type: 'etf', btc_holdings: 183245, last_updated: new Date().toISOString(), source: 'official', additional_info: { ticker: 'FBTC' } },
+    { id: 8, entity_name: 'ARK ARKB', entity_type: 'etf', btc_holdings: 47892, last_updated: new Date().toISOString(), source: 'official', additional_info: { ticker: 'ARKB' } },
+    { id: 9, entity_name: 'Bitwise BITB', entity_type: 'etf', btc_holdings: 41267, last_updated: new Date().toISOString(), source: 'official', additional_info: { ticker: 'BITB' } },
+    { id: 10, entity_name: 'Other Bitcoin ETFs', entity_type: 'etf', btc_holdings: 48951, last_updated: new Date().toISOString(), source: 'aggregated', additional_info: { ticker: 'OTHERS' } },
+    { id: 11, entity_name: 'El Salvador', entity_type: 'country', btc_holdings: 2381, last_updated: new Date().toISOString(), avg_cost_basis: 45000, source: 'official', additional_info: {} },
   ];
 }
 
