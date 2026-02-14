@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     for (const symbol of preferreds) {
       if (!preferredData[symbol]) {
         preferredData[symbol] = {
-          ...fallbackData[symbol],
+          ...(fallbackData as any)[symbol],
           source: 'fallback_stable',
           timestamp
         }
