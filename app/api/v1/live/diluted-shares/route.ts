@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
         }
       }
     } catch (error) {
-      console.log('⚠️ Yahoo Finance diluted shares failed:', error.message)
+      console.log('⚠️ Yahoo Finance diluted shares failed:', error)
     }
     
     // Source 2: Try Alpha Vantage (if available)
