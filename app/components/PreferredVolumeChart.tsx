@@ -64,7 +64,7 @@ export default function PreferredVolumeChart({ symbol, color }: Props) {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch(`/api/v1/mstr/preferreds/volume-history?symbol=${symbol}&period=${period}`)
+        const res = await fetch(`/api/v1/live/preferreds-volume?symbol=${symbol}&period=${period}`)
         const json = await res.json()
         if (json.success && json.volume_history?.length > 0) {
           setData(json.volume_history)
