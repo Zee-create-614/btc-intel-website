@@ -14,11 +14,11 @@ async function DashboardStats() {
   return (
     <div className="space-y-8">
       {/* BETA MODE Banner */}
-      <div className="bg-gradient-to-r from-orange-500/20 to-yellow-500/20 border border-orange-500/30 rounded-lg p-4 text-center">
+      <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-lg p-4 text-center">
         <div className="flex items-center justify-center space-x-2">
-          <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-          <span className="text-orange-400 font-semibold text-lg">BETA MODE</span>
-          <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+          <span className="text-blue-400 font-semibold text-lg">BETA MODE</span>
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
         </div>
         <p className="text-gray-400 text-sm mt-1">Platform in active development • Data feeds stabilizing • More features coming soon</p>
       </div>
@@ -105,12 +105,12 @@ async function DashboardStats() {
                   <div className="flex items-center space-x-2">
                     <span className="text-xs text-gray-500 w-3">{index + 1}</span>
                     <span className="text-xs">{company.country_flag}</span>
-                    <span className={`text-xs ${index === 0 ? 'text-orange-400 font-medium' : 'text-white'}`}>
+                    <span className={`text-xs ${index === 0 ? 'text-blue-400 font-medium' : 'text-white'}`}>
                       {company.name.length > 18 ? company.name.substring(0, 18) + '...' : company.name}
                     </span>
                   </div>
                   <span className={`font-mono text-xs ${
-                    index === 0 ? 'text-orange-400 font-bold' : 'text-gray-300'
+                    index === 0 ? 'text-blue-400 font-bold' : 'text-gray-300'
                   }`}>
                     ₿ {company.btc_holdings.toLocaleString()}
                   </span>
@@ -119,7 +119,7 @@ async function DashboardStats() {
               <div className="pt-2 text-center">
                 <Link 
                   href="/corporate" 
-                  className="text-orange-400 hover:text-orange-300 text-xs underline"
+                  className="text-blue-400 hover:text-blue-300 text-xs underline"
                 >
                   View all {stats.treasuriesData.companies.length} companies →
                 </Link>
