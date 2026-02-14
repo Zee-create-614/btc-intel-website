@@ -95,11 +95,11 @@ export default function FixedNavAnalysis() {
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold">🔥 CORRECTED NAV (Strategy.com 1.19x)</h3>
+        <h3 className="text-xl font-bold">NAV Analysis (Strategy.com)</h3>
         <div className="flex items-center space-x-2">
           <div className={`w-2 h-2 rounded-full ${updating ? 'bg-orange-500 animate-pulse' : 'bg-green-500'}`}></div>
           <RefreshCw className={`h-4 w-4 ${updating ? 'animate-spin' : ''}`} />
-          <span className="text-xs text-green-400">FIXED</span>
+          <span className="text-xs text-green-400">LIVE</span>
         </div>
       </div>
 
@@ -107,8 +107,8 @@ export default function FixedNavAnalysis() {
         {/* BASIC NAV from Strategy.com - CORRECTED */}
         <div className="text-center p-6 bg-green-900/20 border border-green-500 rounded-lg">
           <div className="flex items-center justify-center space-x-2 mb-2">
-            <p className="text-sm text-green-400 font-medium">✅ CORRECTED Basic NAV</p>
-            <span className="text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded">1.19x STRATEGY.COM</span>
+            <p className="text-sm text-green-400 font-medium">Basic NAV</p>
+            <span className="text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded">Strategy.com 1.19x</span>
           </div>
           <p className="text-4xl font-bold text-green-400">
             +{navData.basicNavPremium.toFixed(1)}%
@@ -124,7 +124,7 @@ export default function FixedNavAnalysis() {
         {/* FULLY DILUTED NAV - CORRECTED */}
         <div className="text-center p-6 bg-orange-900/20 border border-orange-500 rounded-lg">
           <div className="flex items-center justify-center space-x-2 mb-2">
-            <p className="text-sm text-orange-400 font-medium">✅ CORRECTED Diluted NAV</p>
+            <p className="text-sm text-orange-400 font-medium">Diluted NAV</p>
             <span className="text-xs bg-orange-500/20 text-orange-300 px-2 py-1 rounded">DILUTED</span>
           </div>
           <p className="text-4xl font-bold text-orange-400">
@@ -138,14 +138,10 @@ export default function FixedNavAnalysis() {
           </p>
         </div>
 
-        {/* Live Calculation Proof */}
-        <div className="text-xs text-green-300 p-3 bg-green-900/10 border border-green-600 rounded">
-          <p className="mb-1"><strong>🔥 PROOF OF CORRECT CALCULATION:</strong></p>
-          <p>• Strategy.com Multiple: {navData.strategyMultiple}x (LIVE)</p>
-          <p>• MSTR Price: ${navData.mstrPrice}</p>
-          <p>• ✅ CORRECT NAV: ${navData.basicNavPerShare.toFixed(2)} (NOT $149!)</p>
-          <p>• ✅ CORRECT Premium: +{navData.basicNavPremium.toFixed(1)}% (NOT -10%!)</p>
-          <p className="text-red-300 mt-1">🚫 OLD BTC Holdings Method = WRONG ❌</p>
+        {/* NAV Calculation Details */}
+        <div className="text-xs text-slate-400 p-3 bg-slate-800/50 border border-slate-700 rounded">
+          <p>Strategy.com Multiple: {navData.strategyMultiple}x • MSTR: ${navData.mstrPrice}</p>
+          <p>NAV/Share: ${navData.basicNavPerShare.toFixed(2)} • Premium: +{navData.basicNavPremium.toFixed(1)}%</p>
         </div>
       </div>
     </div>

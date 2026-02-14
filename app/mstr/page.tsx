@@ -324,30 +324,7 @@ export default function MSTRPage() {
           </div>
         </div>
 
-        {/* NUCLEAR OPTION - DIRECT INLINE FIX */}
-        <div className="card">
-          <h3 className="text-xl font-bold mb-6 text-green-400">🔥 EMERGENCY FIX - CORRECT NAV</h3>
-          <div className="space-y-4">
-            <div className="text-center p-6 bg-green-900/20 border-2 border-green-500 rounded-lg">
-              <p className="text-sm text-green-400 font-medium mb-2">✅ CORRECT STRATEGY.COM CALCULATION</p>
-              <p className="text-4xl font-bold text-green-400">
-                +19.0%
-              </p>
-              <p className="text-sm text-white mt-2">
-                NAV: $112 (NOT $149!) | Strategy.com 1.19x
-              </p>
-              <p className="text-xs text-green-300 mt-1">
-                $133.88 ÷ 1.19 = $112.49 per share
-              </p>
-            </div>
-            
-            <div className="p-4 bg-red-900/20 border border-red-500 rounded">
-              <p className="text-red-400 font-bold">🚫 OLD CALCULATION DISABLED</p>
-              <p className="text-xs text-red-300">The -10% discount shown above is WRONG - uses old BTC method</p>
-              <p className="text-xs text-green-300">This green section shows CORRECT strategy.com calculation</p>
-            </div>
-          </div>
-        </div>
+        {/* NAV section cleaned up - using strategy.com calculation */}
       </div>
 
       {/* REMOVED OptionsFlowLive - was showing hardcoded data Josh was seeing */}
@@ -358,7 +335,7 @@ export default function MSTRPage() {
           <div className="card text-center">
             <p className="text-sm text-gray-400 mb-2">Call/Put Ratio</p>
             <p className="text-3xl font-bold text-green-400">
-              {optionsFlow.greeks_summary.call_put_ratio.toFixed(2)}
+              {(optionsFlow.greeks_summary?.call_put_ratio ?? 0).toFixed(2)}
             </p>
             <p className="text-xs text-gray-500">
               {optionsFlow.greeks_summary.dominant_sentiment} • Live
@@ -368,7 +345,7 @@ export default function MSTRPage() {
           <div className="card text-center">
             <p className="text-sm text-gray-400 mb-2">Live Call Delta</p>
             <p className="text-3xl font-bold text-green-400">
-              {optionsFlow.greeks_summary.avg_call_delta.toFixed(2)}
+              {(optionsFlow.greeks_summary?.avg_call_delta ?? 0).toFixed(2)}
             </p>
             <p className="text-xs text-gray-500">Average delta</p>
           </div>
@@ -376,7 +353,7 @@ export default function MSTRPage() {
           <div className="card text-center">
             <p className="text-sm text-gray-400 mb-2">Live Put Delta</p>
             <p className="text-3xl font-bold text-red-400">
-              {optionsFlow.greeks_summary.avg_put_delta.toFixed(2)}
+              {(optionsFlow.greeks_summary?.avg_put_delta ?? 0).toFixed(2)}
             </p>
             <p className="text-xs text-gray-500">Average delta</p>
           </div>
@@ -424,7 +401,7 @@ export default function MSTRPage() {
                   <div className="font-mono">{option.volume.toLocaleString()}</div>
                   <div className="font-mono">{option.openInterest.toLocaleString()}</div>
                   <div className="font-mono text-blue-400">{(option.impliedVolatility * 100).toFixed(0)}%</div>
-                  <div className="font-mono">{option.delta.toFixed(2)}</div>
+                  <div className="font-mono">{(option.delta ?? 0).toFixed(2)}</div>
                 </div>
               ))}
             </div>
@@ -453,7 +430,7 @@ export default function MSTRPage() {
                   <div className="font-mono">{option.volume.toLocaleString()}</div>
                   <div className="font-mono">{option.openInterest.toLocaleString()}</div>
                   <div className="font-mono text-blue-400">{(option.impliedVolatility * 100).toFixed(0)}%</div>
-                  <div className="font-mono text-red-400">{option.delta.toFixed(2)}</div>
+                  <div className="font-mono text-red-400">{(option.delta ?? 0).toFixed(2)}</div>
                 </div>
               ))}
             </div>
@@ -466,13 +443,13 @@ export default function MSTRPage() {
               <div className="text-center p-4 bg-gray-800 rounded">
                 <p className="text-sm text-gray-400 mb-2">Avg Call Delta</p>
                 <p className="text-2xl font-bold text-green-400">
-                  {optionsFlow.greeks_summary.avg_call_delta.toFixed(2)}
+                  {(optionsFlow.greeks_summary?.avg_call_delta ?? 0).toFixed(2)}
                 </p>
               </div>
               <div className="text-center p-4 bg-gray-800 rounded">
                 <p className="text-sm text-gray-400 mb-2">Avg Put Delta</p>
                 <p className="text-2xl font-bold text-red-400">
-                  {optionsFlow.greeks_summary.avg_put_delta.toFixed(2)}
+                  {(optionsFlow.greeks_summary?.avg_put_delta ?? 0).toFixed(2)}
                 </p>
               </div>
               <div className="text-center p-4 bg-gray-800 rounded">
