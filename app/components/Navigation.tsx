@@ -11,6 +11,7 @@ export default function Navigation() {
   const navItems = [
     { href: '/', label: 'Dashboard', icon: Bitcoin },
     { href: '/treasuries', label: 'Treasuries', icon: TrendingUp },
+    { href: '/corporate', label: 'Corporate Holdings', icon: Users },
     { href: '/politicians', label: 'Politicians', icon: Users },
     { href: '/mstr', label: 'MSTR Analytics', icon: TrendingUp },
     // { href: '/halving', label: 'Halving Tracker', icon: Clock },
