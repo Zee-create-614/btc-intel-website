@@ -182,7 +182,6 @@ export async function GET(request: NextRequest) {
       market_sentiment: rsi > 60 && macd.signal === 'BULLISH' ? 'STRONG_BULLISH' :
                         rsi < 40 && macd.signal === 'BEARISH' ? 'STRONG_BEARISH' : 'NEUTRAL',
       last_updated: new Date().toISOString(),
-      source: dataSource,
       timestamp: Date.now()
     }
     
@@ -225,7 +224,6 @@ export async function GET(request: NextRequest) {
       },
       market_sentiment: 'NEUTRAL',
       last_updated: new Date().toISOString(),
-      source: 'fallback_error',
       timestamp: Date.now(),
       error: 'Technical indicators temporarily unavailable'
     }, {

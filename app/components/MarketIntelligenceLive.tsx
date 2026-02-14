@@ -27,7 +27,6 @@ interface TechnicalData {
   technical_indicators: TechnicalIndicators
   market_sentiment: string
   last_updated: string
-  source: string
   timestamp: number
 }
 
