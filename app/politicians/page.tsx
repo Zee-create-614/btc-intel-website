@@ -199,7 +199,7 @@ async function PoliticianCards({ page }: { page: number }) {
                 </p>
                 
                 <div className={`text-lg font-bold ${returnColor(pol.avg_return_pct)}`}>
-                  {formatReturn(pol.avg_return_pct)} avg
+                  {formatReturn(pol.avg_return_pct)} avg per trade
                 </div>
               </div>
               
