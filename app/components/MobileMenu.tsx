@@ -53,7 +53,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         {/* Navigation Links */}
         <nav className="p-4">
           <div className="space-y-1">
-            {navItems.map((item) => {
+            {navItems.map((item: any) => {
               const Icon = item.icon
               const isActive = pathname === item.href
               
@@ -65,11 +65,14 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive
                       ? 'bg-blue-600 text-white shadow-lg'
+                      : item.highlight
+                      ? 'text-orange-400 bg-orange-500/10 border border-orange-500/30 hover:bg-orange-500/20'
                       : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                   }`}
                 >
                   <Icon className="h-5 w-5" />
                   <span>{item.label}</span>
+                  {item.highlight && <span className="ml-auto text-xs bg-orange-500 text-black px-2 py-0.5 rounded-full font-bold">NEW</span>}
                 </Link>
               )
             })}
