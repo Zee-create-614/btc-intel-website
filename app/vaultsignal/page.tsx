@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Activity, TrendingUp, TrendingDown, Minus, ChevronRight, Zap, Shield, BarChart3, Brain, Building2, Check, ArrowRight, RefreshCw } from 'lucide-react'
+import { Activity, TrendingUp, TrendingDown, Minus, ChevronRight, Zap, Shield, BarChart3, Brain, Building2, Check, ArrowRight, RefreshCw, Bitcoin } from 'lucide-react'
 
 // ============================================================
 // TYPES
@@ -14,7 +14,7 @@ interface Signal {
   value: string
   direction: SignalDirection
   weight: number
-  live?: boolean // true = real-time data, false = estimated
+  live?: boolean
 }
 
 interface SignalCategory {
@@ -25,6 +25,7 @@ interface SignalCategory {
   signals: Signal[]
   score: number
   direction: SignalDirection
+  feed: 'btc' | 'mstr' | 'both' // which master signal this feeds
 }
 
 interface LivePrices {
@@ -45,6 +46,13 @@ interface LivePrices {
   mstrSignal: string
 }
 
+interface DualScores {
+  btcScore: number
+  btcSignal: string
+  mstrScore: number
+  mstrSignal: string
+}
+
 // ============================================================
 // DATA BUILDING
 // ============================================================
@@ -56,7 +64,6 @@ function getDirection(val: number, bullThresh: number, bearThresh: number): Sign
 }
 
 function buildCategories(data: LivePrices): SignalCategory[] {
-  // On-Chain (estimated — no free real-time on-chain APIs)
   const onChainScore = 68
   const onChain: SignalCategory = {
     name: 'On-Chain',
@@ -65,6 +72,7 @@ function buildCategories(data: LivePrices): SignalCategory[] {
     glowColor: 'shadow-emerald-500/20',
     score: onChainScore,
     direction: 'bullish',
+    feed: 'btc',
     signals: [
       { name: 'MVRV Z-Score', value: '2.1', direction: 'bullish', weight: 30, live: false },
       { name: 'NUPL', value: '0.58', direction: 'bullish', weight: 25, live: false },
@@ -73,7 +81,6 @@ function buildCategories(data: LivePrices): SignalCategory[] {
     ],
   }
 
-  // Macro (estimated)
   const macroScore = 61
   const macro: SignalCategory = {
     name: 'Macro',
@@ -82,6 +89,7 @@ function buildCategories(data: LivePrices): SignalCategory[] {
     glowColor: 'shadow-blue-500/20',
     score: macroScore,
     direction: 'bullish',
+    feed: 'btc',
     signals: [
       { name: 'Global Liquidity', value: '61.2', direction: 'bullish', weight: 30, live: false },
       { name: 'DXY Trend', value: '103.8 ↓', direction: 'bullish', weight: 25, live: false },
@@ -90,7 +98,6 @@ function buildCategories(data: LivePrices): SignalCategory[] {
     ],
   }
 
-  // Technical — RSI + momentum are LIVE
   const rsiDir = getDirection(data.rsi, 55, 45)
   const momDir = getDirection(data.btcMomentum5d, 2, -2)
   const volDir: SignalDirection = data.btcVolTrend > 1.15 ? 'bullish' : data.btcVolTrend < 0.85 ? 'bearish' : 'neutral'
@@ -103,6 +110,7 @@ function buildCategories(data: LivePrices): SignalCategory[] {
     glowColor: 'shadow-violet-500/20',
     score: Math.round(techScore),
     direction: techDir,
+    feed: 'btc',
     signals: [
       { name: 'RSI (14D)', value: data.rsi.toString(), direction: rsiDir, weight: 20, live: true },
       { name: 'BTC 5D Momentum', value: `${data.btcMomentum5d >= 0 ? '+' : ''}${data.btcMomentum5d.toFixed(1)}%`, direction: momDir, weight: 25, live: true },
@@ -112,7 +120,6 @@ function buildCategories(data: LivePrices): SignalCategory[] {
     ],
   }
 
-  // Sentiment — Fear & Greed is LIVE
   const fgDir = getDirection(data.fearGreed, 55, 40)
   const sentScore = Math.max(0, Math.min(100, data.fearGreed))
   const sentDir = getDirection(sentScore, 55, 45)
@@ -123,6 +130,7 @@ function buildCategories(data: LivePrices): SignalCategory[] {
     glowColor: 'shadow-amber-500/20',
     score: sentScore,
     direction: sentDir,
+    feed: 'btc',
     signals: [
       { name: 'Fear & Greed', value: `${data.fearGreed} — ${data.fearGreedLabel}`, direction: fgDir, weight: 30, live: true },
       { name: 'Funding Rates', value: '0.012%', direction: 'neutral', weight: 25, live: false },
@@ -131,7 +139,6 @@ function buildCategories(data: LivePrices): SignalCategory[] {
     ],
   }
 
-  // MSTR-Specific — price momentum is LIVE
   const mstrMomDir = getDirection(data.mstrMomentum5d, 2, -2)
   const mstrSpecScore = Math.max(0, Math.min(100, 50 + data.mstrScore * 0.3))
   const mstrDir = getDirection(mstrSpecScore, 55, 45)
@@ -142,6 +149,7 @@ function buildCategories(data: LivePrices): SignalCategory[] {
     glowColor: 'shadow-rose-500/20',
     score: Math.round(mstrSpecScore),
     direction: mstrDir,
+    feed: 'mstr',
     signals: [
       { name: 'NAV Premium', value: '1.8x', direction: 'bullish', weight: 30, live: false },
       { name: 'MSTR 5D Momentum', value: `${data.mstrMomentum5d >= 0 ? '+' : ''}${data.mstrMomentum5d.toFixed(1)}%`, direction: mstrMomDir, weight: 25, live: true },
@@ -153,14 +161,28 @@ function buildCategories(data: LivePrices): SignalCategory[] {
   return [onChain, macro, technical, sentiment, mstrSpec]
 }
 
-function computeMasterScore(cats: SignalCategory[]): number {
-  const weights = [0.25, 0.15, 0.25, 0.15, 0.20] // on-chain, macro, tech, sentiment, mstr
-  let total = 0
-  cats.forEach((c, i) => { total += c.score * weights[i] })
-  return Math.round(total)
+function computeDualScores(cats: SignalCategory[]): DualScores {
+  // BTC signal: weighted average of btc-feeding categories
+  const btcCats = cats.filter(c => c.feed === 'btc')
+  const btcWeights = [0.30, 0.15, 0.30, 0.25] // on-chain, macro, technical, sentiment
+  let btcTotal = 0
+  btcCats.forEach((c, i) => { btcTotal += c.score * (btcWeights[i] || 0.25) })
+  const btcScore = Math.round(btcTotal)
+
+  // MSTR signal: 60% BTC signal + 40% MSTR-specific (leveraged exposure)
+  const mstrCat = cats.find(c => c.feed === 'mstr')
+  const mstrSpecific = mstrCat?.score || 50
+  const mstrScore = Math.round(btcScore * 0.6 + mstrSpecific * 0.4)
+
+  return {
+    btcScore,
+    btcSignal: getSignalLabel(btcScore),
+    mstrScore,
+    mstrSignal: getSignalLabel(mstrScore),
+  }
 }
 
-function getMasterSignal(score: number): string {
+function getSignalLabel(score: number): string {
   if (score >= 75) return 'STRONG BUY'
   if (score >= 60) return 'BUY'
   if (score >= 45) return 'NEUTRAL'
@@ -193,8 +215,8 @@ function LiveBadge({ live }: { live?: boolean }) {
   return <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-700/50 text-slate-500 uppercase tracking-wider">Est.</span>
 }
 
-// ---- Gauge ----
-function SignalGauge({ score, label }: { score: number; label: string }) {
+// ---- Gauge (accepts unique gradient id to avoid SVG conflicts) ----
+function SignalGauge({ score, label, title, gradientId }: { score: number; label: string; title: string; gradientId: string }) {
   const [animatedScore, setAnimatedScore] = useState(0)
 
   useEffect(() => {
@@ -207,43 +229,46 @@ function SignalGauge({ score, label }: { score: number; label: string }) {
     animatedScore >= 70 ? '#10b981' : animatedScore >= 55 ? '#22c55e' : animatedScore >= 45 ? '#6b7280' : animatedScore >= 30 ? '#ef4444' : '#dc2626'
 
   return (
-    <div className="relative w-72 h-72 mx-auto sm:w-80 sm:h-80">
-      <div
-        className="absolute inset-0 rounded-full blur-3xl opacity-30 transition-colors duration-1000"
-        style={{ backgroundColor: scoreColor }}
-      />
-      <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-2xl">
-        <path d="M 30 145 A 80 80 0 1 1 170 145" fill="none" stroke="#1e293b" strokeWidth="14" strokeLinecap="round" />
-        <defs>
-          <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#dc2626" />
-            <stop offset="25%" stopColor="#ef4444" />
-            <stop offset="50%" stopColor="#6b7280" />
-            <stop offset="75%" stopColor="#22c55e" />
-            <stop offset="100%" stopColor="#10b981" />
-          </linearGradient>
-        </defs>
-        <path d="M 30 145 A 80 80 0 1 1 170 145" fill="none" stroke="url(#gaugeGrad)" strokeWidth="14" strokeLinecap="round" opacity="0.3" />
-        <g className="transition-transform duration-1000 ease-out" style={{ transform: `rotate(${angle}deg)`, transformOrigin: '100px 100px' }}>
-          <line x1="100" y1="100" x2="100" y2="32" stroke={scoreColor} strokeWidth="3" strokeLinecap="round" />
-          <circle cx="100" cy="100" r="6" fill={scoreColor} />
-        </g>
-        <text x="100" y="90" textAnchor="middle" fill="white" fontSize="28" fontWeight="bold" className="font-mono">
-          {animatedScore}%
-        </text>
-        <text x="100" y="110" textAnchor="middle" fill={scoreColor} fontSize="11" fontWeight="600">
-          Bullish
-        </text>
-        <text x="24" y="162" fill="#ef4444" fontSize="8" fontWeight="600">SELL</text>
-        <text x="155" y="162" fill="#10b981" fontSize="8" fontWeight="600">BUY</text>
-      </svg>
-      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-center">
-        <span
-          className="text-2xl font-black tracking-wider px-6 py-2 rounded-full border"
-          style={{ color: scoreColor, borderColor: scoreColor, backgroundColor: `${scoreColor}15` }}
-        >
-          {label}
-        </span>
+    <div className="flex flex-col items-center">
+      <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">{title}</h3>
+      <div className="relative w-56 h-56 sm:w-64 sm:h-64">
+        <div
+          className="absolute inset-0 rounded-full blur-3xl opacity-25 transition-colors duration-1000"
+          style={{ backgroundColor: scoreColor }}
+        />
+        <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-2xl">
+          <path d="M 30 145 A 80 80 0 1 1 170 145" fill="none" stroke="#1e293b" strokeWidth="14" strokeLinecap="round" />
+          <defs>
+            <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#dc2626" />
+              <stop offset="25%" stopColor="#ef4444" />
+              <stop offset="50%" stopColor="#6b7280" />
+              <stop offset="75%" stopColor="#22c55e" />
+              <stop offset="100%" stopColor="#10b981" />
+            </linearGradient>
+          </defs>
+          <path d="M 30 145 A 80 80 0 1 1 170 145" fill="none" stroke={`url(#${gradientId})`} strokeWidth="14" strokeLinecap="round" opacity="0.3" />
+          <g className="transition-transform duration-1000 ease-out" style={{ transform: `rotate(${angle}deg)`, transformOrigin: '100px 100px' }}>
+            <line x1="100" y1="100" x2="100" y2="32" stroke={scoreColor} strokeWidth="3" strokeLinecap="round" />
+            <circle cx="100" cy="100" r="6" fill={scoreColor} />
+          </g>
+          <text x="100" y="88" textAnchor="middle" fill="white" fontSize="26" fontWeight="bold" className="font-mono">
+            {animatedScore}%
+          </text>
+          <text x="100" y="108" textAnchor="middle" fill={scoreColor} fontSize="11" fontWeight="600">
+            {animatedScore >= 50 ? 'Bullish' : animatedScore <= 40 ? 'Bearish' : 'Neutral'}
+          </text>
+          <text x="24" y="162" fill="#ef4444" fontSize="8" fontWeight="600">SELL</text>
+          <text x="155" y="162" fill="#10b981" fontSize="8" fontWeight="600">BUY</text>
+        </svg>
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-center">
+          <span
+            className="text-lg sm:text-xl font-black tracking-wider px-5 py-1.5 rounded-full border whitespace-nowrap"
+            style={{ color: scoreColor, borderColor: scoreColor, backgroundColor: `${scoreColor}15` }}
+          >
+            {label}
+          </span>
+        </div>
       </div>
     </div>
   )
@@ -252,6 +277,8 @@ function SignalGauge({ score, label }: { score: number; label: string }) {
 // ---- Category Card ----
 function CategoryCard({ cat, index }: { cat: SignalCategory; index: number }) {
   const [open, setOpen] = useState(false)
+  const feedLabel = cat.feed === 'btc' ? '→ BTC Signal' : '→ MSTR Signal'
+  const feedColor = cat.feed === 'btc' ? 'text-orange-400' : 'text-blue-400'
   return (
     <div
       className={`group relative rounded-2xl border border-white/5 bg-white/[0.03] backdrop-blur-xl p-5 hover:border-white/10 transition-all duration-300 ${cat.glowColor} hover:shadow-lg cursor-pointer`}
@@ -263,7 +290,7 @@ function CategoryCard({ cat, index }: { cat: SignalCategory; index: number }) {
           <div className={`p-2 rounded-xl bg-gradient-to-br ${cat.color} text-white`}>{cat.icon}</div>
           <div>
             <h3 className="font-bold text-white text-sm">{cat.name}</h3>
-            <p className="text-[11px] text-slate-400">{cat.signals.length} signals</p>
+            <p className="text-[11px] text-slate-400">{cat.signals.length} signals <span className={`${feedColor} font-semibold`}>{feedLabel}</span></p>
           </div>
         </div>
         <div className="text-right">
@@ -301,67 +328,185 @@ function CategoryCard({ cat, index }: { cat: SignalCategory; index: number }) {
   )
 }
 
-// ---- Flowchart ----
-function FlowChart({ categories: cats, masterScore, masterSignal }: { categories: SignalCategory[]; masterScore: number; masterSignal: string }) {
+// ---- Dual Flowchart ----
+function DualFlowChart({ categories: cats, dual }: { categories: SignalCategory[]; dual: DualScores }) {
+  const btcCats = cats.filter(c => c.feed === 'btc')
+  const mstrCats = cats.filter(c => c.feed === 'mstr')
+
+  const btcColor = dual.btcScore >= 55 ? 'emerald' : dual.btcScore >= 45 ? 'slate' : 'red'
+  const mstrColor = dual.mstrScore >= 55 ? 'blue' : dual.mstrScore >= 45 ? 'slate' : 'red'
+
   return (
     <div className="relative">
-      <div className="hidden lg:flex items-center justify-center gap-4 relative">
-        <div className="flex flex-col gap-3">
-          {cats.map((cat) => (
-            <div key={cat.name} className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/[0.03] backdrop-blur-sm min-w-[180px]">
-                <div className={`p-1.5 rounded-lg bg-gradient-to-br ${cat.color}`}>{cat.icon}</div>
+      {/* Desktop */}
+      <div className="hidden lg:block space-y-8">
+        {/* Row 1: BTC categories → Signal Engine → BTC Master */}
+        <div className="flex items-center justify-center gap-4">
+          <div className="flex flex-col gap-2">
+            {btcCats.map((cat) => (
+              <div key={cat.name} className="flex items-center gap-3">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.03] min-w-[160px]">
+                  <div className={`p-1 rounded-lg bg-gradient-to-br ${cat.color}`}>{cat.icon}</div>
+                  <div>
+                    <div className="text-[11px] font-bold text-white">{cat.name}</div>
+                    <div className="text-[9px] text-slate-400">{cat.score}/100</div>
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-8 h-px bg-gradient-to-r from-white/20 to-white/5" />
+                  <ArrowRight className="w-3 h-3 text-white/20 -ml-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="px-5 py-3 rounded-2xl border border-[#F7931A]/30 bg-[#F7931A]/5 text-center">
+            <Zap className="w-5 h-5 text-[#F7931A] mx-auto mb-1" />
+            <div className="text-[10px] font-bold text-[#F7931A]">BTC Engine</div>
+            <div className="text-[9px] text-slate-400">Weighted Fusion</div>
+          </div>
+
+          <div className="flex items-center">
+            <div className="w-12 h-px bg-gradient-to-r from-[#F7931A]/30 to-[#F7931A]" />
+            <ArrowRight className="w-3 h-3 text-[#F7931A] -ml-1" />
+          </div>
+
+          <div className={`px-6 py-4 rounded-2xl border-2 border-${btcColor}-500/40 bg-${btcColor}-500/5 text-center shadow-lg shadow-${btcColor}-500/10`}
+            style={{ borderColor: dual.btcScore >= 55 ? '#10b98166' : dual.btcScore >= 45 ? '#6b728066' : '#ef444466' }}
+          >
+            <div className="text-[10px] text-orange-400 font-bold mb-1">₿ BTC Signal</div>
+            <div className="text-xl font-black" style={{ color: dual.btcScore >= 55 ? '#10b981' : dual.btcScore >= 45 ? '#6b7280' : '#ef4444' }}>
+              {dual.btcScore}%
+            </div>
+            <div className="text-xs font-bold text-white mt-0.5">{dual.btcSignal}</div>
+          </div>
+        </div>
+
+        {/* Connector: BTC Signal feeds down into MSTR */}
+        <div className="flex justify-center">
+          <div className="flex flex-col items-center">
+            <div className="h-6 w-px bg-gradient-to-b from-orange-500/40 to-blue-500/40" />
+            <div className="px-3 py-1 rounded-full bg-gradient-to-r from-orange-500/10 to-blue-500/10 border border-white/10 text-[9px] text-slate-400 font-semibold">
+              BTC Signal feeds into MSTR (60% weight)
+            </div>
+            <div className="h-6 w-px bg-gradient-to-b from-blue-500/40 to-blue-500/20" />
+          </div>
+        </div>
+
+        {/* Row 2: MSTR-Specific + BTC Signal → MSTR Engine → MSTR Master */}
+        <div className="flex items-center justify-center gap-4">
+          <div className="flex flex-col gap-2">
+            {mstrCats.map((cat) => (
+              <div key={cat.name} className="flex items-center gap-3">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-white/[0.03] min-w-[160px]">
+                  <div className={`p-1 rounded-lg bg-gradient-to-br ${cat.color}`}>{cat.icon}</div>
+                  <div>
+                    <div className="text-[11px] font-bold text-white">{cat.name}</div>
+                    <div className="text-[9px] text-slate-400">{cat.score}/100</div>
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-8 h-px bg-gradient-to-r from-white/20 to-white/5" />
+                  <ArrowRight className="w-3 h-3 text-white/20 -ml-1" />
+                </div>
+              </div>
+            ))}
+            {/* BTC Signal as input */}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-orange-500/20 bg-orange-500/5 min-w-[160px]">
+                <div className="p-1 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500">
+                  <Bitcoin className="w-4 h-4 text-white" />
+                </div>
                 <div>
-                  <div className="text-xs font-bold text-white">{cat.name}</div>
-                  <div className="text-[10px] text-slate-400">{cat.score}/100</div>
+                  <div className="text-[11px] font-bold text-orange-400">BTC Signal</div>
+                  <div className="text-[9px] text-slate-400">{dual.btcScore}/100 (60% wt)</div>
                 </div>
               </div>
               <div className="flex items-center">
-                <div className="w-12 h-px bg-gradient-to-r from-white/20 to-white/5" />
-                <ArrowRight className="w-3 h-3 text-white/20 -ml-1" />
+                <div className="w-8 h-px bg-gradient-to-r from-orange-500/20 to-orange-500/5" />
+                <ArrowRight className="w-3 h-3 text-orange-500/20 -ml-1" />
               </div>
             </div>
-          ))}
-        </div>
-        <div className="relative flex flex-col items-center">
-          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-white/0 via-white/20 to-white/0" />
-          <div className="relative z-10 px-6 py-4 rounded-2xl border border-[#F7931A]/30 bg-[#F7931A]/5 backdrop-blur-xl text-center">
-            <Zap className="w-6 h-6 text-[#F7931A] mx-auto mb-1" />
-            <div className="text-xs font-bold text-[#F7931A]">Signal Engine</div>
-            <div className="text-[10px] text-slate-400">Weighted Fusion</div>
+          </div>
+
+          <div className="px-5 py-3 rounded-2xl border border-blue-500/30 bg-blue-500/5 text-center">
+            <Zap className="w-5 h-5 text-blue-400 mx-auto mb-1" />
+            <div className="text-[10px] font-bold text-blue-400">MSTR Engine</div>
+            <div className="text-[9px] text-slate-400">BTC + MSTR Fusion</div>
+          </div>
+
+          <div className="flex items-center">
+            <div className="w-12 h-px bg-gradient-to-r from-blue-500/30 to-blue-500" />
+            <ArrowRight className="w-3 h-3 text-blue-400 -ml-1" />
+          </div>
+
+          <div className="px-6 py-4 rounded-2xl border-2 text-center shadow-lg"
+            style={{
+              borderColor: dual.mstrScore >= 55 ? '#3b82f666' : dual.mstrScore >= 45 ? '#6b728066' : '#ef444466',
+              backgroundColor: dual.mstrScore >= 55 ? '#3b82f608' : dual.mstrScore >= 45 ? '#6b728008' : '#ef444408',
+            }}
+          >
+            <div className="text-[10px] text-blue-400 font-bold mb-1">MSTR Signal</div>
+            <div className="text-xl font-black" style={{ color: dual.mstrScore >= 55 ? '#3b82f6' : dual.mstrScore >= 45 ? '#6b7280' : '#ef4444' }}>
+              {dual.mstrScore}%
+            </div>
+            <div className="text-xs font-bold text-white mt-0.5">{dual.mstrSignal}</div>
           </div>
         </div>
-        <div className="flex items-center">
-          <div className="w-16 h-px bg-gradient-to-r from-[#F7931A]/30 to-[#F7931A]" />
-          <ArrowRight className="w-4 h-4 text-[#F7931A] -ml-1" />
-        </div>
-        <div className="px-8 py-5 rounded-2xl border-2 border-emerald-500/40 bg-emerald-500/5 backdrop-blur-xl text-center shadow-lg shadow-emerald-500/10">
-          <div className="text-2xl font-black text-emerald-400">{masterScore}%</div>
-          <div className="text-sm font-bold text-white mt-1">{masterSignal}</div>
-          <div className="text-[10px] text-emerald-400/60 mt-1">Master Signal</div>
-        </div>
       </div>
+
+      {/* Mobile: vertical flow */}
       <div className="lg:hidden flex flex-col items-center gap-2">
-        {cats.map((cat) => (
+        <div className="text-[10px] font-bold text-orange-400 uppercase tracking-wider">BTC Signal Path</div>
+        {btcCats.map((cat) => (
           <div key={cat.name} className="flex flex-col items-center">
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/[0.03] backdrop-blur-sm w-full max-w-[240px]">
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/[0.03] w-full max-w-[240px]">
               <div className={`p-1.5 rounded-lg bg-gradient-to-br ${cat.color}`}>{cat.icon}</div>
               <div>
                 <div className="text-xs font-bold text-white">{cat.name}</div>
                 <div className="text-[10px] text-slate-400">Score: {cat.score}</div>
               </div>
             </div>
-            <div className="w-px h-4 bg-white/10" />
+            <div className="w-px h-3 bg-white/10" />
           </div>
         ))}
-        <div className="px-6 py-3 rounded-2xl border border-[#F7931A]/30 bg-[#F7931A]/5 backdrop-blur-xl text-center">
-          <Zap className="w-5 h-5 text-[#F7931A] mx-auto mb-1" />
-          <div className="text-xs font-bold text-[#F7931A]">Signal Engine</div>
+        <div className="px-5 py-2 rounded-2xl border border-[#F7931A]/30 bg-[#F7931A]/5 text-center">
+          <Zap className="w-4 h-4 text-[#F7931A] mx-auto" />
+          <div className="text-[10px] font-bold text-[#F7931A]">BTC Engine</div>
         </div>
-        <div className="w-px h-4 bg-[#F7931A]/30" />
-        <div className="px-8 py-4 rounded-2xl border-2 border-emerald-500/40 bg-emerald-500/5 backdrop-blur-xl text-center">
-          <div className="text-2xl font-black text-emerald-400">{masterScore}%</div>
-          <div className="text-sm font-bold text-white">{masterSignal}</div>
+        <div className="w-px h-3 bg-[#F7931A]/30" />
+        <div className="px-6 py-3 rounded-2xl border-2 border-emerald-500/40 bg-emerald-500/5 text-center">
+          <div className="text-lg font-black text-emerald-400">{dual.btcScore}%</div>
+          <div className="text-xs font-bold text-white">{dual.btcSignal}</div>
+          <div className="text-[9px] text-orange-400 mt-0.5">₿ BTC Signal</div>
+        </div>
+
+        <div className="w-px h-4 bg-gradient-to-b from-orange-500/30 to-blue-500/30" />
+        <div className="px-3 py-1 rounded-full bg-white/5 text-[9px] text-slate-400 border border-white/10">↓ feeds into MSTR (60%)</div>
+        <div className="w-px h-4 bg-blue-500/20" />
+
+        <div className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">MSTR Signal Path</div>
+        {mstrCats.map((cat) => (
+          <div key={cat.name} className="flex flex-col items-center">
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/[0.03] w-full max-w-[240px]">
+              <div className={`p-1.5 rounded-lg bg-gradient-to-br ${cat.color}`}>{cat.icon}</div>
+              <div>
+                <div className="text-xs font-bold text-white">{cat.name}</div>
+                <div className="text-[10px] text-slate-400">Score: {cat.score}</div>
+              </div>
+            </div>
+            <div className="w-px h-3 bg-white/10" />
+          </div>
+        ))}
+        <div className="px-5 py-2 rounded-2xl border border-blue-500/30 bg-blue-500/5 text-center">
+          <Zap className="w-4 h-4 text-blue-400 mx-auto" />
+          <div className="text-[10px] font-bold text-blue-400">MSTR Engine</div>
+        </div>
+        <div className="w-px h-3 bg-blue-500/30" />
+        <div className="px-6 py-3 rounded-2xl border-2 border-blue-500/40 bg-blue-500/5 text-center">
+          <div className="text-lg font-black text-blue-400">{dual.mstrScore}%</div>
+          <div className="text-xs font-bold text-white">{dual.mstrSignal}</div>
+          <div className="text-[9px] text-blue-400 mt-0.5">MSTR Signal</div>
         </div>
       </div>
     </div>
@@ -426,8 +571,8 @@ const pricingTiers = [
     name: 'Free',
     price: '$0',
     period: '',
-    desc: 'Master signal only',
-    features: ['Daily master signal', 'BUY / SELL / NEUTRAL', 'Basic email summary'],
+    desc: 'Master signals only',
+    features: ['Daily BTC + MSTR signals', 'BUY / SELL / NEUTRAL', 'Basic email summary'],
     cta: 'Get Started',
     highlight: false,
   },
@@ -522,20 +667,17 @@ export default function VaultSignalPage() {
 
   const fetchLiveData = useCallback(async () => {
     try {
-      // Fetch from existing APIs in parallel
       const [vaultRes, fngRes, btcRes] = await Promise.allSettled([
         fetch('/api/v1/live/vault-signal', { cache: 'no-store' }),
         fetch('https://api.alternative.me/fng/?limit=1'),
         fetch('/api/v1/live/btc', { cache: 'no-store' }),
       ])
 
-      // Parse vault-signal (has BTC + MSTR prices, momentum, scores)
       let vault: any = null
       if (vaultRes.status === 'fulfilled' && vaultRes.value.ok) {
         vault = await vaultRes.value.json()
       }
 
-      // Parse fear & greed
       let fearGreed = 50
       let fearGreedLabel = 'Neutral'
       if (fngRes.status === 'fulfilled' && fngRes.value.ok) {
@@ -547,7 +689,6 @@ export default function VaultSignalPage() {
         }
       }
 
-      // Parse BTC for 24h change (vault-signal only has day-over-day)
       let btcPrice = vault?.btc?.price || 0
       let btcChange24h = vault?.btc?.change_24h || 0
       if (btcRes.status === 'fulfilled' && btcRes.value.ok) {
@@ -556,7 +697,6 @@ export default function VaultSignalPage() {
         if (btcData.change_24h != null) btcChange24h = btcData.change_24h
       }
 
-      // Estimate RSI from momentum (rough but reasonable)
       const momentum = vault?.btc?.momentum_5d || 0
       const rsi = Math.max(20, Math.min(80, 50 + momentum * 3))
 
@@ -591,10 +731,8 @@ export default function VaultSignalPage() {
     return () => clearInterval(interval)
   }, [fetchLiveData])
 
-  // Build categories from live data or defaults
   const cats = liveData ? buildCategories(liveData) : []
-  const masterScore = cats.length > 0 ? computeMasterScore(cats) : 0
-  const masterSignal = getMasterSignal(masterScore)
+  const dual = cats.length > 0 ? computeDualScores(cats) : { btcScore: 0, btcSignal: 'NEUTRAL', mstrScore: 0, mstrSignal: 'NEUTRAL' }
 
   if (loading) {
     return (
@@ -614,54 +752,58 @@ export default function VaultSignalPage() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
           </span>
-          Live Signal — Refreshes Every 60s
+          Live Signals — Refreshes Every 60s
           {lastUpdate && <span className="text-slate-500 ml-1">• {lastUpdate}</span>}
         </div>
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight">
           Vault<span className="text-[#F7931A]">Signal</span>
         </h1>
         <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-          22 data streams. 5 categories. One clear signal.
+          22 data streams. 5 categories. Two clear signals.
           <br />
           <span className="text-slate-500">The most comprehensive BTC &amp; MSTR trading indicator.</span>
         </p>
 
-        {/* Prices ticker — LIVE */}
-        <div className="flex items-center justify-center gap-6 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-slate-500">BTC</span>
-            <span className="text-white font-mono font-bold">
-              {liveData?.btcPrice ? `$${liveData.btcPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '—'}
-            </span>
-            {liveData && (
-              <span className={`text-xs ${liveData.btcChange24h >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                {liveData.btcChange24h >= 0 ? '+' : ''}{liveData.btcChange24h.toFixed(1)}%
+        {/* Dual Gauges side by side */}
+        <div className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+          {/* BTC Gauge */}
+          <div className="space-y-4">
+            <SignalGauge score={dual.btcScore} label={dual.btcSignal} title="₿ BTC Signal" gradientId="gaugeGradBTC" />
+            <div className="flex items-center justify-center gap-2 text-sm pt-6">
+              <span className="text-orange-400 font-semibold">BTC</span>
+              <span className="text-white font-mono font-bold">
+                {liveData?.btcPrice ? `$${liveData.btcPrice.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '—'}
               </span>
-            )}
+              {liveData && (
+                <span className={`text-xs font-semibold ${liveData.btcChange24h >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {liveData.btcChange24h >= 0 ? '+' : ''}{liveData.btcChange24h.toFixed(1)}%
+                </span>
+              )}
+            </div>
           </div>
-          <div className="w-px h-4 bg-slate-700" />
-          <div className="flex items-center gap-2">
-            <span className="text-slate-500">MSTR</span>
-            <span className="text-white font-mono font-bold">
-              {liveData?.mstrPrice ? `$${liveData.mstrPrice.toFixed(2)}` : '—'}
-            </span>
-            {liveData && (
-              <span className={`text-xs ${liveData.mstrChange24h >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                {liveData.mstrChange24h >= 0 ? '+' : ''}{liveData.mstrChange24h.toFixed(1)}%
+
+          {/* MSTR Gauge */}
+          <div className="space-y-4">
+            <SignalGauge score={dual.mstrScore} label={dual.mstrSignal} title="MSTR Signal" gradientId="gaugeGradMSTR" />
+            <div className="flex items-center justify-center gap-2 text-sm pt-6">
+              <span className="text-blue-400 font-semibold">MSTR</span>
+              <span className="text-white font-mono font-bold">
+                {liveData?.mstrPrice ? `$${liveData.mstrPrice.toFixed(2)}` : '—'}
               </span>
-            )}
-          </div>
-          <div className="w-px h-4 bg-slate-700" />
-          <div className="flex items-center gap-2">
-            <span className="text-slate-500">Fear &amp; Greed</span>
-            <span className="text-white font-mono font-bold">{liveData?.fearGreed ?? '—'}</span>
-            <span className="text-xs text-slate-400">{liveData?.fearGreedLabel}</span>
+              {liveData && (
+                <span className={`text-xs font-semibold ${liveData.mstrChange24h >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {liveData.mstrChange24h >= 0 ? '+' : ''}{liveData.mstrChange24h.toFixed(1)}%
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Gauge */}
-        <div className="pt-4">
-          <SignalGauge score={masterScore} label={masterSignal} />
+        {/* Relationship note */}
+        <div className="flex items-center justify-center gap-2 text-xs text-slate-500 pt-2">
+          <span>₿ BTC Signal feeds into MSTR Signal at 60% weight</span>
+          <span className="text-slate-700">•</span>
+          <span>Fear &amp; Greed: <span className="text-white font-mono">{liveData?.fearGreed ?? '—'}</span> {liveData?.fearGreedLabel}</span>
         </div>
       </section>
 
@@ -669,7 +811,11 @@ export default function VaultSignalPage() {
       <section className="space-y-8">
         <div className="text-center">
           <h2 className="text-2xl font-black text-white">Component Signals</h2>
-          <p className="text-slate-400 text-sm mt-2">Tap any category to see individual signals • <span className="text-emerald-400">LIVE</span> = real-time • <span className="text-slate-500">Est.</span> = estimated</p>
+          <p className="text-slate-400 text-sm mt-2">
+            Tap any category to expand • <span className="text-emerald-400">LIVE</span> = real-time • <span className="text-slate-500">Est.</span> = estimated
+            <br />
+            <span className="text-orange-400">→ BTC Signal</span> categories feed Bitcoin • <span className="text-blue-400">→ MSTR Signal</span> categories feed MicroStrategy
+          </p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {cats.map((cat, i) => (
@@ -682,10 +828,10 @@ export default function VaultSignalPage() {
       <section className="space-y-8">
         <div className="text-center">
           <h2 className="text-2xl font-black text-white">How It Works</h2>
-          <p className="text-slate-400 text-sm mt-2">Signals flow through weighted fusion into one master reading</p>
+          <p className="text-slate-400 text-sm mt-2">BTC signals flow into both master signals — MSTR inherits BTC conviction with leveraged exposure</p>
         </div>
         <div className="rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-xl p-8 lg:p-12">
-          <FlowChart categories={cats} masterScore={masterScore} masterSignal={masterSignal} />
+          <DualFlowChart categories={cats} dual={dual} />
         </div>
       </section>
 
