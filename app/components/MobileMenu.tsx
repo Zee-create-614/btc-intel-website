@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { X, Menu, Bitcoin, TrendingUp, Calculator, Bell, Users, BarChart3, Target, Waves, Landmark } from 'lucide-react'
+import { X, Menu, Bitcoin, TrendingUp, Calculator, Bell, Users, BarChart3, Target, Waves, Landmark, Zap, Info } from 'lucide-react'
 
 interface MobileMenuProps {
   isOpen: boolean
@@ -22,7 +22,9 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     { href: '/mstr/preferreds', label: 'MSTR Preferreds', icon: Target },
     { href: '/liquidity', label: 'Liquidity Tracker', icon: Waves },
     { href: '/mstr/calculator', label: 'Options Calculator', icon: Calculator },
+    { href: '/vaultsignal', label: '🔥 VaultSignal', icon: Zap, highlight: true },
     { href: '/alerts', label: 'Alerts', icon: Bell },
+    { href: '/about', label: 'About', icon: Info },
   ]
 
   if (!isOpen) return null
