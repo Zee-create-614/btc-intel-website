@@ -595,12 +595,7 @@ export default function VaultSignalPage() {
           <span>₿ BTC Signal feeds into MSTR Signal at 60% weight</span>
           <span className="text-slate-700">•</span>
           <span>Generated: {new Date(data.generated_at).toLocaleString()}</span>
-          {data.errors.length > 0 && (
-            <>
-              <span className="text-slate-700">•</span>
-              <span className="text-amber-500">{data.errors.length} API errors (gracefully handled)</span>
-            </>
-          )}
+          {/* Error count hidden from production UI */}
         </div>
       </section>
 
