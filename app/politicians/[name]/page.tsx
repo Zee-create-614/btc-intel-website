@@ -204,7 +204,7 @@ export default async function PoliticianPage({ params }: { params: { name: strin
           
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {politician.top_tickers.map((ticker, index) => (
-              <div key={ticker} className="group">
+              <Link key={ticker} href={`/tickers/${encodeURIComponent(ticker)}`} className="group">
                 <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-lg p-4 text-center hover:border-bitcoin-500/50 transition-all group-hover:scale-105">
                   <div className="text-lg font-bold text-bitcoin-400 font-mono mb-1">
                     {ticker}
@@ -213,7 +213,7 @@ export default async function PoliticianPage({ params }: { params: { name: strin
                     #{index + 1} most traded
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
           

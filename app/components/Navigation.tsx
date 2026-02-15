@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Bitcoin, TrendingUp, Calculator, Bell, Users, Target, BarChart3, Waves, Landmark } from 'lucide-react'
+import { Bitcoin, TrendingUp, Calculator, Bell, Users, Target, BarChart3, Waves, Landmark, Info } from 'lucide-react'
 import { MobileMenuButton } from './MobileMenu'
 
 export default function Navigation() {
@@ -20,6 +20,7 @@ export default function Navigation() {
     // { href: '/halving', label: 'Halving Tracker', icon: Clock },
     { href: '/mstr/calculator', label: 'Options Calculator', icon: Calculator },
     { href: '/alerts', label: 'Alerts', icon: Bell },
+    { href: '/about', label: 'About', icon: Info },
   ]
 
   return (

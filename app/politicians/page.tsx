@@ -1,39 +1,32 @@
 import { Users, TrendingUp, TrendingDown, BarChart3, ArrowRight, Star } from 'lucide-react'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import {
   getTradeStats, getTrades, getPoliticianSummaries, getPoliticianDetail,
   partyColor, partyBg, partyName, tradeTypeColor, tradeTypeEmoji,
   returnColor, formatReturn,
 } from '../lib/politician-data'
-import PoliticianCard from '../components/PoliticianCard'
 import PoliticianPhoto from '../components/PoliticianPhoto'
 import PoliticianSparkline from '../components/PoliticianSparkline'
-import PoliticianSearch from '../components/PoliticianSearch'
+import PoliticianFilters from '../components/PoliticianFilters'
 
 export const metadata = {
   title: 'Politician Trading Tracker | BTCIntelVault',
   description: 'Track every stock trade made by US politicians. Real-time alerts, performance tracking, and leaderboards.',
-}
-
-async function SearchBar() {
-  const summaries = await getPoliticianSummaries()
-  const politicians = summaries.map((s: any) => ({
-    name: s.name,
-    party: s.party,
-    chamber: s.chamber,
-    state: s.state,
-    photo_url: s.photo_url,
-  }))
-  return <PoliticianSearch politicians={politicians} />
+  openGraph: {
+    title: 'Politician Trading Tracker | BTCIntelVault',
+    description: 'Track every stock trade made by US politicians. 29K+ trades across 202 members of Congress.',
+    type: 'website',
+  },
+  twitter: { card: 'summary_large_image' },
 }
 
 async function StatsBar() {
   const stats = await getTradeStats()
-  
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center">
-        <p className="text-3xl font-bold text-bitcoin-500">{stats.total_trades}</p>
+        <p className="text-3xl font-bold text-bitcoin-500">{stats.total_trades?.toLocaleString()}</p>
         <p className="text-sm text-gray-400">Total Trades</p>
       </div>
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center">
@@ -41,91 +34,21 @@ async function StatsBar() {
         <p className="text-sm text-gray-400">Politicians</p>
       </div>
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center">
-        <p className="text-3xl font-bold text-white">{stats.unique_tickers}</p>
+        <p className="text-3xl font-bold text-white">{stats.unique_tickers?.toLocaleString()}</p>
         <p className="text-sm text-gray-400">Unique Tickers</p>
       </div>
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center">
-        <p className="text-3xl font-bold text-green-400">{stats.total_buys}</p>
+        <p className="text-3xl font-bold text-green-400">{stats.total_buys?.toLocaleString()}</p>
         <p className="text-sm text-gray-400">Buys</p>
       </div>
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-4 text-center">
-        <p className="text-3xl font-bold text-red-400">{stats.total_sells}</p>
+        <p className="text-3xl font-bold text-red-400">{stats.total_sells?.toLocaleString()}</p>
         <p className="text-sm text-gray-400">Sells</p>
       </div>
     </div>
   )
 }
 
-async function RecentTrades() {
-  const { trades } = await getTrades(1, 15)
-  
-  return (
-    <div className="card">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-bitcoin-500" />
-          Recent Trades
-        </h2>
-      </div>
-      
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-gray-700 text-gray-400">
-              <th className="text-left py-3 px-2">Politician</th>
-              <th className="text-left py-3 px-2">Party</th>
-              <th className="text-left py-3 px-2">Ticker</th>
-              <th className="text-left py-3 px-2">Type</th>
-              <th className="text-left py-3 px-2">Size</th>
-              <th className="text-left py-3 px-2">Price</th>
-              <th className="text-left py-3 px-2">Date</th>
-              <th className="text-left py-3 px-2">Owner</th>
-            </tr>
-          </thead>
-          <tbody>
-            {trades.map((trade, i) => (
-              <tr key={trade.id || i} className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors">
-                <td className="py-3 px-2">
-                  <Link 
-                    href={`/politicians/${encodeURIComponent(trade.politician)}`}
-                    className="text-bitcoin-500 hover:text-bitcoin-400 font-medium"
-                  >
-                    {trade.politician}
-                  </Link>
-                </td>
-                <td className="py-3 px-2">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${partyBg(trade.party)}`}>
-                    <span className={partyColor(trade.party)}>
-                      {trade.party || '?'}
-                    </span>
-                  </span>
-                </td>
-                <td className="py-3 px-2 font-mono">
-                  {trade.ticker ? (
-                    <span className="text-white font-semibold">${trade.ticker}</span>
-                  ) : (
-                    <span className="text-gray-500 text-xs">{trade.asset_name?.slice(0, 25)}</span>
-                  )}
-                </td>
-                <td className="py-3 px-2">
-                  <span className={tradeTypeColor(trade.trade_type)}>
-                    {tradeTypeEmoji(trade.trade_type)} {trade.trade_type}
-                  </span>
-                </td>
-                <td className="py-3 px-2 text-gray-300 text-xs">{trade.size_range}</td>
-                <td className="py-3 px-2 text-gray-300">{trade.price || 'N/A'}</td>
-                <td className="py-3 px-2 text-gray-400 text-xs">{trade.trade_date}</td>
-                <td className="py-3 px-2 text-gray-500 text-xs">{trade.owner}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
-}
-
-// Politician avatar component with photo support
 function PoliticianAvatar({ name, party, photoUrl, large = false }: { name: string; party: string; photoUrl?: string; large?: boolean }) {
   const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
   const bgColor = party === 'R' ? 'bg-gradient-to-br from-red-600 to-red-700' : 
@@ -150,28 +73,57 @@ function PoliticianAvatar({ name, party, photoUrl, large = false }: { name: stri
   )
 }
 
-async function PoliticianCards({ page }: { page: number }) {
-  const summaries = await getPoliticianSummaries()
-  const perPage = 24
-  const currentPage = Math.max(1, Math.min(page, Math.ceil(summaries.length / perPage)))
-  const totalPages = Math.ceil(summaries.length / perPage)
-  const top = summaries.slice((currentPage - 1) * perPage, currentPage * perPage)
+async function PoliticianCards({ page, party, sort, q }: { page: number; party: string; sort: string; q: string }) {
+  let summaries = await getPoliticianSummaries()
   
-  // Load recent trades for sparklines (limit to avoid payload issues)
-  const { trades: allTrades } = await getTrades(1, 5000)
-  const tradesByPolitician: Record<string, any[]> = {}
-  for (const t of allTrades) {
-    const name = t.politician
-    if (!tradesByPolitician[name]) tradesByPolitician[name] = []
-    if (tradesByPolitician[name].length < 50) tradesByPolitician[name].push(t)
+  // Filter by party
+  if (party) {
+    summaries = summaries.filter(s => s.party === party)
   }
   
+  // Filter by search query
+  if (q) {
+    const lower = q.toLowerCase()
+    summaries = summaries.filter(s => s.name.toLowerCase().includes(lower))
+  }
+  
+  // Sort
+  switch (sort) {
+    case 'best_return':
+      summaries = [...summaries].sort((a, b) => (b.avg_return_pct || -999) - (a.avg_return_pct || -999))
+      break
+    case 'worst_return':
+      summaries = [...summaries].sort((a, b) => (a.avg_return_pct || 999) - (b.avg_return_pct || 999))
+      break
+    case 'alpha':
+      summaries = [...summaries].sort((a, b) => a.name.localeCompare(b.name))
+      break
+    case 'most_trades':
+    default:
+      summaries = [...summaries].sort((a, b) => b.total_trades - a.total_trades)
+      break
+  }
+  
+  const perPage = 24
+  const totalPages = Math.ceil(summaries.length / perPage)
+  const currentPage = Math.max(1, Math.min(page, totalPages))
+  const top = summaries.slice((currentPage - 1) * perPage, currentPage * perPage)
+  
+  // Build query string for pagination links
+  const qs = new URLSearchParams()
+  if (party) qs.set('party', party)
+  if (sort && sort !== 'most_trades') qs.set('sort', sort)
+  if (q) qs.set('q', q)
+  const qsStr = qs.toString()
+  const qsPrefix = qsStr ? `&${qsStr}` : ''
+
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold flex items-center gap-2">
           <Users className="h-5 w-5 text-bitcoin-500" />
-          Active Politicians
+          {q ? `Results for "${q}"` : 'Active Politicians'}
+          <span className="text-sm font-normal text-gray-400">({summaries.length})</span>
         </h2>
         <Link href="/politicians/leaderboard" className="text-bitcoin-500 hover:text-bitcoin-400 text-sm flex items-center gap-1">
           Leaderboard <ArrowRight className="h-4 w-4" />
@@ -185,31 +137,22 @@ async function PoliticianCards({ page }: { page: number }) {
             href={`/politicians/${encodeURIComponent(pol.name)}`}
             className="bg-gray-800 border border-gray-700 rounded-lg p-4 hover:border-bitcoin-500/50 transition-all group"
           >
-            {/* Header with Avatar and Performance */}
             <div className="flex items-start gap-3 mb-4">
               <PoliticianAvatar name={pol.name} party={pol.party} photoUrl={pol.photo_url} />
-              
-              <div className="flex-grow">
-                <h3 className="font-semibold text-white group-hover:text-bitcoin-400 transition-colors">
+              <div className="flex-grow min-w-0">
+                <h3 className="font-semibold text-white group-hover:text-bitcoin-400 transition-colors truncate">
                   {pol.name}
                 </h3>
                 <p className="text-xs text-gray-400 mb-2">
                   <span className={partyColor(pol.party)}>{partyName(pol.party)}</span>
                   {' · '}{pol.chamber}{pol.state ? ` · ${pol.state}` : ''}
                 </p>
-                
                 <div className={`text-lg font-bold ${returnColor(pol.avg_return_pct)}`}>
                   {formatReturn(pol.avg_return_pct)} avg per trade
                 </div>
               </div>
-              
-              {/* Sparkline */}
-              <div className="ml-auto">
-                <PoliticianSparkline trades={tradesByPolitician[pol.name] || []} width={70} height={28} />
-              </div>
             </div>
             
-            {/* Portfolio Performance Summary */}
             <div className="grid grid-cols-2 gap-2 mb-3">
               <div className="bg-gray-900 rounded p-2 text-center">
                 <p className="text-xs text-gray-500">Best Trade</p>
@@ -225,19 +168,16 @@ async function PoliticianCards({ page }: { page: number }) {
               </div>
             </div>
             
-            {/* Trading Activity */}
             <div className="flex items-center justify-between text-xs text-gray-400 mb-3">
               <span>{pol.total_trades} trades</span>
               <span className="text-green-400">{pol.buys} buys</span>
               <span className="text-red-400">{pol.sells} sells</span>
             </div>
             
-            {/* Portfolio Holdings */}
             {pol.top_tickers && pol.top_tickers.length > 0 && (
               <div>
                 <p className="text-xs text-gray-500 mb-2 flex items-center gap-1">
-                  <BarChart3 className="h-3 w-3" />
-                  Portfolio:
+                  <BarChart3 className="h-3 w-3" /> Portfolio:
                 </p>
                 <div className="flex flex-wrap gap-1">
                   {pol.top_tickers.slice(0, 5).map(ticker => (
@@ -256,13 +196,18 @@ async function PoliticianCards({ page }: { page: number }) {
           </Link>
         ))}
       </div>
+
+      {top.length === 0 && (
+        <div className="text-center py-12 text-gray-500">
+          <p className="text-lg">No politicians found matching your filters.</p>
+        </div>
+      )}
       
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-4 mt-8">
           {currentPage > 1 ? (
             <Link
-              href={`/politicians?page=${currentPage - 1}`}
+              href={`/politicians?page=${currentPage - 1}${qsPrefix}`}
               className="px-5 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white hover:border-bitcoin-500/50 transition-colors"
             >
               ← Previous
@@ -272,14 +217,12 @@ async function PoliticianCards({ page }: { page: number }) {
               ← Previous
             </span>
           )}
-          
           <span className="text-gray-400 text-sm">
             Page {currentPage} of {totalPages} · {summaries.length} politicians
           </span>
-          
           {currentPage < totalPages ? (
             <Link
-              href={`/politicians?page=${currentPage + 1}`}
+              href={`/politicians?page=${currentPage + 1}${qsPrefix}`}
               className="px-5 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white hover:border-bitcoin-500/50 transition-colors"
             >
               Next →
@@ -295,11 +238,15 @@ async function PoliticianCards({ page }: { page: number }) {
   )
 }
 
-export default async function PoliticiansPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+export default async function PoliticiansPage({ searchParams }: { searchParams: Promise<{ page?: string; party?: string; sort?: string; q?: string }> }) {
   const params = await searchParams
+  const page = parseInt(params.page || '1', 10)
+  const party = params.party || ''
+  const sort = params.sort || 'most_trades'
+  const q = params.q || ''
+
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-bitcoin-500 to-red-500 bg-clip-text text-transparent">
           Politician Trading Tracker
@@ -310,10 +257,10 @@ export default async function PoliticiansPage({ searchParams }: { searchParams: 
         </p>
       </div>
 
-      {/* Search */}
-      <SearchBar />
+      <Suspense fallback={null}>
+        <PoliticianFilters />
+      </Suspense>
 
-      {/* BETA Banner */}
       <div className="bg-gradient-to-r from-green-500/20 to-blue-500/20 border border-green-500/30 rounded-lg p-4 text-center">
         <div className="flex items-center justify-center space-x-2">
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
@@ -321,20 +268,13 @@ export default async function PoliticiansPage({ searchParams }: { searchParams: 
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
         </div>
         <p className="text-gray-400 text-sm mt-1">
-          Sourced from Capitol Trades • Updated every 30 minutes • Follow @BTCIntelVault for instant alerts
+          Sourced from Capitol Trades • Updated regularly • Follow @BTCIntelVault for instant alerts
         </p>
       </div>
 
-      {/* Stats */}
       <StatsBar />
+      <PoliticianCards page={page} party={party} sort={sort} q={q} />
       
-      {/* Politician Cards */}
-      <PoliticianCards page={parseInt(params.page || '1', 10)} />
-      
-      {/* Recent Trades Table */}
-      <RecentTrades />
-      
-      {/* CTA */}
       <div className="card text-center py-8">
         <h3 className="text-2xl font-bold mb-4">Get Instant Trade Alerts</h3>
         <p className="text-gray-400 mb-6">
