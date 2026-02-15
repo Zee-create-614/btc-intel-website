@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-02-15T13:59:06Z",
-  "btc_price": 68884.69,
-  "btc_24h_change": -1.27,
+  "generated_at": "2026-02-15T21:04:16Z",
+  "btc_price": 68443.93,
+  "btc_24h_change": -1.9,
   "mstr_price": 133.88,
   "mstr_24h_change": 8.85,
   "btc_signal": {
@@ -42,7 +42,7 @@
     {
       "name": "News & Geopolitical",
       "key": "news",
-      "score": 59,
+      "score": 57,
       "weight": 0.18
     },
     {
@@ -62,7 +62,7 @@
       "weight": 25,
       "source": "api",
       "category": "onchain",
-      "updated_at": "2026-02-15T13:59:07Z"
+      "updated_at": "2026-02-15T21:04:19Z"
     },
     {
       "name": "Hash Rate",
@@ -73,7 +73,7 @@
       "weight": 25,
       "source": "api",
       "category": "onchain",
-      "updated_at": "2026-02-15T13:59:08Z"
+      "updated_at": "2026-02-15T21:04:21Z"
     },
     {
       "name": "Exchange Reserve",
@@ -84,7 +84,7 @@
       "weight": 15,
       "source": "pro_only",
       "category": "onchain",
-      "updated_at": "2026-02-15T13:59:08Z"
+      "updated_at": "2026-02-15T21:04:21Z"
     },
     {
       "name": "LTH Supply",
@@ -95,7 +95,7 @@
       "weight": 0,
       "source": "pro_only",
       "category": "onchain",
-      "updated_at": "2026-02-15T13:59:10Z"
+      "updated_at": "2026-02-15T21:04:25Z"
     },
     {
       "name": "DXY (Trade Weighted $)",
@@ -106,7 +106,7 @@
       "weight": 20,
       "source": "api",
       "category": "macro",
-      "updated_at": "2026-02-15T13:59:10Z"
+      "updated_at": "2026-02-15T21:04:25Z"
     },
     {
       "name": "10Y Treasury Yield",
@@ -117,7 +117,7 @@
       "weight": 15,
       "source": "api",
       "category": "macro",
-      "updated_at": "2026-02-15T13:59:10Z"
+      "updated_at": "2026-02-15T21:04:25Z"
     },
     {
       "name": "Fed Funds Rate",
@@ -128,7 +128,7 @@
       "weight": 15,
       "source": "api",
       "category": "macro",
-      "updated_at": "2026-02-15T13:59:11Z"
+      "updated_at": "2026-02-15T21:04:25Z"
     },
     {
       "name": "Credit Spreads (HY OAS)",
@@ -139,7 +139,7 @@
       "weight": 15,
       "source": "api",
       "category": "macro",
-      "updated_at": "2026-02-15T13:59:11Z"
+      "updated_at": "2026-02-15T21:04:26Z"
     },
     {
       "name": "Real Rates (10Y TIPS)",
@@ -150,7 +150,7 @@
       "weight": 15,
       "source": "calculated",
       "category": "macro",
-      "updated_at": "2026-02-15T13:59:11Z"
+      "updated_at": "2026-02-15T21:04:26Z"
     },
     {
       "name": "M2 Money Supply (YoY)",
@@ -161,7 +161,7 @@
       "weight": 10,
       "source": "calculated",
       "category": "macro",
-      "updated_at": "2026-02-15T13:59:11Z"
+      "updated_at": "2026-02-15T21:04:26Z"
     },
     {
       "name": "Global Liquidity Score",
@@ -172,84 +172,84 @@
       "weight": 10,
       "source": "calculated",
       "category": "macro",
-      "updated_at": "2026-02-15T13:59:11Z"
+      "updated_at": "2026-02-15T21:04:26Z"
     },
     {
       "name": "BTC RSI (14D)",
-      "value": "38.9",
-      "raw_value": 38.9,
+      "value": "38.4",
+      "raw_value": 38.4,
       "score": 70,
       "direction": "bullish",
       "weight": 20,
       "source": "calculated",
       "category": "technical",
-      "updated_at": "2026-02-15T13:59:11Z"
+      "updated_at": "2026-02-15T21:04:26Z"
     },
     {
       "name": "BTC MACD",
-      "value": "123",
-      "raw_value": 122.95,
+      "value": "95",
+      "raw_value": 94.82,
       "score": 80,
       "direction": "bullish",
       "weight": 15,
       "source": "calculated",
       "category": "technical",
-      "updated_at": "2026-02-15T13:59:11Z"
+      "updated_at": "2026-02-15T21:04:26Z"
     },
     {
       "name": "BTC 50/200 MA",
       "value": "Death Cross",
-      "raw_value": 0.837656668434847,
+      "raw_value": 0.8375873687887807,
       "score": 15,
       "direction": "bearish",
       "weight": 15,
       "source": "calculated",
       "category": "technical",
-      "updated_at": "2026-02-15T13:59:11Z"
+      "updated_at": "2026-02-15T21:04:26Z"
     },
     {
       "name": "BTC Bollinger Bands",
       "value": "Lower half",
-      "raw_value": 68884.6875,
+      "raw_value": 68443.9296875,
       "score": 40,
       "direction": "bearish",
       "weight": 10,
       "source": "calculated",
       "category": "technical",
-      "updated_at": "2026-02-15T13:59:11Z"
+      "updated_at": "2026-02-15T21:04:26Z"
     },
     {
       "name": "BTC Volume Trend",
-      "value": "1.00x",
-      "raw_value": 1.0,
+      "value": "1.01x",
+      "raw_value": 1.01,
       "score": 50,
       "direction": "neutral",
       "weight": 10,
       "source": "calculated",
       "category": "technical",
-      "updated_at": "2026-02-15T13:59:11Z"
+      "updated_at": "2026-02-15T21:04:26Z"
     },
     {
       "name": "BTC OBV",
       "value": "Falling",
-      "raw_value": -170525924987.0,
+      "raw_value": -173165063803.0,
       "score": 35,
       "direction": "bearish",
       "weight": 10,
       "source": "calculated",
       "category": "technical",
-      "updated_at": "2026-02-15T13:59:11Z"
+      "updated_at": "2026-02-15T21:04:26Z"
     },
     {
       "name": "BTC ATR Volatility",
-      "value": "6.8%",
-      "raw_value": 6.82,
+      "value": "6.9%",
+      "raw_value": 6.94,
       "score": 25,
       "direction": "bearish",
       "weight": 20,
       "source": "calculated",
       "category": "technical",
-      "updated_at": "2026-02-15T13:59:11Z"
+      "updated_at": "2026-02-15T21:04:26Z"
     },
     {
       "name": "Fear & Greed Index",
@@ -260,7 +260,7 @@
       "weight": 35,
       "source": "api",
       "category": "sentiment",
-      "updated_at": "2026-02-15T13:59:12Z"
+      "updated_at": "2026-02-15T21:04:27Z"
     },
     {
       "name": "Funding Rate",
@@ -271,7 +271,7 @@
       "weight": 30,
       "source": "api",
       "category": "sentiment",
-      "updated_at": "2026-02-15T13:59:13Z"
+      "updated_at": "2026-02-15T21:04:29Z"
     },
     {
       "name": "Long/Short Ratio",
@@ -282,7 +282,7 @@
       "weight": 25,
       "source": "api",
       "category": "sentiment",
-      "updated_at": "2026-02-15T13:59:14Z"
+      "updated_at": "2026-02-15T21:04:30Z"
     },
     {
       "name": "Options Put/Call",
@@ -293,33 +293,33 @@
       "weight": 10,
       "source": "pro_only",
       "category": "sentiment",
-      "updated_at": "2026-02-15T13:59:14Z"
+      "updated_at": "2026-02-15T21:04:30Z"
     },
     {
       "name": "Crypto News Sentiment",
-      "value": "7\u2191 3\u2193 / 40 headlines",
+      "value": "6\u2191 3\u2193 / 40 headlines",
       "raw_value": {
-        "bullish": 7,
+        "bullish": 6,
         "bearish": 3,
         "total": 40
       },
-      "score": 70,
+      "score": 66,
       "direction": "bullish",
       "weight": 35,
       "source": "api",
       "category": "news",
-      "updated_at": "2026-02-15T13:59:15Z"
+      "updated_at": "2026-02-15T21:04:34Z"
     },
     {
       "name": "Google Trends (Bitcoin)",
-      "value": "49/100",
-      "raw_value": 49,
+      "value": "59/100",
+      "raw_value": 59,
       "score": 50,
       "direction": "neutral",
       "weight": 20,
       "source": "api",
       "category": "news",
-      "updated_at": "2026-02-15T13:59:18Z"
+      "updated_at": "2026-02-15T21:04:40Z"
     },
     {
       "name": "X/Twitter Sentiment",
@@ -330,7 +330,7 @@
       "weight": 25,
       "source": "pro_only",
       "category": "news",
-      "updated_at": "2026-02-15T13:59:18Z"
+      "updated_at": "2026-02-15T21:04:40Z"
     },
     {
       "name": "Geopolitical Risk",
@@ -344,7 +344,7 @@
       "weight": 20,
       "source": "calculated",
       "category": "news",
-      "updated_at": "2026-02-15T13:59:18Z"
+      "updated_at": "2026-02-15T21:04:40Z"
     },
     {
       "name": "MSTR NAV Premium",
@@ -355,7 +355,7 @@
       "weight": 35,
       "source": "calculated",
       "category": "mstr",
-      "updated_at": "2026-02-15T13:59:18Z"
+      "updated_at": "2026-02-15T21:04:40Z"
     },
     {
       "name": "BTC Per Share",
@@ -366,7 +366,7 @@
       "weight": 15,
       "source": "calculated",
       "category": "mstr",
-      "updated_at": "2026-02-15T13:59:18Z"
+      "updated_at": "2026-02-15T21:04:40Z"
     },
     {
       "name": "MSTR IV Percentile",
@@ -377,7 +377,7 @@
       "weight": 20,
       "source": "calculated",
       "category": "mstr",
-      "updated_at": "2026-02-15T13:59:18Z"
+      "updated_at": "2026-02-15T21:04:40Z"
     },
     {
       "name": "Covered Call Yield",
@@ -388,7 +388,7 @@
       "weight": 30,
       "source": "calculated",
       "category": "mstr",
-      "updated_at": "2026-02-15T13:59:18Z"
+      "updated_at": "2026-02-15T21:04:40Z"
     }
   ],
   "errors": [

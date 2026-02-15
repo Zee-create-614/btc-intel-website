@@ -647,17 +647,6 @@ function VaultSignalInner() {
         </div>
       </section>
 
-      {/* Historical */}
-      <section className="space-y-8">
-        <div className="text-center">
-          <h2 className="text-2xl font-black text-white">Track Record</h2>
-          <p className="text-slate-400 text-sm mt-2">Recent signal accuracy on major BTC moves</p>
-        </div>
-        <div className="rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-xl p-6 lg:p-8 max-w-2xl mx-auto">
-          <HistoricalAccuracy />
-        </div>
-      </section>
-
       {/* Pricing */}
       <section className="space-y-8">
         <div className="text-center">
