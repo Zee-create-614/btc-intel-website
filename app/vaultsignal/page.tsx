@@ -146,7 +146,7 @@ function SignalGauge({ score, label, title, gradientId }: { score: number; label
           </g>
           <text x="100" y="88" textAnchor="middle" fill="white" fontSize="26" fontWeight="bold" className="font-mono">{animatedScore}%</text>
           <text x="100" y="108" textAnchor="middle" fill={scoreColor} fontSize="11" fontWeight="600">
-            {animatedScore >= 50 ? 'Bullish' : animatedScore <= 40 ? 'Bearish' : 'Neutral'}
+            {animatedScore >= 80 ? 'Strong Buy' : animatedScore >= 65 ? 'Buy' : animatedScore >= 50 ? 'Lean Bullish' : animatedScore >= 35 ? 'Lean Bearish' : animatedScore >= 20 ? 'Sell' : 'Strong Sell'}
           </text>
           <text x="24" y="162" fill="#ef4444" fontSize="8" fontWeight="600">SELL</text>
           <text x="155" y="162" fill="#10b981" fontSize="8" fontWeight="600">BUY</text>
@@ -537,9 +537,11 @@ export default function VaultSignalPage() {
 
   const cats = buildDisplayCategories(data)
   const btcScore = data.btc_signal.score
-  const btcSignal = data.btc_signal.label
   const mstrScore = data.mstr_signal.score
-  const mstrSignal = data.mstr_signal.label
+  // Consistent labels — gauge text and badge must match
+  const scoreToLabel = (s: number) => s >= 80 ? 'STRONG BUY' : s >= 65 ? 'BUY' : s >= 50 ? 'LEAN BULLISH' : s >= 35 ? 'LEAN BEARISH' : s >= 20 ? 'SELL' : 'STRONG SELL'
+  const btcSignal = scoreToLabel(btcScore)
+  const mstrSignal = scoreToLabel(mstrScore)
   const totalSignals = data.signals.length
 
   return (
