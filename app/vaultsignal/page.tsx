@@ -647,6 +647,24 @@ function VaultSignalInner() {
         </div>
       </section>
 
+      {/* Track Record */}
+      <section className="space-y-8">
+        <div className="text-center">
+          <h2 className="text-2xl font-black text-white">Track Record</h2>
+          <p className="text-slate-400 text-sm mt-2">Live signal history — no backtesting, no fake data</p>
+        </div>
+        <div className="rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-xl p-6 lg:p-8 max-w-2xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full mb-4">
+            <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+            <span className="text-emerald-400 text-sm font-medium">LIVE — Tracking since Feb 15, 2026</span>
+          </div>
+          <p className="text-slate-400 text-sm mt-4">
+            VaultSignal is now recording every signal in real-time. As data accumulates, this section will show verified signal accuracy against actual BTC and MSTR price movements. No cherry-picked backtests — only real, auditable results.
+          </p>
+          <p className="text-slate-500 text-xs mt-4">Signal history updates every 5 minutes</p>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section className="space-y-8">
         <div className="text-center">
