@@ -111,14 +111,25 @@ export default async function PoliticianPage({ params }: { params: { name: strin
               <p className="text-sm text-gray-400">Avg. Trade Return</p>
             </div>
             {(() => {
-              const cumRet = withReturns.reduce((sum: number, t: any) => sum + (t.return_pct || 0), 0)
+              const cumRet = (politician as any).cumulative_return_pct ?? withReturns.reduce((sum: number, t: any) => sum + (t.return_pct || 0), 0)
+              const annRet = (politician as any).annualized_return_pct ?? null
               return withReturns.length > 0 ? (
-                <div className="text-center">
-                  <p className={`text-3xl font-bold ${returnColor(cumRet)}`}>
-                    {formatReturn(cumRet)}
-                  </p>
-                  <p className="text-sm text-gray-400">Cumulative Return</p>
-                </div>
+                <>
+                  <div className="text-center">
+                    <p className={`text-3xl font-bold ${returnColor(cumRet)}`}>
+                      {formatReturn(cumRet)}
+                    </p>
+                    <p className="text-sm text-gray-400">Cumulative Return</p>
+                  </div>
+                  {annRet != null && (
+                    <div className="text-center">
+                      <p className={`text-3xl font-bold ${returnColor(annRet)}`}>
+                        {formatReturn(annRet)}
+                      </p>
+                      <p className="text-sm text-gray-400">Annualized Return</p>
+                    </div>
+                  )}
+                </>
               ) : null
             })()}
           </div>
