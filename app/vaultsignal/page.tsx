@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { Activity, TrendingUp, TrendingDown, Minus, ChevronRight, Zap, Shield, BarChart3, Brain, Building2, Check, ArrowRight, RefreshCw, Bitcoin, Newspaper } from 'lucide-react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Activity, TrendingUp, TrendingDown, Minus, ChevronRight, Zap, Shield, BarChart3, Brain, Building2, Check, ArrowRight, RefreshCw, Bitcoin, Newspaper, Lock } from 'lucide-react'
 
 // ============================================================
 // TYPES
@@ -162,7 +163,7 @@ function SignalGauge({ score, label, title, gradientId }: { score: number; label
   )
 }
 
-function CategoryCard({ cat, index }: { cat: DisplayCategory; index: number }) {
+function CategoryCard({ cat, index, unlocked = false }: { cat: DisplayCategory; index: number; unlocked?: boolean }) {
   const [open, setOpen] = useState(false)
   const feedLabel = cat.feed === 'btc' ? '→ BTC Signal' : '→ MSTR Signal'
   const feedColor = cat.feed === 'btc' ? 'text-orange-400' : 'text-blue-400'
@@ -199,8 +200,14 @@ function CategoryCard({ cat, index }: { cat: DisplayCategory; index: number }) {
               <SourceBadge source={s.source} />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-white font-mono font-semibold text-[11px]">{s.value}</span>
-              <DirectionIcon direction={s.direction} />
+              {s.source === 'pro_only' && !unlocked ? (
+                <span className="flex items-center gap-1 text-amber-500/60 text-[11px]"><Lock className="w-3 h-3" /> Pro</span>
+              ) : (
+                <>
+                  <span className="text-white font-mono font-semibold text-[11px]">{s.value}</span>
+                  <DirectionIcon direction={s.direction} />
+                </>
+              )}
             </div>
           </div>
         ))}
@@ -501,6 +508,16 @@ function Pricing() {
 // ============================================================
 
 export default function VaultSignalPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center"><div className="text-white">Loading VaultSignal...</div></div>}>
+      <VaultSignalInner />
+    </Suspense>
+  )
+}
+
+function VaultSignalInner() {
+  const searchParams = useSearchParams()
+  const unlocked = searchParams.get('key') === 'vault2026'
   const [data, setData] = useState<EngineOutput | null>(null)
   const [loading, setLoading] = useState(true)
   const [lastUpdate, setLastUpdate] = useState<string>('')
@@ -614,7 +631,7 @@ export default function VaultSignalPage() {
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {cats.map((cat, i) => (
-            <CategoryCard key={cat.key} cat={cat} index={i} />
+            <CategoryCard key={cat.key} cat={cat} index={i} unlocked={unlocked} />
           ))}
         </div>
       </section>
