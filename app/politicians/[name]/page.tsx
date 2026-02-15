@@ -331,6 +331,30 @@ export default async function PoliticianPage({ params }: { params: { name: strin
         </div>
       </div>
 
+      {/* ──── VaultSignal Summary ──── */}
+      <Link
+        href="/vaultsignal"
+        className="block card bg-gradient-to-r from-orange-950/30 via-gray-900 to-gray-900 border-[#F7931A]/20 hover:border-[#F7931A]/40 transition-all group"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-[#F7931A]/10 border border-[#F7931A]/20">
+              <BarChart3 className="h-6 w-6 text-[#F7931A]" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-white">VaultSignal</h3>
+                <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-emerald-500/20 text-emerald-400 uppercase">Live</span>
+              </div>
+              <p className="text-slate-400 text-sm">AI-powered BTC &amp; MSTR trading indicator — 22 signals, one clear answer</p>
+            </div>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 text-[#F7931A] font-bold group-hover:translate-x-1 transition-transform">
+            View Signal →
+          </div>
+        </div>
+      </Link>
+
       {/* ──── CTA ──── */}
       <div className="card text-center py-8 bg-gradient-to-r from-gray-900 to-gray-800 border-bitcoin-500/20">
         <h3 className="text-xl font-bold mb-2">Get Instant Alerts for {politician.name}'s Trades</h3>

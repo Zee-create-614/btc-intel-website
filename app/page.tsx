@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Bitcoin, TrendingUp, DollarSign, Activity, RefreshCw, Target } from 'lucide-react'
+import { Bitcoin, TrendingUp, DollarSign, Activity, RefreshCw, Target, Zap, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import OptionsFlowLive from './components/OptionsFlowLive'
 import MarketIntelligenceLive from './components/MarketIntelligenceLive'
@@ -375,6 +375,33 @@ export default function Dashboard() {
       
       {/* LIVE Options Flow */}
       <OptionsFlowLive />
+
+      {/* VaultSignal CTA Banner */}
+      <Link href="/vaultsignal" className="block group">
+        <div className="relative overflow-hidden rounded-2xl border border-[#F7931A]/30 bg-gradient-to-r from-[#F7931A]/10 via-orange-900/20 to-amber-900/10 p-6 hover:border-[#F7931A]/50 transition-all duration-300 shadow-lg shadow-[#F7931A]/5 hover:shadow-[#F7931A]/15">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#F7931A]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-[#F7931A] rounded-xl blur-lg opacity-30 animate-pulse" />
+                <div className="relative p-3 rounded-xl bg-[#F7931A]/20 border border-[#F7931A]/30">
+                  <Zap className="h-6 w-6 text-[#F7931A]" />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xl font-black text-white">🔥 VaultSignal: AI-Powered Trading Indicator</h3>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider animate-pulse">Live</span>
+                </div>
+                <p className="text-slate-400 text-sm mt-1">22 signals. 5 categories. One clear BUY/SELL signal for BTC &amp; MSTR.</p>
+              </div>
+            </div>
+            <div className="hidden md:flex items-center gap-2 text-[#F7931A] font-bold group-hover:translate-x-1 transition-transform">
+              Try Now <ArrowRight className="h-5 w-5" />
+            </div>
+          </div>
+        </div>
+      </Link>
 
       {/* Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -9,7 +9,7 @@ import { MobileMenuButton } from './MobileMenu'
 export default function Navigation() {
   const pathname = usePathname()
   
-  const navItems = [
+  const navItems: { href: string; label: string; icon: any; badge?: string }[] = [
     { href: '/', label: 'Dashboard', icon: Bitcoin },
     { href: '/treasuries', label: 'Treasuries', icon: TrendingUp },
     { href: '/corporate', label: 'Gov Holdings', icon: Landmark },
@@ -19,7 +19,7 @@ export default function Navigation() {
     { href: '/liquidity', label: 'Liquidity Tracker', icon: Waves },
     // { href: '/halving', label: 'Halving Tracker', icon: Clock },
     { href: '/mstr/calculator', label: 'Options Calculator', icon: Calculator },
-    { href: '/vaultsignal', label: 'VaultSignal', icon: Zap },
+    { href: '/vaultsignal', label: 'VaultSignal', icon: Zap, badge: 'NEW' },
     { href: '/alerts', label: 'Alerts', icon: Bell },
     { href: '/about', label: 'About', icon: Info },
   ]
@@ -58,6 +58,12 @@ export default function Navigation() {
                 >
                   <Icon className="h-4 w-4" />
                   <span>{item.label}</span>
+                  {item.badge && (
+                    <span className="relative flex items-center">
+                      <span className="px-1.5 py-0.5 text-[9px] font-bold rounded bg-[#F7931A] text-black leading-none">{item.badge}</span>
+                      <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[#F7931A] animate-ping" />
+                    </span>
+                  )}
                 </Link>
               )
             })}
